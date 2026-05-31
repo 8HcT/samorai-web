@@ -15,7 +15,7 @@ export default function Success() {
           Thank you for your interest in SAMORAI Wheels. We have logged your selection
           and will be in touch shortly.
         </p>
-        <Button href="/shop" variant="primary" size="large">
+        <Button href="/wheels" variant="primary" size="large">
           Back to Shop
         </Button>
       </div>

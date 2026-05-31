@@ -1,8 +1,12 @@
 export const es = {
   nav: {
     home: 'Inicio',
-    shop: 'Tienda',
+    wheels: 'Llantas',
+    gallery: 'Galería',
+    technology: 'Tecnología',
     fitment: 'Montaje',
+    dealers: 'Distribuidores',
+    support: 'Soporte',
     cart: 'Carrito',
   },
   footer: {

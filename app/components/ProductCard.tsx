@@ -31,7 +31,7 @@ export function ProductCard({ product, activeColor }: ProductCardProps) {
 
   return (
     <article className="product-card">
-      <Link to={`/product/${product.slug}`} tabIndex={-1} aria-hidden="true">
+      <Link to={`/wheels/${product.slug}`} tabIndex={-1} aria-hidden="true">
         <div className="product-card__image">
           <div className={`product-card__image-placeholder ${placeholderClass}`}>
             <div className="product-card__wheel-icon" aria-hidden="true" />
@@ -45,7 +45,7 @@ export function ProductCard({ product, activeColor }: ProductCardProps) {
       <div className="product-card__body">
         <p className="product-card__category">Wheels</p>
         <h3 className="product-card__name">
-          <Link to={`/product/${product.slug}`}>{product.model}</Link>
+          <Link to={`/wheels/${product.slug}`}>{product.model}</Link>
         </h3>
         <p className="product-card__desc">
           {sizes.join(', ')} · {product.specs.pcd}
@@ -55,7 +55,7 @@ export function ProductCard({ product, activeColor }: ProductCardProps) {
           {product.colors.map((color) => (
             <Link
               key={color}
-              to={`/product/${product.slug}`}
+              to={`/wheels/${product.slug}`}
               role="listitem"
               aria-label={color}
               title={color}
@@ -69,7 +69,7 @@ export function ProductCard({ product, activeColor }: ProductCardProps) {
 
         <div className="product-card__footer">
           <span className="product-card__price">{product.priceLabel}</span>
-          <Button href={`/product/${product.slug}`} variant="secondary" size="small">
+          <Button href={`/wheels/${product.slug}`} variant="secondary" size="small">
             View Details
           </Button>
         </div>

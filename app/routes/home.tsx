@@ -45,7 +45,7 @@ export default function Home() {
           </p>
 
           <div className="hero__cta">
-            <Button href="/shop" variant="primary" size="large">
+            <Button href="/wheels" variant="primary" size="large">
               Shop Now
             </Button>
             <Button href="/fitment" variant="ghost" size="large">
@@ -101,7 +101,7 @@ export default function Home() {
           />
           <ProductGrid products={featured} />
           <div style={{ marginTop: 'var(--space-10)', textAlign: 'center' }}>
-            <Button href="/shop" variant="secondary">
+            <Button href="/wheels" variant="secondary">
               View All Sizes & Finishes
             </Button>
           </div>
@@ -189,7 +189,7 @@ export default function Home() {
             Custom hub rings available for non-standard center bore fitments.
           </p>
           <div style={{ display: 'flex', gap: 'var(--space-4)', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Button href="/shop" variant="primary" size="large">
+            <Button href="/wheels" variant="primary" size="large">
               Shop Now
             </Button>
             <Button href="/fitment" variant="secondary" size="large">

@@ -13,22 +13,27 @@ export function Footer() {
           <div>
             <p className="site-footer__col-title">Products</p>
             <ul className="site-footer__links" role="list">
-              <li><Link to="/shop">Victoria Wheels</Link></li>
-              <li><Link to="/fitment">Hub Rings</Link></li>
+              <li><Link to="/wheels">Victoria Wheels</Link></li>
+              <li><Link to="/wheels">All Finishes</Link></li>
+              <li><Link to="/fitment">Hub Rings (coming soon)</Link></li>
             </ul>
           </div>
 
           <div>
-            <p className="site-footer__col-title">Support</p>
+            <p className="site-footer__col-title">Learn</p>
             <ul className="site-footer__links" role="list">
+              <li><Link to="/technology">Technology</Link></li>
               <li><Link to="/fitment">Fitment Guide</Link></li>
-              <li><Link to="/shop">Find Your Size</Link></li>
+              <li><Link to="/gallery">Gallery</Link></li>
+              <li><Link to="/dealers">Dealers</Link></li>
             </ul>
           </div>
 
           <div>
-            <p className="site-footer__col-title">Legal</p>
+            <p className="site-footer__col-title">Company</p>
             <ul className="site-footer__links" role="list">
+              <li><Link to="/support">Support</Link></li>
+              <li><Link to="/dealers">Become a Dealer</Link></li>
               <li><a href="#">Privacy Policy</a></li>
               <li><a href="#">Terms of Service</a></li>
               <li><a href="#">Cookie Policy</a></li>

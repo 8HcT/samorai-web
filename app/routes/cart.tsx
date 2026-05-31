@@ -34,7 +34,7 @@ export default function Cart() {
             <div className="empty-state__icon" aria-hidden="true">○</div>
             <h3>Your cart is empty</h3>
             <p>Browse the Victoria range to find your perfect set.</p>
-            <Button href="/shop" variant="primary">Browse the Shop</Button>
+            <Button href="/wheels" variant="primary">Browse Wheels</Button>
           </div>
         </div>
       </div>

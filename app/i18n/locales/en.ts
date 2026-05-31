@@ -1,8 +1,12 @@
 export const en = {
   nav: {
     home: 'Home',
-    shop: 'Shop',
+    wheels: 'Wheels',
+    gallery: 'Gallery',
+    technology: 'Technology',
     fitment: 'Fitment',
+    dealers: 'Dealers',
+    support: 'Support',
     cart: 'Cart',
   },
   footer: {

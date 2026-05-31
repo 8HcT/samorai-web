@@ -7,9 +7,42 @@ import { Button } from '~/components/Button';
 export function meta({}: Route.MetaArgs) {
   return [
     { title: 'Fitment Guide — SAMORAI Wheels' },
-    { name: 'description', content: 'Understanding PCD, ET offset, center bore, and why hub rings matter for perfect wheel fitment.' },
+    { name: 'description', content: 'How to verify that SAMORAI wheels fit your vehicle — PCD, ET, center bore, brake clearance and hub ring guidance.' },
   ];
 }
+
+const FITMENT_CHECKS = [
+  {
+    abbr: 'PCD',
+    title: 'Bolt Pattern (PCD)',
+    desc: 'Your vehicle\'s bolt pattern must match the wheel exactly. The Victoria is 5×120. Check your vehicle handbook, door jamb sticker, or consult a specialist. Do not attempt to fit wheels with a different PCD.',
+  },
+  {
+    abbr: 'CB',
+    title: 'Center Bore',
+    desc: 'Your hub\'s outer diameter must be equal to or smaller than the wheel\'s center bore (72.6mm for the Victoria). If your hub OD is smaller, you need hub rings to fill the gap. An incorrect CB will cause vibration that no wheel balancing can cure.',
+  },
+  {
+    abbr: 'ET',
+    title: 'Offset Range',
+    desc: 'Your vehicle has an acceptable ET range for its wheel arch and suspension geometry. The Victoria offers ET35 and ET45. Confirm your vehicle\'s minimum and maximum ET, factoring in brake caliper clearance and arch clearance with your tyre size.',
+  },
+  {
+    abbr: 'Ø',
+    title: 'Diameter & Width',
+    desc: 'An 18″ wheel requires adequate clearance around brake components and within the wheel arch. Tyre size must be matched to wheel width. Confirm available tyre sizes for your chosen width before ordering.',
+  },
+  {
+    abbr: 'BRK',
+    title: 'Brake Caliper Clearance',
+    desc: 'Large aftermarket brake calipers may not clear all wheel designs. If your vehicle has upgraded brakes, physically verify clearance or consult your brake supplier for minimum wheel dimensions.',
+  },
+  {
+    abbr: 'TYR',
+    title: 'Tyre Compatibility',
+    desc: 'Confirm that your chosen tyre size is compatible with the wheel width and your vehicle\'s recommended tyre sizes. Consult a tyre specialist for correct fitment and load index requirements.',
+  },
+];
 
 export default function Fitment() {
   useEffect(() => {
@@ -23,94 +56,114 @@ export default function Fitment() {
   return (
     <>
       {/* Hero */}
-      <div
-        style={{
-          background: 'linear-gradient(180deg, var(--color-bg-elevated) 0%, var(--color-bg) 100%)',
-          borderBottom: '1px solid var(--color-border)',
-          padding: 'var(--space-20) 0 var(--space-16)',
-        }}
-      >
+      <div className="page-hero">
         <div className="container">
-          <span className="eyebrow">Technical Reference</span>
-          <h1 style={{ marginBottom: 'var(--space-5)', maxWidth: '14ch' }}>
-            Wheel Fitment Guide
-          </h1>
-          <p style={{ fontSize: 'var(--text-lg)', maxWidth: '55ch' }}>
-            Understanding the numbers behind every wheel specification — so your Victoria
-            fits exactly as engineered.
+          <span className="eyebrow">Compatibility</span>
+          <h1>Fitment Guide</h1>
+          <p className="page-hero__subtitle">
+            SAMORAI wheels are engineered to broad multi-vehicle specifications, but
+            fitment must always be verified for your specific vehicle before installation.
           </p>
         </div>
       </div>
 
-      {/* Core concepts */}
-      <section className="section" aria-label="Fitment concepts">
+      {/* Compatibility intro */}
+      <section className="section" aria-label="Compatibility overview">
         <div className="container">
-          <SectionHeader
-            eyebrow="The Fundamentals"
-            title="Three Numbers That Define Fitment"
-          />
-
-          <div className="fitment-concepts">
-            <div className="fitment-concept">
-              <p className="fitment-concept__abbr">PCD</p>
-              <h3 className="fitment-concept__name">Pitch Circle Diameter</h3>
-              <p className="fitment-concept__desc">
-                The diameter of the imaginary circle passing through the center of each
-                wheel bolt. Expressed as bolt count × diameter (e.g. 5×120). A wheel
-                and hub must share the same PCD. The Victoria is 5×120 — a widely used
-                standard across many European performance platforms.
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-12)', alignItems: 'start' }}>
+            <div>
+              <span className="eyebrow">Multi-Vehicle Compatibility</span>
+              <h2 style={{ marginBottom: 'var(--space-5)' }}>Designed for Compatibility. Not Guaranteed for Every Car.</h2>
+              <p style={{ marginBottom: 'var(--space-5)' }}>
+                The Victoria is designed around the 5×120 PCD standard, which is shared by
+                a wide range of vehicles across multiple manufacturers. However, PCD alone does
+                not determine compatibility.
+              </p>
+              <p style={{ marginBottom: 'var(--space-5)' }}>
+                Center bore, offset range, wheel diameter, tyre clearance, and brake caliper
+                clearance all vary between vehicles — even those sharing the same bolt pattern.
+                Each application must be verified individually.
+              </p>
+              <p>
+                If you are unsure, use our checklist below, consult our{' '}
+                <a href="/technology" style={{ color: 'var(--color-accent)' }}>technology page</a>{' '}
+                for detailed specification explanations, or contact{' '}
+                <a href="/support" style={{ color: 'var(--color-accent)' }}>support</a> directly.
               </p>
             </div>
-
-            <div className="fitment-concept">
-              <p className="fitment-concept__abbr">ET</p>
-              <h3 className="fitment-concept__name">Offset (Einpresstiefe)</h3>
-              <p className="fitment-concept__desc">
-                The distance in mm from the wheel's mounting face to its geometric
-                centerline. Higher ET (e.g. ET45) moves the wheel inward — toward the
-                car. Lower ET (e.g. ET25) pushes it outward. Critical for brake caliper
-                and arch clearance. Victoria comes in ET35 and ET45 options.
-              </p>
-            </div>
-
-            <div className="fitment-concept">
-              <p className="fitment-concept__abbr">CB</p>
-              <h3 className="fitment-concept__name">Center Bore</h3>
-              <p className="fitment-concept__desc">
-                The diameter of the central hole in the wheel that fits over the
-                vehicle's hub spigot. A wheel centered only by its bolts — not the hub
-                — can develop harmonic vibration at speed. The Victoria base CB is
-                72.6mm — matching the hub diameter of many performance vehicles. For
-                other center bore sizes, SAMORAI hub rings bridge the gap precisely.
-              </p>
+            <div
+              style={{
+                background: 'var(--color-bg-card)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-lg)',
+                padding: 'var(--space-8)',
+              }}
+            >
+              <p className="label" style={{ marginBottom: 'var(--space-5)' }}>Victoria Base Specifications</p>
+              <dl style={{ display: 'grid', gap: 'var(--space-3)' }}>
+                {[
+                  ['PCD', '5×120'],
+                  ['Center Bore', '72.6mm'],
+                  ['Diameter', '18″'],
+                  ['Available Widths', '8.5J, 9J, 9.5J'],
+                  ['Available Offsets', 'ET35, ET45'],
+                  ['Max Load', '650kg / wheel'],
+                ].map(([label, value]) => (
+                  <div key={label} style={{ display: 'flex', justifyContent: 'space-between', paddingBlock: 'var(--space-2)', borderBottom: '1px solid var(--color-border)' }}>
+                    <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-weight-semibold)', letterSpacing: 'var(--tracking-wide)', textTransform: 'uppercase', color: 'var(--color-text-muted)' }}>{label}</span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-sm)', color: 'var(--color-text-primary)' }}>{value}</span>
+                  </div>
+                ))}
+              </dl>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Why hub rings */}
-      <section className="section section--elevated section--bordered" aria-label="Hub rings explanation">
+      {/* Fitment checklist */}
+      <section className="section section--elevated section--bordered" aria-label="Fitment checklist">
+        <div className="container">
+          <SectionHeader
+            eyebrow="Before You Order"
+            title="Fitment Verification Checklist"
+            subtitle="Work through each point for your specific vehicle. If any check fails or is uncertain, do not proceed without professional guidance."
+          />
+
+          <div className="fitment-checklist" role="list">
+            {FITMENT_CHECKS.map((item) => (
+              <div key={item.abbr} className="fitment-check-item" role="listitem">
+                <div className="fitment-check-item__icon" aria-hidden="true">{item.abbr}</div>
+                <div>
+                  <p className="fitment-check-item__title">{item.title}</p>
+                  <p className="fitment-check-item__desc">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Hub rings */}
+      <section className="section" aria-label="Hub rings">
         <div className="container">
           <div className="hub-rings-section">
             <div>
-              <span className="eyebrow">Precision Fitment</span>
-              <h2>Why Hub Rings Matter</h2>
+              <span className="eyebrow">Center Bore Adaptation</span>
+              <h2>Custom Hub Rings</h2>
               <p style={{ marginTop: 'var(--space-4)', marginBottom: 'var(--space-5)' }}>
-                Wheel bolts are designed to clamp — not to center. If the wheel's center
-                bore is larger than the vehicle's hub, the wheel relies on bolt tension
-                for its radial position. Under load, this can shift, causing vibration.
+                If your vehicle's hub diameter is smaller than the Victoria's 72.6mm center bore,
+                a hub ring is required. Without it, the wheel will only be centered by the bolts —
+                which can produce vibration under load.
               </p>
               <p style={{ marginBottom: 'var(--space-5)' }}>
-                A hub ring fills the gap between wheel CB and hub OD with exact
-                tolerances — typically within 0.1mm — transferring the centering function
-                back to the hub spigot, where it belongs.
+                SAMORAI hub rings are being developed as precision-machined billet aluminum
+                components, machined to fill the gap between wheel CB and your vehicle's hub OD
+                with bilateral tolerances. Available with optional SAMORAI logo engraving.
               </p>
               <p style={{ marginBottom: 'var(--space-8)' }}>
-                SAMORAI hub rings will be precision-machined from billet aluminum,
-                logo-engraved, and available for any combination of wheel CB and vehicle CB.
+                The custom hub ring selector is coming soon. Register interest below.
               </p>
               <Button
-                href="/fitment"
                 variant="primary"
                 onClick={handleHubRingsInterest}
               >
@@ -131,47 +184,40 @@ export default function Fitment() {
       </section>
 
       {/* Coming soon selector */}
-      <section className="section" aria-label="Hub ring selector">
+      <section className="section section--elevated" aria-label="Hub ring configurator">
         <div className="container">
           <SectionHeader
             eyebrow="Coming Soon"
-            title="Custom Hub Ring Selector"
-            subtitle="Select your wheel center bore and vehicle hub diameter. We machine your rings to exact tolerances."
+            title="Hub Ring Configurator"
+            subtitle="Select your wheel center bore and vehicle hub diameter. Receive precision-machined hub rings sized to your specification."
             center
           />
 
           <div
             style={{
-              maxWidth: '600px',
+              maxWidth: '580px',
               margin: '0 auto',
               padding: 'var(--space-10)',
               border: '1px dashed var(--color-border-strong)',
               borderRadius: 'var(--radius-xl)',
               textAlign: 'center',
             }}
-            aria-label="Hub ring selector — coming soon"
+            aria-label="Hub ring configurator — coming soon"
           >
             <p
               style={{
-                fontSize: 'var(--text-xs)',
                 fontFamily: 'var(--font-mono)',
+                fontSize: 'var(--text-xs)',
                 letterSpacing: 'var(--tracking-widest)',
                 textTransform: 'uppercase',
                 color: 'var(--color-text-muted)',
                 marginBottom: 'var(--space-6)',
               }}
             >
-              Wheel CB: 72.6mm → Vehicle CB: [your car]
+              Wheel CB: 72.6mm → Vehicle hub OD: [select]
             </p>
 
-            <div
-              style={{
-                display: 'flex',
-                gap: 'var(--space-4)',
-                justifyContent: 'center',
-                marginBottom: 'var(--space-6)',
-              }}
-            >
+            <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'center', flexWrap: 'wrap', marginBottom: 'var(--space-6)' }}>
               {['57.1', '60.1', '65.1', '66.9', '73.1'].map((cb) => (
                 <div
                   key={cb}
@@ -179,8 +225,8 @@ export default function Fitment() {
                     padding: 'var(--space-3) var(--space-4)',
                     border: '1px solid var(--color-border)',
                     borderRadius: 'var(--radius-md)',
-                    fontSize: 'var(--text-sm)',
                     fontFamily: 'var(--font-mono)',
+                    fontSize: 'var(--text-sm)',
                     color: 'var(--color-text-muted)',
                     opacity: 0.5,
                     cursor: 'not-allowed',
@@ -192,39 +238,24 @@ export default function Fitment() {
               ))}
             </div>
 
-            <p
-              style={{
-                fontSize: 'var(--text-xs)',
-                letterSpacing: 'var(--tracking-widest)',
-                textTransform: 'uppercase',
-                color: 'var(--color-text-muted)',
-                marginBottom: 'var(--space-6)',
-              }}
-            >
-              Custom hub ring selector — coming soon
-            </p>
-
-            <Button
-              variant="secondary"
-              onClick={handleHubRingsInterest}
-            >
+            <Button variant="secondary" onClick={handleHubRingsInterest}>
               Register Interest
             </Button>
           </div>
         </div>
       </section>
 
-      {/* CTA to shop */}
-      <section className="section section--elevated" aria-label="Shop CTA">
+      {/* CTA */}
+      <section className="section" aria-label="CTA">
         <div className="container" style={{ textAlign: 'center' }}>
-          <h2 style={{ marginBottom: 'var(--space-5)' }}>Ready for Victoria?</h2>
+          <h2 style={{ marginBottom: 'var(--space-5)' }}>Ready to Order?</h2>
           <p style={{ marginInline: 'auto', marginBottom: 'var(--space-8)' }}>
-            Browse all available sizes and finishes. Hub ring fitment confirmed for
-            5×120 vehicles with 72.6mm hub as standard.
+            Once you have confirmed fitment for your vehicle, browse the Victoria range.
           </p>
-          <Button href="/shop" variant="primary" size="large">
-            Shop Victoria Wheels
-          </Button>
+          <div style={{ display: 'flex', gap: 'var(--space-4)', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Button href="/wheels" variant="primary" size="large">Shop Victoria Wheels</Button>
+            <Button href="/technology" variant="secondary" size="large">Technical Details</Button>
+          </div>
         </div>
       </section>
     </>
