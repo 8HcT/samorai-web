@@ -15,11 +15,11 @@ export function loader() {
   return { products };
 }
 
-type FilterKey = 'all' | 'bmw' | '18';
+type FilterKey = 'all' | '5x120' | '18';
 
 const FILTERS: { key: FilterKey; label: string }[] = [
   { key: 'all', label: 'All' },
-  { key: 'bmw', label: 'BMW Fitment' },
+  { key: '5x120', label: '5×120 PCD' },
   { key: '18', label: '18″' },
 ];
 
@@ -28,7 +28,7 @@ export default function Shop({ loaderData }: Route.ComponentProps) {
 
   const filtered = loaderData.products.filter((p) => {
     if (p.status !== 'active') return false;
-    if (activeFilter === 'bmw') return p.specs.pcd === '5x120';
+    if (activeFilter === '5x120') return p.specs.pcd === '5x120';
     if (activeFilter === '18') return p.variants.some((v) => v.diameter === 18);
     return true;
   });

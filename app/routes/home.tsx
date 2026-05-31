@@ -9,7 +9,7 @@ import { FitmentCallout } from '~/components/FitmentCallout';
 export function meta({}: Route.MetaArgs) {
   return [
     { title: 'SAMORAI Wheels — Precision Engineered' },
-    { name: 'description', content: 'SAMORAI Victoria — premium alloy wheels engineered for BMW. Precision fitment, performance aesthetics.' },
+    { name: 'description', content: 'SAMORAI Victoria — premium alloy wheels. Precision cast, performance driven. Available in 18" with 5×120 PCD.' },
   ];
 }
 
@@ -21,30 +21,73 @@ export default function Home() {
       {/* Hero */}
       <section className="hero" aria-label="Hero">
         <div className="hero__bg" aria-hidden="true" />
-        <div className="hero__visual" aria-hidden="true">
-          <div className="hero__visual-ring" />
+
+        {/* large decorative wheel */}
+        <div className="hero__wheel-bg" aria-hidden="true">
+          <div className="hero__wheel-bg-circle">
+            <div className="hero__wheel-hub" />
+          </div>
         </div>
+
         <div className="container hero__content">
-          <span className="eyebrow">Precision Engineering</span>
-          <h1 className="hero__title">
-            SAMORAI
-            <span>Wheels</span>
+          <div className="hero__label" aria-hidden="true">
+            <span className="hero__label-line" />
+            <span className="eyebrow" style={{ margin: 0 }}>First Model — 2025</span>
+          </div>
+
+          <h1 className="hero__model-name" aria-label="Victoria by SAMORAI">
+            Vic<em>toria</em>
           </h1>
-          <p className="hero__subtitle">
-            Victoria — Engineered for BMW. Refined for the road.
+
+          <p className="hero__tagline">
+            Precision cast. Performance driven.<br />
+            18″ · 5×120 · Three finishes.
           </p>
+
           <div className="hero__cta">
             <Button href="/shop" variant="primary" size="large">
-              Shop Victoria
+              Shop Now
             </Button>
             <Button href="/fitment" variant="ghost" size="large">
               Fitment Guide
             </Button>
           </div>
         </div>
-        <div className="hero__scroll-hint" aria-hidden="true">
-          <div className="hero__scroll-line" />
-          <span>Scroll</span>
+
+        {/* specs strip anchored to bottom */}
+        <div className="hero__specs-strip" aria-label="Victoria key specs">
+          <div className="container">
+            <div className="hero__specs-inner">
+              <div className="hero__spec-item">
+                <span className="hero__spec-label">Model</span>
+                <span className="hero__spec-value hero__spec-value--accent">Victoria</span>
+              </div>
+              <div className="hero__spec-item">
+                <span className="hero__spec-label">Diameter</span>
+                <span className="hero__spec-value">18″</span>
+              </div>
+              <div className="hero__spec-item">
+                <span className="hero__spec-label">PCD</span>
+                <span className="hero__spec-value">5×120</span>
+              </div>
+              <div className="hero__spec-item">
+                <span className="hero__spec-label">Center Bore</span>
+                <span className="hero__spec-value">72.6mm</span>
+              </div>
+              <div className="hero__spec-item">
+                <span className="hero__spec-label">Max Load</span>
+                <span className="hero__spec-value">650kg</span>
+              </div>
+              <div className="hero__spec-item">
+                <span className="hero__spec-label">Finishes</span>
+                <span className="hero__spec-value">3</span>
+              </div>
+              <div className="hero__spec-item">
+                <span className="hero__spec-label">Brand</span>
+                <span className="hero__spec-value">SAMORAI</span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -54,7 +97,7 @@ export default function Home() {
           <SectionHeader
             eyebrow="First Commercial Model"
             title="Victoria"
-            subtitle="A five-spoke alloy wheel built around BMW 5×120 fitment standards with motorsport-grade geometry and precision powder finishes."
+            subtitle="A five-spoke alloy wheel with motorsport-grade geometry, 5×120 PCD, and precision powder finishes. Engineered to fit precisely."
           />
           <ProductGrid products={featured} />
           <div style={{ marginTop: 'var(--space-10)', textAlign: 'center' }}>
@@ -120,7 +163,7 @@ export default function Home() {
               <p className="brand-value__number">02</p>
               <h3 className="brand-value__title">Exact Fitment</h3>
               <p className="brand-value__text">
-                Designed from OEM specifications. The Victoria sits on your BMW hub
+                Designed from OEM specifications. The Victoria seats on the hub
                 as if it left the factory that way.
               </p>
             </div>

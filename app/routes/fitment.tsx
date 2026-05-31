@@ -57,8 +57,8 @@ export default function Fitment() {
               <p className="fitment-concept__desc">
                 The diameter of the imaginary circle passing through the center of each
                 wheel bolt. Expressed as bolt count × diameter (e.g. 5×120). A wheel
-                and hub must share the same PCD. The Victoria is 5×120 — the standard
-                for most BMW models.
+                and hub must share the same PCD. The Victoria is 5×120 — a widely used
+                standard across many European performance platforms.
               </p>
             </div>
 
@@ -80,7 +80,8 @@ export default function Fitment() {
                 The diameter of the central hole in the wheel that fits over the
                 vehicle's hub spigot. A wheel centered only by its bolts — not the hub
                 — can develop harmonic vibration at speed. The Victoria base CB is
-                72.6mm, matching BMW's standard hub diameter.
+                72.6mm — matching the hub diameter of many performance vehicles. For
+                other center bore sizes, SAMORAI hub rings bridge the gap precisely.
               </p>
             </div>
           </div>

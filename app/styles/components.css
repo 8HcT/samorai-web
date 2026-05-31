@@ -237,9 +237,10 @@
 /* ─── Hero ────────────────────────────────────────────────────────── */
 .hero {
   position: relative;
-  min-height: 100vh;
+  min-height: 88vh;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  justify-content: center;
   overflow: hidden;
   background-color: var(--color-bg);
 }
@@ -247,70 +248,107 @@
 .hero__bg {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 80% 60% at 65% 50%, rgba(200, 160, 42, 0.07) 0%, transparent 70%),
-              radial-gradient(ellipse 50% 80% at 90% 20%, rgba(255, 255, 255, 0.02) 0%, transparent 60%),
-              linear-gradient(180deg, #0a0a0a 0%, #0f0f0f 100%);
+  background:
+    radial-gradient(ellipse 70% 80% at 75% 50%, rgba(200, 160, 42, 0.055) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 60% at 100% 10%, rgba(255,255,255,0.015) 0%, transparent 55%),
+    linear-gradient(175deg, #0f0f0f 0%, #0a0a0a 60%, #0c0c0c 100%);
   pointer-events: none;
 }
 
-.hero__visual {
+/* large decorative wheel behind the content */
+.hero__wheel-bg {
   position: absolute;
-  right: 0;
+  right: -4%;
   top: 50%;
   transform: translateY(-50%);
-  width: 55%;
+  width: min(680px, 58vw);
   aspect-ratio: 1;
   pointer-events: none;
 }
 
-.hero__visual-ring {
+.hero__wheel-bg-circle {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, rgba(200, 160, 42, 0.08) 0%, rgba(60, 60, 60, 0.12) 40%, transparent 70%);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  position: relative;
-}
-
-.hero__visual-ring::after {
-  content: '';
-  position: absolute;
-  inset: 12%;
-  border-radius: 50%;
-  border: 1px solid rgba(200, 160, 42, 0.12);
-}
-
-.hero__visual-ring::before {
-  content: '';
-  position: absolute;
-  inset: 28%;
-  border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.05);
-  background: radial-gradient(circle at 40% 40%, rgba(200, 160, 42, 0.06), transparent 60%);
+  position: relative;
+  background: radial-gradient(circle at 38% 38%,
+    rgba(200,160,42,0.07) 0%,
+    rgba(40,40,40,0.10) 35%,
+    transparent 68%
+  );
+}
+
+/* spoke lines */
+.hero__wheel-bg-circle::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    repeating-conic-gradient(
+      rgba(255,255,255,0.035) 0deg 2deg,
+      transparent 2deg 72deg
+    );
+}
+
+.hero__wheel-bg-circle::after {
+  content: '';
+  position: absolute;
+  inset: 18%;
+  border-radius: 50%;
+  border: 1px solid rgba(200, 160, 42, 0.14);
+  background: radial-gradient(circle at 40% 38%, rgba(200,160,42,0.05), transparent 55%);
+  box-shadow: inset 0 0 60px rgba(0,0,0,0.5);
+}
+
+/* center hub */
+.hero__wheel-hub {
+  position: absolute;
+  inset: 38%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 38%, #222, #111);
+  border: 1px solid rgba(200, 160, 42, 0.2);
+  z-index: 1;
 }
 
 .hero__content {
   position: relative;
-  z-index: 1;
-  max-width: 56%;
+  z-index: 2;
+  padding-block: var(--space-20) var(--space-12);
 }
 
-.hero__title {
-  font-size: clamp(var(--text-5xl), 10vw, var(--text-8xl));
-  line-height: var(--leading-tight);
-  letter-spacing: var(--tracking-tight);
+.hero__label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
   margin-bottom: var(--space-6);
 }
 
-.hero__title span {
-  display: block;
+.hero__label-line {
+  width: 32px;
+  height: 1px;
+  background-color: var(--color-accent);
+}
+
+.hero__model-name {
+  font-size: clamp(var(--text-6xl), 13vw, 160px);
+  font-weight: var(--font-weight-black);
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+  margin-bottom: var(--space-6);
+  color: var(--color-text-primary);
+}
+
+.hero__model-name em {
+  font-style: normal;
   color: var(--color-accent);
 }
 
-.hero__subtitle {
-  font-size: clamp(var(--text-base), 2vw, var(--text-xl));
+.hero__tagline {
+  font-size: clamp(var(--text-base), 1.8vw, var(--text-xl));
   color: var(--color-text-secondary);
-  max-width: 50ch;
+  max-width: 42ch;
   margin-bottom: var(--space-10);
   line-height: var(--leading-relaxed);
 }
@@ -321,30 +359,69 @@
   flex-wrap: wrap;
 }
 
-.hero__scroll-hint {
+/* specs strip visible at bottom of hero */
+.hero__specs-strip {
   position: absolute;
-  bottom: var(--space-10);
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  border-top: 1px solid var(--color-border);
+  background: rgba(10,10,10,0.85);
+  backdrop-filter: blur(8px);
+}
+
+.hero__specs-inner {
+  display: flex;
+  align-items: stretch;
+  height: 56px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.hero__specs-inner::-webkit-scrollbar { display: none; }
+
+.hero__spec-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-inline: var(--space-6);
+  border-right: 1px solid var(--color-border);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.hero__spec-item:first-child {
+  padding-left: 0;
+}
+
+.hero__spec-label {
   font-size: var(--text-xs);
+  font-weight: var(--font-weight-bold);
   letter-spacing: var(--tracking-widest);
   text-transform: uppercase;
   color: var(--color-text-muted);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-2);
 }
 
-.hero__scroll-line {
-  width: 1px;
-  height: 40px;
-  background: linear-gradient(to bottom, var(--color-accent), transparent);
+.hero__spec-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
 }
 
-@media (max-width: 768px) {
-  .hero__content { max-width: 100%; }
-  .hero__visual { display: none; }
+.hero__spec-value--accent {
+  color: var(--color-accent);
+}
+
+@media (max-width: 900px) {
+  .hero__model-name { font-size: clamp(var(--text-5xl), 15vw, var(--text-6xl)); }
+  .hero__wheel-bg { width: 70vw; right: -15%; opacity: 0.5; }
+}
+
+@media (max-width: 600px) {
+  .hero__wheel-bg { display: none; }
+  .hero { min-height: 80vh; }
+  .hero__specs-inner { padding-inline: var(--container-padding); }
 }
 
 /* ─── Section Header ──────────────────────────────────────────────── */
