@@ -37,10 +37,24 @@ export default function Dealers() {
             title="Authorized Retailers"
           />
 
-          {/* Map placeholder */}
-          <div className="dealer-map-placeholder" aria-label="Dealer map — coming soon">
-            <p className="dealer-map-placeholder__label">Dealer Map</p>
-            <p className="dealer-map-placeholder__sub">Interactive locator coming soon</p>
+          {/* Mapa (componente 23) — Fase 1: dark theme sin pins */}
+          <div className="map-demo" aria-label="Mapa de distribuidores" style={{ marginBottom: 'var(--sp-6)' }}>
+            <svg className="map-svg" viewBox="0 0 1200 340" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+              <g stroke="rgba(216,180,91,.08)" strokeWidth="1" fill="none">
+                {[60, 120, 180, 240, 300].map((y) => (
+                  <line key={`h${y}`} x1="0" y1={y} x2="1200" y2={y} />
+                ))}
+                {[100, 250, 400, 550, 700, 850, 1000, 1150].map((x) => (
+                  <line key={`v${x}`} x1={x} y1="0" x2={x} y2="340" />
+                ))}
+              </g>
+              <g fill="rgba(216,180,91,.06)" stroke="rgba(216,180,91,.16)" strokeWidth="1">
+                <path d="M540 90 q60 -20 120 10 q40 30 20 80 q-30 50 -110 40 q-70 -10 -60 -80 q5 -35 30 -50 Z" />
+                <path d="M700 150 q50 -10 70 30 q10 40 -40 55 q-55 5 -55 -45 q0 -30 25 -40 Z" />
+              </g>
+            </svg>
+            <div className="map-grain" aria-hidden="true" />
+            <span className="map-attr">Mapbox · red en construcción</span>
           </div>
 
           {/* Empty state */}
@@ -53,7 +67,7 @@ export default function Dealers() {
               the nearest partner as the network expands.
             </p>
             <div style={{ marginTop: 'var(--space-6)', display: 'flex', gap: 'var(--space-4)', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <Button href="/support" variant="primary">Contact Support</Button>
+              <Button href="/contacto" variant="primary">Contact Support</Button>
             </div>
           </div>
         </div>
@@ -73,7 +87,7 @@ export default function Dealers() {
                   If your business serves performance-oriented customers and you want
                   to carry our wheel range, we would like to hear from you.
                 </p>
-                <Button href="/support" variant="primary">
+                <Button href="/contacto" variant="primary">
                   Enquire About Partnership
                 </Button>
               </div>
@@ -107,8 +121,8 @@ export default function Dealers() {
             Our support team handles dealer enquiries, technical questions and order assistance.
           </p>
           <div style={{ display: 'flex', gap: 'var(--space-4)', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Button href="/support" variant="primary" size="large">Contact Support</Button>
-            <Button href="/wheels" variant="secondary" size="large">View Wheels</Button>
+            <Button href="/contacto" variant="primary" size="large">Contact Support</Button>
+            <Button href="/the-wheels" variant="secondary" size="large">View Wheels</Button>
           </div>
         </div>
       </section>

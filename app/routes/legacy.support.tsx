@@ -1,9 +1,9 @@
 import { redirect } from 'react-router';
 
 export function loader() {
-  return redirect('/the-wheels', 301);
+  return redirect('/contacto', 301);
 }
 
-export default function WheelsLegacyRedirect() {
+export default function SupportLegacyRedirect() {
   return null;
 }

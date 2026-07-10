@@ -1,4 +1,4 @@
-import type { Product, HubRingProduct } from '~/types/product';
+import type { Product, HubRingProduct, WheelVariant } from '~/types/product';
 
 export const products: Product[] = [
   {
@@ -156,4 +156,15 @@ export function getVariantsByColor(product: Product, color: string) {
   return product.variants.filter(
     (v) => v.color === color && v.stockStatus !== 'out_of_stock'
   );
+}
+
+/** Localiza una variante (y su producto) por id de variante. */
+export function getVariantById(
+  variantId: string
+): { product: Product; variant: WheelVariant } | undefined {
+  for (const product of products) {
+    const variant = product.variants.find((v) => v.id === variantId);
+    if (variant) return { product, variant };
+  }
+  return undefined;
 }

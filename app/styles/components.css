@@ -1,5 +1,5 @@
-/* ─── Site Header ─────────────────────────────────────────────────── */
-/* Nav has 8 items — tighten gap at all sizes */
+﻿/* â”€â”€â”€ Site Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Nav has 8 items â€” tighten gap at all sizes */
 .site-header {
   position: fixed;
   top: 0;
@@ -7,7 +7,7 @@
   right: 0;
   height: var(--header-height);
   z-index: var(--z-header);
-  background-color: rgba(10, 10, 10, 0.92);
+  background-color: rgba(29, 29, 29, 0.92);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--color-border);
@@ -77,7 +77,7 @@
   color: var(--color-text-primary);
 }
 
-/* Mobile nav — scroll horizontally when items overflow */
+/* Mobile nav â€” scroll horizontally when items overflow */
 @media (max-width: 900px) {
   .site-nav {
     overflow-x: auto;
@@ -95,7 +95,7 @@
   }
 }
 
-/* ─── Site Footer ─────────────────────────────────────────────────── */
+/* â”€â”€â”€ Site Footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .site-footer {
   background-color: var(--color-bg-elevated);
   border-top: 1px solid var(--color-border);
@@ -169,7 +169,7 @@
   .site-footer__bottom { flex-direction: column; gap: var(--space-3); text-align: center; }
 }
 
-/* ─── Button ──────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .button {
   display: inline-flex;
   align-items: center;
@@ -243,7 +243,7 @@
   outline-offset: 2px;
 }
 
-/* ─── Hero ────────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Hero â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .hero {
   position: relative;
   min-height: 88vh;
@@ -258,9 +258,9 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 70% 80% at 75% 50%, rgba(200, 160, 42, 0.055) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 80% at 75% 50%, rgba(216, 180, 91, 0.055) 0%, transparent 65%),
     radial-gradient(ellipse 40% 60% at 100% 10%, rgba(255,255,255,0.015) 0%, transparent 55%),
-    linear-gradient(175deg, #0f0f0f 0%, #0a0a0a 60%, #0c0c0c 100%);
+    linear-gradient(175deg, #1d1d1d 0%, #1d1d1d 60%, #0c0c0c 100%);
   pointer-events: none;
 }
 
@@ -282,7 +282,7 @@
   border: 1px solid rgba(255, 255, 255, 0.05);
   position: relative;
   background: radial-gradient(circle at 38% 38%,
-    rgba(200,160,42,0.07) 0%,
+    rgba(216, 180, 91,0.07) 0%,
     rgba(40,40,40,0.10) 35%,
     transparent 68%
   );
@@ -306,8 +306,8 @@
   position: absolute;
   inset: 18%;
   border-radius: 50%;
-  border: 1px solid rgba(200, 160, 42, 0.14);
-  background: radial-gradient(circle at 40% 38%, rgba(200,160,42,0.05), transparent 55%);
+  border: 1px solid rgba(216, 180, 91, 0.14);
+  background: radial-gradient(circle at 40% 38%, rgba(216, 180, 91,0.05), transparent 55%);
   box-shadow: inset 0 0 60px rgba(0,0,0,0.5);
 }
 
@@ -317,7 +317,7 @@
   inset: 38%;
   border-radius: 50%;
   background: radial-gradient(circle at 40% 38%, #222, #111);
-  border: 1px solid rgba(200, 160, 42, 0.2);
+  border: 1px solid rgba(216, 180, 91, 0.2);
   z-index: 1;
 }
 
@@ -376,7 +376,7 @@
   right: 0;
   z-index: 2;
   border-top: 1px solid var(--color-border);
-  background: rgba(10,10,10,0.85);
+  background: rgba(29, 29, 29,0.85);
   backdrop-filter: blur(8px);
 }
 
@@ -433,7 +433,7 @@
   .hero__specs-inner { padding-inline: var(--container-padding); }
 }
 
-/* ─── Section Header ──────────────────────────────────────────────── */
+/* â”€â”€â”€ Section Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .section-header {
   margin-bottom: var(--space-12);
 }
@@ -455,7 +455,7 @@
   color: var(--color-text-secondary);
 }
 
-/* ─── Product Card ────────────────────────────────────────────────── */
+/* â”€â”€â”€ Product Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .product-card {
   background-color: var(--color-bg-card);
   border: 1px solid var(--color-border);
@@ -614,14 +614,14 @@
   text-transform: uppercase;
 }
 
-/* ─── Product Grid ────────────────────────────────────────────────── */
+/* â”€â”€â”€ Product Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .product-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: var(--space-6);
 }
 
-/* ─── Spec List ───────────────────────────────────────────────────── */
+/* â”€â”€â”€ Spec List â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .spec-list {
   display: grid;
   gap: var(--space-3);
@@ -656,7 +656,7 @@
   text-align: right;
 }
 
-/* ─── Variant Table ───────────────────────────────────────────────── */
+/* â”€â”€â”€ Variant Table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .variant-table-wrapper {
   overflow-x: auto;
   border-radius: var(--radius-lg);
@@ -716,7 +716,7 @@
 .variant-table__status--out_of_stock { background-color: var(--color-text-muted); }
 .variant-table__status--pre_order   { background-color: var(--color-accent); }
 
-/* ─── Fitment Callout ─────────────────────────────────────────────── */
+/* â”€â”€â”€ Fitment Callout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .fitment-callout {
   background-color: var(--color-bg-elevated);
   border: 1px solid var(--color-border);
@@ -751,7 +751,7 @@
   max-width: 55ch;
 }
 
-/* ─── Language Placeholder ────────────────────────────────────────── */
+/* â”€â”€â”€ Language Placeholder â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .lang-switcher {
   display: flex;
   align-items: center;
@@ -775,7 +775,7 @@
   background-color: var(--color-accent);
 }
 
-/* ─── Brand Values ────────────────────────────────────────────────── */
+/* â”€â”€â”€ Brand Values â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .brand-values {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -816,7 +816,7 @@
   .brand-values { grid-template-columns: 1fr; }
 }
 
-/* ─── Hub Rings Feature ───────────────────────────────────────────── */
+/* â”€â”€â”€ Hub Rings Feature â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .hub-rings-section {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -880,7 +880,7 @@
   .hub-rings-visual { max-width: 320px; margin-inline: auto; }
 }
 
-/* ─── Filter Bar ──────────────────────────────────────────────────── */
+/* â”€â”€â”€ Filter Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .filter-bar {
   display: flex;
   gap: var(--space-3);
@@ -921,7 +921,7 @@
   background-color: var(--color-accent-muted);
 }
 
-/* ─── Product Detail ──────────────────────────────────────────────── */
+/* â”€â”€â”€ Product Detail â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .product-detail {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1048,7 +1048,7 @@
   .product-detail__gallery { position: static; }
 }
 
-/* ─── Cart ────────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Cart â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cart-layout {
   display: grid;
   grid-template-columns: 1fr 360px;
@@ -1187,7 +1187,7 @@
   .cart-item__price { grid-column: 1 / -1; }
 }
 
-/* ─── Fitment Page ────────────────────────────────────────────────── */
+/* â”€â”€â”€ Fitment Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .fitment-concepts {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1229,7 +1229,7 @@
   .fitment-concepts { grid-template-columns: 1fr; }
 }
 
-/* ─── Empty / Info States ─────────────────────────────────────────── */
+/* â”€â”€â”€ Empty / Info States â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .empty-state {
   text-align: center;
   padding: var(--space-24) var(--space-8);
@@ -1254,7 +1254,7 @@
   margin-bottom: var(--space-8);
 }
 
-/* ─── Placeholder page (success / cancel) ────────────────────────── */
+/* â”€â”€â”€ Placeholder page (success / cancel) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .placeholder-page {
   min-height: calc(100vh - var(--header-height));
   display: flex;
@@ -1283,7 +1283,7 @@
   margin-bottom: var(--space-8);
 }
 
-/* ─── Page Hero (generic reusable) ───────────────────────────────── */
+/* â”€â”€â”€ Page Hero (generic reusable) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .page-hero {
   background: linear-gradient(180deg, var(--color-bg-elevated) 0%, var(--color-bg) 100%);
   border-bottom: 1px solid var(--color-border);
@@ -1300,7 +1300,7 @@
   max-width: 55ch;
 }
 
-/* ─── Gallery ─────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Gallery â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1340,8 +1340,8 @@
 .gallery-placeholder--wheel-ag   { background: radial-gradient(circle at 40% 40%, #4a4a4a 0%, #2a2a2a 40%, #141414 100%); }
 .gallery-placeholder--wheel-bm   { background: radial-gradient(circle at 40% 40%, #2a2a30 0%, #18181e 40%, #0c0c0e 100%); }
 .gallery-placeholder--wheel-sm   { background: radial-gradient(circle at 40% 40%, #c8c8cc 0%, #909098 40%, #606066 100%); }
-.gallery-placeholder--detail-1   { background: radial-gradient(circle at 50% 50%, #3a3a3a 0%, #1c1c1c 50%, #0a0a0a 100%); }
-.gallery-placeholder--detail-2   { background: radial-gradient(ellipse at 60% 40%, rgba(200,160,42,0.12) 0%, #2a2a2a 30%, #0a0a0a 100%); }
+.gallery-placeholder--detail-1   { background: radial-gradient(circle at 50% 50%, #3a3a3a 0%, #1c1c1c 50%, #1d1d1d 100%); }
+.gallery-placeholder--detail-2   { background: radial-gradient(ellipse at 60% 40%, rgba(216, 180, 91,0.12) 0%, #2a2a2a 30%, #1d1d1d 100%); }
 .gallery-placeholder--studio-1   { background: linear-gradient(160deg, #1e1e1e 0%, #2c2c2c 40%, #141414 100%); }
 .gallery-placeholder--studio-2   { background: linear-gradient(140deg, #242424 0%, #1a1a1a 60%, #0e0e0e 100%); }
 .gallery-placeholder--studio-3   { background: radial-gradient(ellipse at 40% 30%, #2a2a2a 0%, #141414 70%); }
@@ -1352,7 +1352,7 @@
   left: 0;
   right: 0;
   padding: var(--space-4) var(--space-5);
-  background: linear-gradient(to top, rgba(10,10,10,0.88) 0%, transparent 100%);
+  background: linear-gradient(to top, rgba(29, 29, 29,0.88) 0%, transparent 100%);
 }
 
 .gallery-card__category {
@@ -1391,7 +1391,7 @@
   inset: 37%;
   border-radius: 50%;
   background: rgba(0,0,0,0.4);
-  border: 1px solid rgba(200,160,42,0.15);
+  border: 1px solid rgba(216, 180, 91,0.15);
 }
 
 @media (max-width: 900px) {
@@ -1403,7 +1403,7 @@
   .gallery-card--landscape { grid-column: span 1; }
 }
 
-/* ─── Technology Page ─────────────────────────────────────────────── */
+/* â”€â”€â”€ Technology Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .tech-specs-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -1497,7 +1497,7 @@
   inset: 28%;
   border-radius: 50%;
   background: #141414;
-  border: 2px solid rgba(200,160,42,0.25);
+  border: 2px solid rgba(216, 180, 91,0.25);
 }
 
 @media (max-width: 900px) {
@@ -1506,7 +1506,7 @@
   .tech-construction__visual { max-width: 320px; margin-inline: auto; }
 }
 
-/* ─── Fitment Checklist ───────────────────────────────────────────── */
+/* â”€â”€â”€ Fitment Checklist â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .fitment-checklist {
   display: grid;
   gap: var(--space-4);
@@ -1553,7 +1553,7 @@
   line-height: var(--leading-relaxed);
 }
 
-/* ─── Dealers ─────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Dealers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .dealer-map-placeholder {
   width: 100%;
   aspect-ratio: 16 / 6;
@@ -1665,7 +1665,7 @@
   .dealer-map-placeholder { aspect-ratio: 4 / 3; }
 }
 
-/* ─── Support / FAQ ───────────────────────────────────────────────── */
+/* â”€â”€â”€ Support / FAQ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .support-layout {
   display: grid;
   grid-template-columns: 1fr 380px;

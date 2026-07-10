@@ -1,8 +1,10 @@
 import type { Route } from './+types/wheels.$slug';
 import { useEffect, useState } from 'react';
-import { getProductBySlug, getVariantsByColor } from '~/data/products';
+import { getProductBySlug } from '~/data/products';
 import type { WheelColor } from '~/types/product';
 import { trackEvent } from '~/lib/analytics/trackEvent';
+import { useCart } from '~/lib/cart/CartContext';
+import { formatPrice } from '~/lib/money';
 import { Button } from '~/components/Button';
 import { SpecList } from '~/components/SpecList';
 import { VariantTable } from '~/components/VariantTable';
@@ -24,13 +26,6 @@ export function loader({ params }: Route.LoaderArgs) {
   return { product };
 }
 
-const COLOR_CLASS: Record<WheelColor, string> = {
-  'Anthracite Grey': 'anthracite',
-  'Black Metallic': 'black',
-  'Silver Metallic': 'silver',
-  'Raw Aluminum': 'raw-aluminum',
-};
-
 const PLACEHOLDER_CLASS: Record<WheelColor, string> = {
   'Anthracite Grey': 'product-card__image-placeholder--anthracite',
   'Black Metallic': 'product-card__image-placeholder--black',
@@ -40,7 +35,17 @@ const PLACEHOLDER_CLASS: Record<WheelColor, string> = {
 
 export default function WheelDetail({ loaderData }: Route.ComponentProps) {
   const { product } = loaderData;
+  const { add } = useCart();
   const [activeColor, setActiveColor] = useState<WheelColor>(product.colors[0]);
+  const [added, setAdded] = useState(false);
+
+  const variants = product.variants.filter(
+    (v) => v.color === activeColor && v.stockStatus !== 'out_of_stock'
+  );
+
+  const [selectedVariantId, setSelectedVariantId] = useState<string>(variants[0]?.id ?? '');
+  const selectedVariant =
+    variants.find((v) => v.id === selectedVariantId) ?? variants[0];
 
   useEffect(() => {
     trackEvent('product_viewed', {
@@ -50,22 +55,31 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
     });
   }, [product.id, product.name, product.slug]);
 
+  // Al cambiar de acabado, seleccionar la primera talla disponible.
+  useEffect(() => {
+    const first = product.variants.find(
+      (v) => v.color === activeColor && v.stockStatus !== 'out_of_stock'
+    );
+    setSelectedVariantId(first?.id ?? '');
+    setAdded(false);
+  }, [activeColor, product.variants]);
+
   function handleColorSelect(color: WheelColor) {
     setActiveColor(color);
     trackEvent('color_selected', { productId: product.id, color });
   }
 
   function handleAddToCart() {
+    if (!selectedVariant) return;
+    add(selectedVariant.id, 1);
     trackEvent('add_to_cart_clicked', {
       productId: product.id,
-      variantId: getVariantsByColor(product, activeColor)[0]?.id ?? '',
-      quantity: 4,
+      variantId: selectedVariant.id,
+      quantity: 1,
     });
+    setAdded(true);
+    window.setTimeout(() => setAdded(false), 2200);
   }
-
-  const variants = product.variants.filter(
-    (v) => v.color === activeColor && v.stockStatus !== 'out_of_stock'
-  );
 
   const specs = [
     { label: 'PCD', value: product.specs.pcd },
@@ -80,34 +94,39 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
     <div className="section">
       <div className="container">
         <div className="product-detail">
-          {/* Gallery */}
+          {/* Gallery (componente 14) */}
           <div className="product-detail__gallery">
-            <div className="product-detail__main-image">
-              <div
-                className={`product-card__image-placeholder ${PLACEHOLDER_CLASS[activeColor]}`}
-                style={{ width: '100%', height: '100%', aspectRatio: '1' }}
-                role="img"
-                aria-label={`${product.name} in ${activeColor}`}
-              >
-                <div className="product-card__wheel-icon" style={{ width: '50%', height: '50%' }} />
+            <div className="gallery">
+              <div className="thumbs" role="list" aria-label="Color previews">
+                {product.colors.map((color) => (
+                  <button
+                    key={color}
+                    role="listitem"
+                    className={color === activeColor ? 'active' : undefined}
+                    onClick={() => handleColorSelect(color)}
+                    aria-label={`Switch to ${color}`}
+                    aria-pressed={color === activeColor}
+                  >
+                    <div
+                      className={`product-card__image-placeholder ${PLACEHOLDER_CLASS[color]}`}
+                      style={{ width: '100%', height: '100%' }}
+                    />
+                  </button>
+                ))}
               </div>
-            </div>
-            <div className="product-detail__thumbnails" role="list" aria-label="Color previews">
-              {product.colors.map((color) => (
-                <button
-                  key={color}
-                  role="listitem"
-                  className={`product-detail__thumb${color === activeColor ? ' product-detail__thumb--active' : ''}`}
-                  onClick={() => handleColorSelect(color)}
-                  aria-label={`Switch to ${color}`}
-                  aria-pressed={color === activeColor}
+              <div className="main" role="img" aria-label={`${product.name} in ${activeColor}`} style={{ position: 'relative' }}>
+                <div
+                  className={`product-card__image-placeholder ${PLACEHOLDER_CLASS[activeColor]}`}
+                  style={{ width: '100%', height: '100%' }}
                 >
-                  <div
-                    className={`product-card__image-placeholder ${PLACEHOLDER_CLASS[color]}`}
-                    style={{ width: '100%', height: '100%' }}
-                  />
-                </button>
-              ))}
+                  <div className="product-card__wheel-icon" style={{ width: '46%', height: '46%' }} />
+                </div>
+                {product.featured && (
+                  <div className="badges" style={{ position: 'absolute', top: '14px', left: '14px' }}>
+                    <span className="badge badge-new">New</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -115,7 +134,12 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
           <div className="product-detail__info">
             <p className="product-detail__model">Wheels · {product.model}</p>
             <h1 className="product-detail__name">{product.name}</h1>
-            <p className="product-detail__price">{product.priceLabel}</p>
+            <p className="product-detail__price">
+              {formatPrice(selectedVariant?.priceCents)}
+              <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginLeft: 'var(--space-2)' }}>
+                / unidad
+              </span>
+            </p>
 
             {/* Color selector */}
             <div className="product-detail__color-selector">
@@ -125,20 +149,40 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
                   {activeColor}
                 </span>
               </p>
-              <div className="product-detail__colors" role="group" aria-label="Select finish">
+              <div className="pills" role="group" aria-label="Select finish">
                 {product.colors.map((color) => (
                   <button
                     key={color}
-                    className={`product-detail__color-btn${color === activeColor ? ' product-detail__color-btn--active' : ''}`}
+                    className={`pill${color === activeColor ? ' active' : ''}`}
                     onClick={() => handleColorSelect(color)}
                     aria-pressed={color === activeColor}
                     aria-label={color}
                   >
-                    <span className={`color-swatch color-swatch--${COLOR_CLASS[color]}`} style={{ flexShrink: 0 }} />
                     {color}
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* Size selector */}
+            <div className="product-detail__color-selector">
+              <p className="product-detail__option-title">Size</p>
+              {variants.length > 0 ? (
+                <div className="pills" role="group" aria-label="Select size">
+                  {variants.map((v) => (
+                    <button
+                      key={v.id}
+                      className={`pill${v.id === selectedVariant?.id ? ' active' : ''}`}
+                      onClick={() => setSelectedVariantId(v.id)}
+                      aria-pressed={v.id === selectedVariant?.id}
+                    >
+                      {v.diameter}×{v.width}J ET{v.et}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="caption">No hay tallas disponibles en este acabado.</p>
+              )}
             </div>
 
             {/* Specs */}
@@ -152,11 +196,12 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
               size="large"
               className="product-detail__add-to-cart"
               onClick={handleAddToCart}
+              disabled={!selectedVariant}
             >
-              Request Quote
+              {added ? 'Añadido ✓' : 'Añadir al carrito'}
             </Button>
             <p className="product-detail__note">
-              Checkout coming soon — submitting registers your interest.
+              El pago se procesa de forma segura con Stripe.
             </p>
 
             {/* Fitment note */}
@@ -174,7 +219,7 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
             >
               Fitment must be verified per vehicle. Check PCD, center bore, ET range, diameter
               clearance and brake caliper clearance before installation.{' '}
-              <a href="/fitment" style={{ color: 'var(--color-accent)' }}>Fitment guide →</a>
+              <a href="/contacto" style={{ color: 'var(--color-accent)' }}>Consultar fitment →</a>
             </div>
 
             {/* Description */}

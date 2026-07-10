@@ -15,6 +15,12 @@ interface ButtonProps {
   'aria-label'?: string;
 }
 
+const VARIANT_CLASS: Record<ButtonVariant, string> = {
+  primary: 'btn-primary',
+  secondary: 'btn-outline',
+  ghost: 'btn-ghost',
+};
+
 export function Button({
   variant = 'primary',
   size = 'medium',
@@ -27,11 +33,11 @@ export function Button({
   'aria-label': ariaLabel,
 }: ButtonProps) {
   const classes = [
-    'button',
-    `button--${variant}`,
-    size === 'large' ? 'button--large' : '',
-    size === 'small' ? 'button--small' : '',
-    disabled ? 'button--disabled' : '',
+    'btn',
+    VARIANT_CLASS[variant],
+    size === 'large' ? 'btn-lg' : '',
+    size === 'small' ? 'btn-sm' : '',
+    disabled ? 'is-disabled' : '',
     className,
   ]
     .filter(Boolean)

@@ -6,8 +6,8 @@ import { Button } from '~/components/Button';
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: 'Support — SAMORAI Wheels' },
-    { name: 'description', content: 'SAMORAI support — fitment assistance, order enquiries, technical questions and contact form.' },
+    { title: 'Contacto — SAMORAI Wheels' },
+    { name: 'description', content: 'Contacta con SAMORAI — asistencia de fitment, consultas de pedido, preguntas técnicas y formulario de contacto.' },
   ];
 }
 
@@ -56,10 +56,10 @@ export default function Support() {
       {/* Hero */}
       <div className="page-hero">
         <div className="container">
-          <span className="eyebrow">Help & Contact</span>
-          <h1>Support</h1>
+          <span className="eyebrow">Soporte y contacto</span>
+          <h1>Contacto</h1>
           <p className="page-hero__subtitle">
-            Fitment assistance, order enquiries, technical questions and general support.
+            Asistencia de fitment, consultas de pedido, preguntas técnicas y soporte general.
           </p>
         </div>
       </div>
@@ -82,33 +82,6 @@ export default function Support() {
                   </details>
                 ))}
               </div>
-
-              {/* Fitment quick link */}
-              <div
-                style={{
-                  marginTop: 'var(--space-10)',
-                  padding: 'var(--space-6)',
-                  background: 'var(--color-bg-elevated)',
-                  borderRadius: 'var(--radius-lg)',
-                  border: '1px solid var(--color-border)',
-                  display: 'flex',
-                  gap: 'var(--space-6)',
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                }}
-              >
-                <div style={{ flex: 1, minWidth: '200px' }}>
-                  <p style={{ fontWeight: 'var(--font-weight-bold)', color: 'var(--color-text-primary)', marginBottom: 'var(--space-1)' }}>
-                    Need fitment help?
-                  </p>
-                  <p style={{ fontSize: 'var(--text-sm)', maxWidth: 'none' }}>
-                    Our fitment guide explains PCD, ET, CB and center bore adaptation in detail.
-                  </p>
-                </div>
-                <Button href="/fitment" variant="secondary">
-                  Fitment Guide
-                </Button>
-              </div>
             </div>
 
             {/* Contact form */}
@@ -116,52 +89,57 @@ export default function Support() {
               <h3>Get in Touch</h3>
 
               <form
-                className="contact-form"
                 onSubmit={(e) => e.preventDefault()}
                 aria-label="Contact form"
                 noValidate
+                style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}
               >
-                <div className="contact-form__group">
-                  <label className="contact-form__label" htmlFor="cf-name">Name</label>
+                <div className="field-group" style={{ maxWidth: 'none' }}>
+                  <label htmlFor="cf-name">Name</label>
                   <input
                     id="cf-name"
                     type="text"
-                    className="contact-form__input"
+                    className="s-input"
                     placeholder="Your name"
                     autoComplete="name"
                   />
                 </div>
 
-                <div className="contact-form__group">
-                  <label className="contact-form__label" htmlFor="cf-email">Email</label>
+                <div className="field-group" style={{ maxWidth: 'none' }}>
+                  <label htmlFor="cf-email">Email</label>
                   <input
                     id="cf-email"
                     type="email"
-                    className="contact-form__input"
+                    className="s-input"
                     placeholder="your@email.com"
                     autoComplete="email"
                   />
                 </div>
 
-                <div className="contact-form__group">
-                  <label className="contact-form__label" htmlFor="cf-subject">Topic</label>
-                  <select id="cf-subject" className="contact-form__select">
-                    <option value="">Select a topic</option>
-                    <option value="fitment">Fitment / Compatibility</option>
-                    <option value="order">Order / Pricing</option>
-                    <option value="dealer">Dealer Enquiry</option>
-                    <option value="hub-rings">Hub Rings</option>
-                    <option value="technical">Technical Question</option>
-                    <option value="other">Other</option>
-                  </select>
+                <div className="field-group" style={{ maxWidth: 'none' }}>
+                  <label htmlFor="cf-subject">Topic</label>
+                  <div className="s-select" style={{ maxWidth: 'none' }}>
+                    <select id="cf-subject">
+                      <option value="">Select a topic</option>
+                      <option value="fitment">Fitment / Compatibility</option>
+                      <option value="order">Order / Pricing</option>
+                      <option value="dealer">Dealer Enquiry</option>
+                      <option value="hub-rings">Hub Rings</option>
+                      <option value="technical">Technical Question</option>
+                      <option value="other">Other</option>
+                    </select>
+                    <span className="chev" aria-hidden="true">▾</span>
+                  </div>
                 </div>
 
-                <div className="contact-form__group">
-                  <label className="contact-form__label" htmlFor="cf-message">Message</label>
+                <div className="field-group" style={{ maxWidth: 'none' }}>
+                  <label htmlFor="cf-message">Message</label>
                   <textarea
                     id="cf-message"
-                    className="contact-form__textarea"
+                    className="s-input"
+                    rows={4}
                     placeholder="Describe your question or request..."
+                    style={{ resize: 'vertical' }}
                   />
                 </div>
 
@@ -169,25 +147,11 @@ export default function Support() {
                   Send Message
                 </Button>
 
-                <p className="contact-form__notice">
+                <p className="caption" style={{ textAlign: 'center', textTransform: 'uppercase', letterSpacing: '.08em' }}>
                   Form submission not yet active
                 </p>
               </form>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Technology link */}
-      <section className="section section--elevated" aria-label="Technical resources">
-        <div className="container" style={{ textAlign: 'center' }}>
-          <h2 style={{ marginBottom: 'var(--space-5)' }}>Looking for Technical Details?</h2>
-          <p style={{ marginInline: 'auto', marginBottom: 'var(--space-8)' }}>
-            Our technology page covers construction, fitment specifications, load rating, and hub ring engineering in full detail.
-          </p>
-          <div style={{ display: 'flex', gap: 'var(--space-4)', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Button href="/technology" variant="primary" size="large">Technology</Button>
-            <Button href="/fitment" variant="secondary" size="large">Fitment Guide</Button>
           </div>
         </div>
       </section>

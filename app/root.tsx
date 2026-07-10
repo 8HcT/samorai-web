@@ -18,8 +18,11 @@ export const links: Route.LinksFunction = () => [
     crossOrigin: 'anonymous',
   },
   {
+    // Montserrat es la fuente real del cuerpo. Saira y Pinyon Script son
+    // los fallbacks de Bank Gothic / Sloop Script hasta subir los .woff2
+    // a public/fonts/ (handoff §6).
     rel: 'stylesheet',
-    href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap',
+    href: 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Saira:wght@400;500;600;700&family=Pinyon+Script&display=swap',
   },
 ];
 
@@ -72,13 +75,13 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
         gap: '1rem',
         padding: '2rem',
         textAlign: 'center',
-        background: '#0a0a0a',
-        color: '#f0ece5',
+        background: '#1d1d1d',
+        color: '#ededed',
         fontFamily: 'system-ui, sans-serif',
       }}
     >
-      <h1 style={{ fontSize: '4rem', fontWeight: 900, letterSpacing: '-0.02em' }}>{message}</h1>
-      <p style={{ color: '#8c8c8c', maxWidth: '40ch' }}>{details}</p>
+      <h1 style={{ fontSize: '4rem', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{message}</h1>
+      <p style={{ color: 'rgba(237,237,237,0.7)', maxWidth: '40ch' }}>{details}</p>
       {stack && (
         <pre
           style={{
@@ -86,17 +89,17 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
             maxWidth: '600px',
             padding: '1rem',
             overflow: 'auto',
-            background: '#141414',
-            borderRadius: '6px',
+            background: '#232323',
+            borderRadius: '0',
             fontSize: '0.8rem',
             textAlign: 'left',
-            color: '#8c8c8c',
+            color: 'rgba(237,237,237,0.5)',
           }}
         >
           <code>{stack}</code>
         </pre>
       )}
-      <a href="/" style={{ color: '#c8a02a', marginTop: '1rem' }}>
+      <a href="/" style={{ color: '#d8b45b', marginTop: '1rem' }}>
         ← Back to home
       </a>
     </div>

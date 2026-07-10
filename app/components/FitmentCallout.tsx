@@ -20,11 +20,11 @@ export function FitmentCallout({ source = 'product_page' }: FitmentCalloutProps)
         and meeting OEM tolerances.
       </p>
       <Button
-        href="/fitment"
+        href="/contacto"
         variant="secondary"
         onClick={handleInterest}
       >
-        Fitment Guide
+        Consultar fitment
       </Button>
     </div>
   );

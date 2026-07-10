@@ -52,12 +52,17 @@ export default function Wheels({ loaderData }: Route.ComponentProps) {
 
       <div className="section">
         <div className="container">
-          <div className="filter-bar" role="group" aria-label="Filter products">
-            <span className="filter-bar__label">Filter:</span>
+          <div
+            className="pills"
+            role="group"
+            aria-label="Filter products"
+            style={{ alignItems: 'center', marginBottom: 'var(--sp-6)' }}
+          >
+            <span className="label" style={{ marginRight: 'var(--sp-1)' }}>Filtrar:</span>
             {FILTERS.map(({ key, label }) => (
               <button
                 key={key}
-                className={`filter-chip${activeFilter === key ? ' filter-chip--active' : ''}`}
+                className={`pill${activeFilter === key ? ' active' : ''}`}
                 onClick={() => setActiveFilter(key)}
                 aria-pressed={activeFilter === key}
               >

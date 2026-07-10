@@ -1,0 +1,46 @@
+/* ============================================================
+   SAMORAI WHEELS · Fuentes
+   ------------------------------------------------------------
+   Las tres fuentes de la marca:
+     · Bank Gothic   → display / titulares
+     · Montserrat    → cuerpo (cargada vía Google Fonts, es exacta)
+     · Sloop Script  → claims / editorial puntual
+
+   Bank Gothic y Sloop Script se sirven desde public/fonts/ (ruta
+   /fonts/…). Fuente primaria en TrueType (.ttf); si en el futuro se
+   añaden .woff2 (más ligeros), el navegador usa el primero disponible.
+   Mientras no existan los archivos, cae al fallback (Saira / Pinyon).
+   Ver public/fonts/README.md.
+   ============================================================ */
+
+/* --- Bank Gothic --- */
+@font-face {
+  font-family: "Bank Gothic";
+  src: url("/fonts/BankGothic-Regular.ttf") format("truetype"),
+       url("/fonts/BankGothic-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Bank Gothic";
+  src: url("/fonts/BankGothic-Medium.ttf") format("truetype"),
+       url("/fonts/BankGothic-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Bank Gothic";
+  src: url("/fonts/BankGothic-Bold.ttf") format("truetype"),
+       url("/fonts/BankGothic-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+
+/* --- Sloop Script --- */
+@font-face {
+  font-family: "Sloop Script";
+  src: url("/fonts/SloopScript.ttf") format("truetype"),
+       url("/fonts/SloopScript.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}

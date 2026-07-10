@@ -18,7 +18,7 @@ export function VariantTable({ variants }: VariantTableProps) {
 
   return (
     <div className="variant-table-wrapper">
-      <table className="variant-table" aria-label="Available variants">
+      <table className="spec-table" aria-label="Available variants">
         <thead>
           <tr>
             <th scope="col">Size</th>

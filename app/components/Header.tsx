@@ -1,53 +1,48 @@
 import { NavLink } from 'react-router';
 import { LanguagePlaceholder } from './LanguagePlaceholder';
+import { useCart } from '~/lib/cart/CartContext';
 
 const NAV_LINKS = [
   { to: '/', label: 'Home', end: true },
-  { to: '/wheels', label: 'Wheels' },
-  { to: '/gallery', label: 'Gallery' },
-  { to: '/technology', label: 'Technology' },
-  { to: '/fitment', label: 'Fitment' },
-  { to: '/dealers', label: 'Dealers' },
-  { to: '/support', label: 'Support' },
+  { to: '/the-dynasty', label: 'The Dynasty' },
+  { to: '/the-wheels', label: 'The Wheels' },
+  { to: '/the-dealers', label: 'The Dealers' },
+  { to: '/contacto', label: 'Contacto' },
 ];
 
 export function Header() {
-  return (
-    <header className="site-header">
-      <div className="container site-header__inner">
-        <NavLink to="/" className="site-logo" aria-label="SAMORAI — home">
-          SAMORAI
-        </NavLink>
+  const { count, ready } = useCart();
 
-        <nav className="site-nav" aria-label="Main navigation">
-          <ul className="site-nav__list" role="list">
-            {NAV_LINKS.map(({ to, label, end }) => (
-              <li key={to}>
-                <NavLink
-                  to={to}
-                  end={end}
-                  className={({ isActive }) =>
-                    `site-nav__link${isActive ? ' site-nav__link--active' : ''}`
-                  }
-                >
-                  {label}
-                </NavLink>
-              </li>
-            ))}
-            <li>
+  return (
+    <header className="navbar samorai-header">
+      <NavLink to="/" className="nv-logo" aria-label="SAMORAI — home">
+        SAMORAI
+      </NavLink>
+
+      <nav aria-label="Main navigation">
+        <ul className="nv-links" role="list">
+          {NAV_LINKS.map(({ to, label, end }) => (
+            <li key={to}>
               <NavLink
-                to="/cart"
-                className={({ isActive }) =>
-                  `site-nav__link site-nav__link--cart${isActive ? ' site-nav__link--active' : ''}`
-                }
-                aria-label="Cart"
+                to={to}
+                end={end}
+                className={({ isActive }) => (isActive ? 'active' : undefined)}
               >
-                Cart
+                {label}
               </NavLink>
             </li>
-          </ul>
-        </nav>
+          ))}
+        </ul>
+      </nav>
 
+      <div className="nv-cta">
+        <NavLink
+          to="/cart"
+          className={({ isActive }) => `nv-cart${isActive ? ' active' : ''}`}
+          aria-label={`Cart${ready && count > 0 ? ` (${count})` : ''}`}
+        >
+          Cart{ready && count > 0 ? ` (${count})` : ''}
+        </NavLink>
         <LanguagePlaceholder />
       </div>
     </header>

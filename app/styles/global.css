@@ -1,5 +1,22 @@
-@import './reset.css';
-@import './tokens.css';
+/* ============================================================
+   SAMORAI WHEELS · Hoja global
+   Orden (handoff §3): fonts → tokens → base → components.
+   Tras el sistema oficial, capas de la app:
+     · tokens.css      → shim de nombres heredados
+     · typography.css  → helpers (.eyebrow/.label/.caption/.mono)
+     · layout.css      → container/section/grids
+     · components.css  → scaffolds de página (product-detail, cart, faq…)
+     · utilities.css   → utilidades
+   ============================================================ */
+
+/* --- Sistema oficial (fuente de verdad) --- */
+@import './samorai/fonts.css';
+@import './samorai/tokens.css';
+@import './tokens.css';            /* compat shim: nombres heredados → oficiales */
+@import './samorai/base.css';
+@import './samorai/components.css';
+
+/* --- Capa de aplicación --- */
 @import './typography.css';
 @import './layout.css';
 @import './components.css';

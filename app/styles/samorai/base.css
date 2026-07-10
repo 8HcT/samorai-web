@@ -1,0 +1,93 @@
+/* ============================================================
+   SAMORAI WHEELS · Base
+   Parte reutilizable de styleguide.css (handoff §4): reset, base
+   tipográfica, motivos de marca y cursor dorado. SIN el "chrome"
+   de la página-guía (.shell, .sidenav, .section, .demo…).
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--s-black);
+  color: var(--s-light);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+img, picture, video, canvas, svg { display: block; max-width: 100%; }
+input, button, textarea, select { font: inherit; }
+ul, ol { list-style: none; }
+a { text-decoration: none; color: inherit; }
+button { cursor: pointer; background: none; border: none; }
+table { border-collapse: collapse; }
+p, h1, h2, h3, h4, h5, h6 { overflow-wrap: break-word; }
+
+::selection { background: var(--s-gold); color: var(--s-black); }
+
+/* ---------------- Tipografía base ---------------- */
+.display, h1, h2, h3 {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.05;
+}
+.script {
+  font-family: var(--font-script);
+  text-transform: none;
+  font-weight: 400;
+  color: var(--s-gold);
+  line-height: 1;
+}
+
+/* overline / label */
+.overline {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: var(--fs-label);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  color: var(--gold-70);
+}
+
+/* =====================================================
+   Motivos de marca
+   ===================================================== */
+.sep-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--s-gold), transparent);
+  border: 0;
+  margin: 0;
+}
+
+.chip {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: .02em;
+  color: var(--gold-70);
+  background: var(--gold-10);
+  border: 1px solid var(--gold-30);
+  padding: 2px 7px;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+/* patrón de radios (negro sobre negro) */
+.motif-spokes {
+  position: absolute; inset: 0;
+  background:
+    repeating-conic-gradient(from 0deg at 50% 50%,
+      rgba(216,180,91,.05) 0deg 1.2deg, transparent 1.2deg 15deg);
+  -webkit-mask: radial-gradient(circle at 50% 50%, #000 18%, transparent 72%);
+  mask: radial-gradient(circle at 50% 50%, #000 18%, transparent 72%);
+}

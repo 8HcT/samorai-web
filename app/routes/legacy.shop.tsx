@@ -4,6 +4,6 @@ export function loader() {
   return redirect('/the-wheels', 301);
 }
 
-export default function WheelsLegacyRedirect() {
+export default function ShopLegacyRedirect() {
   return null;
 }

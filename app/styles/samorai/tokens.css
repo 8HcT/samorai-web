@@ -1,0 +1,92 @@
+/* ============================================================
+   SAMORAI WHEELS · Tokens
+   Sistema de color, tipografía y espaciado.
+   Fuente de verdad: brandbook (Ley Creative Studio · 2026)
+   ============================================================ */
+
+:root {
+  /* ---------- 00 · COLOR (7 bases) ---------- */
+  --s-black:      #1D1D1D;   /* fondo principal, texto sobre claro */
+  --s-gold:       #D8B45B;   /* CTAs primarios, acentos, hover */
+  --s-gold-dark:  #C28036;   /* hover botón primary, énfasis */
+  --s-brown:      #3E1C00;   /* badge edición limitada, fondo profundo */
+  --s-red:        #75280A;   /* error, acento secundario */
+  --s-green:      #1E3227;   /* badge homologación, éxito */
+  --s-light:      #EDEDED;   /* texto sobre oscuro, ghost */
+  --s-sky:        #A2DFF9;   /* acento frío, texto sobre verde */
+
+  /* ---- canales RGB para construir stops de opacidad ---- */
+  --rgb-black:  29, 29, 29;
+  --rgb-gold:   216, 180, 91;
+  --rgb-gold-d: 194, 128, 54;
+  --rgb-brown:  62, 28, 0;
+  --rgb-red:    117, 40, 10;
+  --rgb-green:  30, 50, 39;
+  --rgb-light:  237, 237, 237;
+  --rgb-sky:    162, 223, 249;
+
+  /* ---- 5 stops de opacidad por color (100/70/50/30/10) ---- */
+  --gold-70: rgba(var(--rgb-gold), .70);
+  --gold-50: rgba(var(--rgb-gold), .50);
+  --gold-30: rgba(var(--rgb-gold), .30);
+  --gold-10: rgba(var(--rgb-gold), .10);
+
+  --light-70: rgba(var(--rgb-light), .70);
+  --light-50: rgba(var(--rgb-light), .50);
+  --light-30: rgba(var(--rgb-light), .30);
+  --light-10: rgba(var(--rgb-light), .10);
+
+  /* superficies derivadas */
+  --surface-raise: rgba(255, 255, 255, .03);  /* row-alt tablas */
+  --surface-line:  rgba(var(--rgb-gold), .15);
+  --hairline:      rgba(var(--rgb-gold), .20);
+
+  /* ---------- 01 · TIPOGRAFÍA ---------- */
+  --font-display: "Bank Gothic", "Saira", "Arial Narrow", sans-serif;
+  --font-body:    "Montserrat", system-ui, sans-serif;
+  --font-script:  "Sloop Script", "Pinyon Script", cursive;
+
+  /* escala display/headers (desktop · clamp para mobile) */
+  --fs-display: clamp(2.5rem, 1.2rem + 4.8vw, 4.5rem);   /* 48–72 */
+  --fs-h1:      clamp(2rem, 1.3rem + 2.6vw, 3rem);        /* 36–48 */
+  --fs-h2:      clamp(1.5rem, 1.1rem + 1.4vw, 2rem);      /* 24–32 */
+  --fs-h3:      clamp(1.125rem, 1rem + .5vw, 1.25rem);    /* 18–20 */
+  --fs-body:    clamp(.875rem, .82rem + .2vw, 1rem);      /* 14–16 */
+  --fs-caption: .75rem;     /* 12 */
+  --fs-label:   .6875rem;   /* 11 */
+
+  /* tracking */
+  --tr-display: .05em;
+  --tr-h1:      .04em;
+  --tr-h2:      .03em;
+  --tr-h3:      .02em;
+  --tr-label:   .12em;
+
+  /* ---------- 02 · ESPACIADO (base 8px) ---------- */
+  --sp-1: 8px;
+  --sp-2: 16px;
+  --sp-3: 24px;
+  --sp-4: 32px;
+  --sp-5: 40px;
+  --sp-6: 48px;
+  --sp-8: 64px;
+  --sp-10: 80px;
+  --sp-15: 120px;
+
+  --max-w: 1440px;
+  --pad-x: 80px;
+
+  /* radios — estética sharp, 2px máx. en botones/inputs */
+  --radius-0: 0px;
+  --radius-input: 2px;
+
+  /* transición estándar */
+  --ease: cubic-bezier(.22, .61, .36, 1);
+}
+
+@media (max-width: 900px) {
+  :root { --pad-x: 40px; }
+}
+@media (max-width: 600px) {
+  :root { --pad-x: 20px; }
+}

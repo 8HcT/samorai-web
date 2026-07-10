@@ -23,6 +23,13 @@ export interface WheelVariant {
   capLogo: string;
   stockStatus: StockStatus;
   priceLabel: string;
+  /**
+   * Precio unitario en céntimos de EUR (Stripe usa la unidad mínima).
+   * TODO (config manual): rellenar el importe real de cada variante.
+   * Si queda `undefined`, el checkout lo rechaza salvo que se defina
+   * STRIPE_FALLBACK_PRICE_CENTS para pruebas.
+   */
+  priceCents?: number;
 }
 
 export interface WheelSpecs {

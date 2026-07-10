@@ -4,7 +4,6 @@ import { getFeaturedProducts } from '~/data/products';
 import { SectionHeader } from '~/components/SectionHeader';
 import { ProductGrid } from '~/components/ProductGrid';
 import { Button } from '~/components/Button';
-import { FitmentCallout } from '~/components/FitmentCallout';
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -45,10 +44,10 @@ export default function Home() {
           </p>
 
           <div className="hero__cta">
-            <Button href="/wheels" variant="primary" size="large">
+            <Button href="/the-wheels" variant="primary" size="large">
               Shop Now
             </Button>
-            <Button href="/fitment" variant="ghost" size="large">
+            <Button href="/contacto" variant="ghost" size="large">
               Fitment Guide
             </Button>
           </div>
@@ -101,7 +100,7 @@ export default function Home() {
           />
           <ProductGrid products={featured} />
           <div style={{ marginTop: 'var(--space-10)', textAlign: 'center' }}>
-            <Button href="/wheels" variant="secondary">
+            <Button href="/the-wheels" variant="secondary">
               View All Sizes & Finishes
             </Button>
           </div>
@@ -125,7 +124,7 @@ export default function Home() {
                 Select your wheel CB and vehicle CB. We machine your rings to tolerance.
                 Available in billet aluminum with optional SAMORAI logo engraving.
               </p>
-              <Button href="/fitment" variant="primary">
+              <Button href="/contacto" variant="primary">
                 Learn About Fitment
               </Button>
             </div>
@@ -179,6 +178,22 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Brand attitude — manifiesto (Home §4 · componente 20) */}
+      <section className="section section--elevated" aria-label="Brand attitude">
+        <div className="container">
+          <div className="manifesto">
+            <span className="script">Born to stand out</span>
+            <p>
+              [Párrafo de actitud de marca — 3 a 5 frases. El corazón del tono
+              SAMORAI: a quién habla, qué valores defiende, qué actitud tiene.]
+            </p>
+            <span className="by">
+              <Link to="/the-dynasty" style={{ color: 'inherit' }}>The Dynasty →</Link>
+            </span>
+          </div>
+        </div>
+      </section>
+
       {/* Final CTA */}
       <section className="section" aria-label="Call to action">
         <div className="container" style={{ textAlign: 'center' }}>
@@ -189,10 +204,10 @@ export default function Home() {
             Custom hub rings available for non-standard center bore fitments.
           </p>
           <div style={{ display: 'flex', gap: 'var(--space-4)', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Button href="/wheels" variant="primary" size="large">
+            <Button href="/the-wheels" variant="primary" size="large">
               Shop Now
             </Button>
-            <Button href="/fitment" variant="secondary" size="large">
+            <Button href="/contacto" variant="secondary" size="large">
               Fitment Guide
             </Button>
           </div>
