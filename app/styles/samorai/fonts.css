@@ -13,25 +13,22 @@
    Ver public/fonts/README.md.
    ============================================================ */
 
-/* --- Bank Gothic --- */
+/* --- Bank Gothic (archivos reales en public/fonts/) --- */
 @font-face {
   font-family: "Bank Gothic";
-  src: url("/fonts/BankGothic-Regular.ttf") format("truetype"),
-       url("/fonts/BankGothic-Regular.woff2") format("woff2");
+  src: url("/fonts/BankGothic-Regular.otf") format("opentype");
   font-weight: 400;
   font-display: swap;
 }
 @font-face {
   font-family: "Bank Gothic";
-  src: url("/fonts/BankGothic-Medium.ttf") format("truetype"),
-       url("/fonts/BankGothic-Medium.woff2") format("woff2");
+  src: url("/fonts/BankGothic-Medium.ttf") format("truetype");
   font-weight: 500;
   font-display: swap;
 }
 @font-face {
   font-family: "Bank Gothic";
-  src: url("/fonts/BankGothic-Bold.ttf") format("truetype"),
-       url("/fonts/BankGothic-Bold.woff2") format("woff2");
+  src: url("/fonts/BankGothic-Bold.ttf") format("truetype");
   font-weight: 700;
   font-display: swap;
 }
