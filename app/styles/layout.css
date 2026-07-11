@@ -98,6 +98,51 @@
 .navbar .nv-cart:hover,
 .navbar .nv-cart.active { color: var(--s-light); }
 
+/* Conmutador de tema */
+.theme-toggle {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-input);
+  color: var(--s-gold);
+  font-size: 15px;
+  line-height: 1;
+  background: none;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), color var(--transition-fast), background-color var(--transition-fast);
+}
+.theme-toggle:hover {
+  border-color: var(--s-gold);
+  background: var(--gold-10);
+}
+
+/* Selector de idioma */
+.lang-switch {
+  display: inline-flex;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-input);
+  overflow: hidden;
+}
+.lang-switch__btn {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-weight: 500;
+  font-size: .66rem;
+  letter-spacing: .08em;
+  padding: 6px 9px;
+  background: none;
+  border: none;
+  color: var(--light-50);
+  cursor: pointer;
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+}
+.lang-switch__btn + .lang-switch__btn { border-left: 1px solid var(--hairline); }
+.lang-switch__btn:hover { color: var(--s-light); }
+.lang-switch__btn.active { background: var(--s-gold); color: var(--s-black); }
+
 /* Card de producto — texto del overlay hover (.ph .ov) */
 .pcard .ov .overlay-cta {
   font-family: var(--font-display);

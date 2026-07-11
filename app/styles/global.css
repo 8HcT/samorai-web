@@ -21,3 +21,6 @@
 @import './layout.css';
 @import './components.css';
 @import './utilities.css';
+
+/* --- Temas claro/oscuro (debe ir al final para poder sobrescribir) --- */
+@import './theme.css';

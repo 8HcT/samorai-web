@@ -1,17 +1,22 @@
 import { NavLink } from 'react-router';
-import { LanguagePlaceholder } from './LanguagePlaceholder';
+import { LanguageSwitcher } from './LanguageSwitcher';
+import { ThemeToggle } from './ThemeToggle';
 import { useCart } from '~/lib/cart/CartContext';
+import { useT } from '~/i18n/useT';
 
-const NAV_LINKS = [
-  { to: '/', label: 'Home', end: true },
-  { to: '/the-dynasty', label: 'The Dynasty' },
-  { to: '/the-wheels', label: 'The Wheels' },
-  { to: '/the-dealers', label: 'The Dealers' },
-  { to: '/contacto', label: 'Contacto' },
+type NavKey = 'home' | 'dynasty' | 'wheels' | 'dealers' | 'contact';
+
+const NAV: { to: string; key: NavKey; end: boolean }[] = [
+  { to: '/', key: 'home', end: true },
+  { to: '/the-dynasty', key: 'dynasty', end: false },
+  { to: '/the-wheels', key: 'wheels', end: false },
+  { to: '/the-dealers', key: 'dealers', end: false },
+  { to: '/contacto', key: 'contact', end: false },
 ];
 
 export function Header() {
   const { count, ready } = useCart();
+  const t = useT();
 
   return (
     <header className="navbar samorai-header">
@@ -21,14 +26,14 @@ export function Header() {
 
       <nav aria-label="Main navigation">
         <ul className="nv-links" role="list">
-          {NAV_LINKS.map(({ to, label, end }) => (
+          {NAV.map(({ to, key, end }) => (
             <li key={to}>
               <NavLink
                 to={to}
                 end={end}
                 className={({ isActive }) => (isActive ? 'active' : undefined)}
               >
-                {label}
+                {t.nav[key]}
               </NavLink>
             </li>
           ))}
@@ -39,11 +44,12 @@ export function Header() {
         <NavLink
           to="/cart"
           className={({ isActive }) => `nv-cart${isActive ? ' active' : ''}`}
-          aria-label={`Cart${ready && count > 0 ? ` (${count})` : ''}`}
+          aria-label={`${t.nav.cart}${ready && count > 0 ? ` (${count})` : ''}`}
         >
-          Cart{ready && count > 0 ? ` (${count})` : ''}
+          {t.nav.cart}{ready && count > 0 ? ` (${count})` : ''}
         </NavLink>
-        <LanguagePlaceholder />
+        <ThemeToggle />
+        <LanguageSwitcher />
       </div>
     </header>
   );

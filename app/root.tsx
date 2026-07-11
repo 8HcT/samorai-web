@@ -5,10 +5,21 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useRouteLoaderData,
 } from 'react-router';
 
 import type { Route } from './+types/root';
 import '~/styles/global.css';
+import { resolveLocale } from '~/i18n/config';
+
+export function loader({ request }: Route.LoaderArgs) {
+  // Idioma: cookie explícita del usuario > detección por Accept-Language.
+  const locale = resolveLocale(
+    request.headers.get('Cookie'),
+    request.headers.get('Accept-Language')
+  );
+  return { locale };
+}
 
 export const links: Route.LinksFunction = () => [
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
@@ -27,11 +38,19 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const data = useRouteLoaderData('root') as { locale?: string } | undefined;
   return (
-    <html lang="en">
+    <html lang={data?.locale ?? 'en'}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        {/* Aplica el tema guardado antes del primer paint (evita flash). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{var t=localStorage.getItem('samorai_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}",
+          }}
+        />
         <Meta />
         <Links />
       </head>

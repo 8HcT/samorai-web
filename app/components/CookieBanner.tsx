@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
+import { useT } from '~/i18n/useT';
 
 const STORAGE_KEY = 'samorai_cookie_consent';
 
@@ -10,6 +11,7 @@ const STORAGE_KEY = 'samorai_cookie_consent';
  */
 export function CookieBanner() {
   const [visible, setVisible] = useState(false);
+  const t = useT();
 
   useEffect(() => {
     try {
@@ -34,15 +36,15 @@ export function CookieBanner() {
       style={{ position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 'var(--z-overlay)' }}
     >
       <p>
-        Usamos cookies para mejorar tu experiencia. Consulta nuestra{' '}
-        <Link to="/cookies">política de cookies</Link>.
+        {t.cookie.message}{' '}
+        <Link to="/cookies">{t.cookie.policyLink}</Link>.
       </p>
       <div className="acts">
         <button className="btn btn-ghost btn-sm" onClick={() => decide('rejected')}>
-          Rechazar
+          {t.cookie.reject}
         </button>
         <button className="btn btn-primary btn-sm" onClick={() => decide('accepted')}>
-          Aceptar
+          {t.cookie.accept}
         </button>
       </div>
     </div>
