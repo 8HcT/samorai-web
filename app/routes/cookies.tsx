@@ -3,7 +3,7 @@ import { LegalPage } from '~/components/LegalPage';
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: 'Política de cookies — SAMORAI Wheels' },
+    { title: 'Política de cookies | SAMORAI' },
     { name: 'description', content: 'Política de cookies de SAMORAI Wheels: tipos de cookies utilizadas y su finalidad.' },
     { name: 'robots', content: 'noindex' },
   ];

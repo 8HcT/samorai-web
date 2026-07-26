@@ -86,11 +86,21 @@
   top: 0; left: 0; right: 0;
   z-index: var(--z-header);
 }
+
+/* Nav-bar de 50px, con logo y menú un punto más grandes */
+.navbar {
+  height: 68px;
+  padding-block: 0;
+}
+.navbar .nv-logo { font-size: 1.05rem; letter-spacing: .24em; }
+.navbar .nv-links { gap: 34px; }
+.navbar .nv-links a { font-size: .8rem; }
+.navbar .nv-cta { gap: 20px; }
 .navbar .nv-cart {
   font-family: var(--font-display);
   text-transform: uppercase;
   font-weight: 500;
-  font-size: .72rem;
+  font-size: .8rem;
   letter-spacing: .07em;
   color: var(--s-gold);
   transition: color .25s var(--ease);

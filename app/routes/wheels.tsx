@@ -1,14 +1,15 @@
 import type { Route } from './+types/wheels';
-import { useEffect, useState } from 'react';
+import type { CSSProperties } from 'react';
+import { useEffect } from 'react';
 import { products } from '~/data/products';
 import { trackEvent } from '~/lib/analytics/trackEvent';
-import { SectionHeader } from '~/components/SectionHeader';
-import { ProductGrid } from '~/components/ProductGrid';
+import { ProductCard } from '~/components/ProductCard';
+import { useT } from '~/i18n/useT';
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: 'Wheels — SAMORAI' },
-    { name: 'description', content: 'Browse the SAMORAI Victoria wheel range. Available in multiple sizes, offsets and premium finishes. Verify fitment for your vehicle.' },
+    { title: 'The Wheels | SAMORAI' },
+    { name: 'description', content: 'Llantas de aleación SAMORAI Victoria: 18″, PCD 5×120, buje 72,6 mm. Tres acabados (Antracita Grey, Black Metallic, Silver Metallic). Elige medida y ET para tu vehículo.' },
   ];
 }
 
@@ -16,65 +17,45 @@ export function loader() {
   return { products };
 }
 
-type FilterKey = 'all' | '5x120' | '18';
-
-const FILTERS: { key: FilterKey; label: string }[] = [
-  { key: 'all', label: 'All' },
-  { key: '5x120', label: '5×120 PCD' },
-  { key: '18', label: '18″' },
-];
-
 export default function Wheels({ loaderData }: Route.ComponentProps) {
-  const [activeFilter, setActiveFilter] = useState<FilterKey>('all');
+  const w = useT().wheels;
 
   useEffect(() => {
     trackEvent('wheels_page_viewed', {});
   }, []);
 
-  const filtered = loaderData.products.filter((p) => {
-    if (p.status !== 'active') return false;
-    if (activeFilter === '5x120') return p.specs.pcd === '5x120';
-    if (activeFilter === '18') return p.variants.some((v) => v.diameter === 18);
-    return true;
-  });
+  // Producto activo (Victoria). Cada acabado se presenta como un "modelo".
+  const product = loaderData.products.find((p) => p.status === 'active');
 
   return (
     <>
-      <div className="page-hero">
+      {/* Hero compacto (~30vh) con imagen de fondo (placeholder) + SEO */}
+      <section
+        className="page-hero page-hero--ph page-hero--compact"
+        style={{ '--hero-bg': "url('/images/wheels-hero.jpg')" } as CSSProperties}
+      >
         <div className="container">
-          <span className="eyebrow">Collection</span>
-          <h1>Wheels</h1>
-          <p className="page-hero__subtitle">
-            Premium alloy wheels, precision engineered. Verify fitment for your specific vehicle before ordering.
-          </p>
+          <span className="eyebrow">{w.heroEyebrow}</span>
+          <h1>{w.heroTitle}</h1>
+          <p className="page-hero__subtitle">{w.heroSubtitle}</p>
         </div>
-      </div>
+      </section>
 
       <div className="section">
-        <div className="container">
-          <div
-            className="pills"
-            role="group"
-            aria-label="Filter products"
-            style={{ alignItems: 'center', marginBottom: 'var(--sp-6)' }}
-          >
-            <span className="label" style={{ marginRight: 'var(--sp-1)' }}>Filtrar:</span>
-            {FILTERS.map(({ key, label }) => (
-              <button
-                key={key}
-                className={`pill${activeFilter === key ? ' active' : ''}`}
-                onClick={() => setActiveFilter(key)}
-                aria-pressed={activeFilter === key}
-              >
-                {label}
-              </button>
+      <div className="container">
+        {product ? (
+          <div className="product-grid product-grid--models">
+            {product.finishes.map((finish) => (
+              <ProductCard key={finish.id} product={product} finish={finish} />
             ))}
           </div>
-
-          <ProductGrid
-            products={filtered}
-            emptyMessage="No products match your selection."
-          />
+        ) : (
+          <div className="empty-state">
+            <div className="empty-state__icon" aria-hidden="true">○</div>
+            <h3>Nothing here yet</h3>
+            <p>No hay productos disponibles todavía.</p>
+          </div>
+        )}
         </div>
       </div>
     </>

@@ -3,7 +3,7 @@ import type { TranslationKeys } from './en';
 export const es: TranslationKeys = {
   nav: {
     home: 'Inicio',
-    dynasty: 'The Dynasty',
+    dynasty: 'Dinastía',
     wheels: 'The Wheels',
     dealers: 'The Dealers',
     contact: 'Contacto',
@@ -16,7 +16,7 @@ export const es: TranslationKeys = {
     colLegal: 'Legal',
     catalog: 'Catálogo',
     finishes: 'Acabados',
-    dynasty: 'The Dynasty',
+    dynasty: 'Dinastía',
     dealers: 'The Dealers',
     contact: 'Contacto',
     legalNotice: 'Aviso legal',
@@ -33,9 +33,9 @@ export const es: TranslationKeys = {
   home: {
     heroEyebrow: 'Primer modelo — 2025',
     heroTagline1: 'Fundición de precisión. Rendimiento puro.',
-    heroTagline2: '18″ · 5×120 · Tres acabados.',
+    heroTagline2: 'Tres elegantes acabados.',
     heroCtaPrimary: 'Comprar',
-    heroCtaSecondary: 'Consultar fitment',
+    heroCtaSecondary: 'The Dynasty',
     specModel: 'Modelo',
     specDiameter: 'Diámetro',
     specPcd: 'PCD',
@@ -76,5 +76,40 @@ export const es: TranslationKeys = {
       'Explora la gama Victoria. Elige medida, acabado y offset. Anillos de centrado a medida disponibles para bujes no estándar.',
     finalBtnPrimary: 'Comprar',
     finalBtnSecondary: 'Consultar fitment',
+  },
+  dynasty: {
+    heroEyebrow: 'Dinastía',
+    heroTitle: 'Devolver el arte de la personalización a la automoción',
+    heroSubtitle:
+      'Diseñamos llantas para quienes convierten cada decisión al volante en una declaración de carácter.',
+    originEyebrow: 'El origen',
+    story1:
+      'La idea de Samorai llevaba tiempo dando vueltas en la cabeza de Nacho, el fundador, antes de tomar forma. Nació de mirar alrededor y ver siempre lo mismo: el mismo coche, la misma calle, la misma fábrica repetida hasta el infinito. De vez en cuando aparecía una excepción: un coche montado con criterio, con firma propia, y esa escasez fue la señal. Esas personas, las que sí se atrevían, se convirtieron en la motivación.',
+    story2: 'En 2026, la idea encontró su forma.',
+    visionTitle: 'Una visión motivada por el pasado',
+    story3:
+      'Antes de la cadena de montaje, cada coche nacía distinto. Carroceros y artesanos construían pieza a pieza, a medida del cliente, y el resultado era, en la práctica, una obra única. La estandarización llegó después, con la promesa de eficiencia, y con ella, la repetición. Miramos a ese pasado por una razón concreta: ahí sigue la respuesta. La industria ya sabía construir coches con carácter mucho antes de aprender a hacerlos todos iguales.',
+    story4: 'Nuestra visión mira al futuro. Nuestros valores, al origen.',
+    valuesTitle: 'Nuestros valores',
+    valuesIntro:
+      'Fusionamos ingeniería de precisión con la filosofía del bushi, el código de honor samurái que convierte cada decisión en un acto de carácter.',
+    value1Title: 'Lealtad',
+    value1Text:
+      'Cada llanta se diseña con la exigencia con la que un samurái forja su espada: precisión absoluta, paso a paso. La rectitud se nota en el resultado.',
+    value2Title: 'Convicción',
+    value2Text:
+      'Ser diferente exige valor. Vestimos el coche con la misma honestidad con la que vivimos: de frente, con convicción.',
+    value3Title: 'Honestidad',
+    value3Text:
+      'Una Dynasty se construye entre iguales. Respeto y compromiso definen cada relación: con cada distribuidor, cada cliente, cada kilómetro compartido.',
+    quoteMain:
+      'Cuando la mente se abre, recibe. Las ideas no desaparecen, viajan. Si no las escuchas, encuentran otra mente dispuesta a actuar.',
+    quoteAccent: 'Nosotros elegimos escuchar.',
+  },
+  wheels: {
+    heroEyebrow: 'Colección',
+    heroTitle: 'Llantas SAMORAI Victoria',
+    heroSubtitle:
+      'Llantas de aleación premium de 18″ en PCD 5×120 con buje central de 72,6 mm. Tres acabados — Antracita Grey, Black Metallic y Silver Metallic. Elige medida y ET para un ajuste exacto según tu vehículo.',
   },
 };

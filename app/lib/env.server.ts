@@ -33,6 +33,18 @@ export function fallbackPriceCents(): number | null {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
+/**
+ * ID real del `price` de Stripe para un nivel de precio.
+ * Los `price_...` NO son secretos, pero viven en entorno para poder cambiar
+ * entre Test y Live sin tocar el código. Si no está definido, el checkout
+ * cae a `price_data` con el importe calculado en el servidor.
+ *   · 'low'  → 275 € (ancho 8.5)
+ *   · 'high' → 300 € (anchos 9 y 9.5)
+ */
+export function stripePriceId(tier: 'low' | 'high'): string | undefined {
+  return env(tier === 'low' ? 'STRIPE_PRICE_ID_LOW' : 'STRIPE_PRICE_ID_HIGH');
+}
+
 /** URL base del sitio para construir las return URLs de Stripe. */
 export function siteUrl(): string {
   // 1) SITE_URL explícita (recomendado en producción con dominio propio).

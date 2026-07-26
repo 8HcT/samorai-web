@@ -3,7 +3,7 @@ import { LegalPage } from '~/components/LegalPage';
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: 'Política de privacidad — SAMORAI Wheels' },
+    { title: 'Política de privacidad | SAMORAI' },
     { name: 'description', content: 'Política de privacidad de SAMORAI Wheels: tratamiento de datos personales conforme al RGPD.' },
     { name: 'robots', content: 'noindex' },
   ];

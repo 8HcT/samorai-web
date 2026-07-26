@@ -2,7 +2,8 @@ import type { Route } from './+types/api.stripe-webhook';
 import type Stripe from 'stripe';
 import { getStripe } from '~/lib/stripe/stripe.server';
 import { requireEnv } from '~/lib/env.server';
-import { recordOrder, type OrderLineRecord } from '~/lib/orders/orders.server';
+import { recordOrder, type OrderLineRecord, type OrderRecord } from '~/lib/orders/orders.server';
+import { sendOrderEmails } from '~/lib/email/email.server';
 import { getVariantById } from '~/data/products';
 
 /** Reconstruye las líneas desde `metadata.cart` ("variantId:qty,..."). */
@@ -55,7 +56,7 @@ export async function action({ request }: Route.ActionArgs) {
         };
       });
 
-      await recordOrder({
+      const order: OrderRecord = {
         stripeSessionId: session.id,
         stripePaymentIntentId:
           typeof session.payment_intent === 'string' ? session.payment_intent : null,
@@ -65,7 +66,12 @@ export async function action({ request }: Route.ActionArgs) {
         paymentStatus: session.payment_status ?? 'unknown',
         lines,
         createdAt: new Date().toISOString(),
-      });
+      };
+
+      await recordOrder(order);
+
+      // Correos de compra (best-effort: no debe tumbar el 200 a Stripe).
+      await sendOrderEmails(order);
     }
     // Otros eventos (payment_intent.*, charge.refunded…) se pueden añadir aquí.
   } catch (err) {

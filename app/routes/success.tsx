@@ -6,7 +6,7 @@ import { formatPrice } from '~/lib/money';
 import { getStripe, isStripeConfigured } from '~/lib/stripe/stripe.server';
 
 export function meta({}: Route.MetaArgs) {
-  return [{ title: 'Pedido confirmado — SAMORAI Wheels' }];
+  return [{ title: 'Pedido confirmado | SAMORAI' }];
 }
 
 export async function loader({ request }: Route.LoaderArgs) {

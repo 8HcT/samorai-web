@@ -3,7 +3,7 @@ import { LegalPage } from '~/components/LegalPage';
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: 'Aviso legal — SAMORAI Wheels' },
+    { title: 'Aviso legal | SAMORAI' },
     { name: 'description', content: 'Aviso legal de SAMORAI Wheels: datos del titular, condiciones de uso y propiedad intelectual.' },
     { name: 'robots', content: 'noindex' },
   ];

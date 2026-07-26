@@ -5,24 +5,33 @@ Todo el **código** del checkout está listo. Esto es lo que queda por hacer
 
 ## 1. Claves de API
 
-1. Crea/entra en tu cuenta de Stripe → **Developers → API keys** (modo **Test**).
-2. Copia `.env.example` a `.env` y rellena:
-   - `STRIPE_SECRET_KEY` = `sk_test_…`
-   - `SITE_URL` = `http://localhost:5173` (en producción, tu dominio https)
+1. Entra en tu cuenta de Stripe en **modo Test** → **Developers → API keys**.
+2. El archivo `.env` ya existe (creado con los Price IDs). Rellena en él:
+   - `STRIPE_SECRET_KEY` — recomendado una **restricted key** `rk_test_…`
+     (Developers → API keys → *Create restricted key*) con permiso
+     **Checkout Sessions: Write**. Más segura que la `sk_test_…`.
+   - `SITE_URL` ya está en `http://localhost:5173`.
 
 `.env` está en `.gitignore` — nunca se sube al repositorio.
 
-## 2. Precios de producto
+## 2. Precios de producto — YA CREADOS (Test)
 
-Los precios viven en `app/data/products.ts`, campo **`priceCents`** por variante
-(céntimos de EUR; ej. `45000` = 450,00 €). Hoy están sin definir.
+Los dos niveles de precio ya existen en Stripe (modo Test, IVA incluido /
+`tax_behavior: inclusive`) y están cableados en `.env`:
 
-- **Producción:** pon el `priceCents` real en cada variante vendible.
-- **Pruebas rápidas:** define `STRIPE_FALLBACK_PRICE_CENTS=45000` en `.env` y todas
-  las variantes sin precio usarán ese importe (solo para probar el flujo).
+| Nivel | Importe | Ancho | Price ID (Test) |
+|---|---|---|---|
+| LOW  | 275,00 € | 8.5 | `price_1Tx1jSHLDocwzNmf9D52ckeN` |
+| HIGH | 300,00 € | 9 / 9.5 | `price_1Tx1jTHLDocwzNmfXIt3hGnk` |
 
-El checkout **calcula los precios en el servidor** desde estos datos; el navegador
-nunca envía importes.
+Producto: `prod_UwvaYZqE7GvQD7` (SAMORAI Victoria).
+
+El checkout usa el **Price ID real** cuando está en `.env`
+(`STRIPE_PRICE_ID_LOW/HIGH`); si faltara, cae a `price_data` con el importe
+calculado en el servidor. En ambos casos el navegador **nunca** envía importes.
+
+Para **producción** hay que crear los precios en modo **Live** y poner sus IDs
+en el entorno de producción (Vercel), ya que Test y Live tienen IDs distintos.
 
 ## 3. Webhook (confirmación de pago + pedidos)
 

@@ -10,7 +10,8 @@ const NAV: { to: string; key: NavKey; end: boolean }[] = [
   { to: '/', key: 'home', end: true },
   { to: '/the-dynasty', key: 'dynasty', end: false },
   { to: '/the-wheels', key: 'wheels', end: false },
-  { to: '/the-dealers', key: 'dealers', end: false },
+  // The Dealers oculto hasta una fase más avanzada del proyecto.
+  // { to: '/the-dealers', key: 'dealers', end: false },
   { to: '/contacto', key: 'contact', end: false },
 ];
 

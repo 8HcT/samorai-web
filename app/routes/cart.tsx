@@ -3,14 +3,16 @@ import { useEffect } from 'react';
 import { useSearchParams } from 'react-router';
 import { useCart } from '~/lib/cart/CartContext';
 import { resolveCart, cartTotalCents } from '~/lib/cart';
+import { getFinish } from '~/data/products';
 import { formatPrice } from '~/lib/money';
+import { formatSize, formatEt } from '~/lib/format';
 import { trackEvent } from '~/lib/analytics/trackEvent';
 import { Button } from '~/components/Button';
 import { SectionHeader } from '~/components/SectionHeader';
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: 'Cart — SAMORAI Wheels' },
+    { title: 'Carrito | SAMORAI' },
     { name: 'description', content: 'Your SAMORAI wheel selection.' },
   ];
 }
@@ -83,7 +85,8 @@ export default function Cart() {
           <div>
             {resolved.map((line) => {
               const { variant, product } = line;
-              const spec = `${variant.diameter}×${variant.width}J ET${variant.et} · ${variant.pcd} · CB${variant.cb}`;
+              const finishName = getFinish(product, variant.finishId)?.name ?? variant.color;
+              const spec = `${formatSize(variant.diameter, variant.width)} · ${formatEt(variant.et)} · ${variant.pcd}`;
               return (
                 <div key={variant.id} className="cart-item">
                   <div className="cart-item__image">
@@ -97,9 +100,12 @@ export default function Cart() {
 
                   <div>
                     <p className="cart-item__name">{product.name}</p>
+                    <p className="cart-item__spec">{finishName}</p>
                     <p className="cart-item__spec">{spec}</p>
-                    <p className="cart-item__spec">{variant.color}</p>
-                    <div className="cart-item__qty" aria-label="Quantity">
+                    <p className="cart-item__spec">
+                      Precio unitario: {formatPrice(line.unitPriceCents)} · IVA incluido
+                    </p>
+                    <div className="cart-item__qty" aria-label="Cantidad">
                       <button
                         className="cart-item__qty-btn"
                         aria-label="Decrease quantity"
@@ -137,17 +143,20 @@ export default function Cart() {
           <div className="cart-summary">
             <h2 className="cart-summary__title">Order Summary</h2>
             <div className="cart-summary__row">
-              <span>Subtotal</span>
+              <span>Subtotal (IVA incluido)</span>
               <span>{formatPrice(totalCents)}</span>
             </div>
             <div className="cart-summary__row">
-              <span>Shipping</span>
-              <span>Calculated at checkout</span>
+              <span>Envío</span>
+              <span>Calculado en el checkout</span>
             </div>
             <div className="cart-summary__total">
               <span>Total</span>
               <span>{formatPrice(totalCents)}</span>
             </div>
+            <p className="caption" style={{ marginTop: 'var(--space-2)' }}>
+              IVA incluido. No se añaden impuestos adicionales.
+            </p>
 
             {/* POST nativo al resource route → crea la sesión y redirige a Stripe */}
             <form method="post" action="/api/checkout">
@@ -164,7 +173,7 @@ export default function Cart() {
             </form>
 
             <div className="cart-notice">
-              Pago seguro con Stripe · IVA y envío calculados en el checkout.
+              Pago seguro con Stripe · IVA incluido · Envío calculado en el checkout.
             </div>
           </div>
         </div>

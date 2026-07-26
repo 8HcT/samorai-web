@@ -4,6 +4,11 @@ export type AnalyticsEventName =
   | 'product_viewed'
   | 'product_variant_selected'
   | 'color_selected'
+  | 'finish_selected'
+  | 'configure_clicked'
+  | 'configurator_opened'
+  | 'config_size_selected'
+  | 'config_et_selected'
   | 'size_selected'
   | 'gallery_viewed'
   | 'technology_page_viewed'
@@ -23,6 +28,11 @@ export interface AnalyticsEventPayloads {
   product_viewed:            { productId: string; productName: string; slug: string };
   product_variant_selected:  { productId: string; variantId: string };
   color_selected:            { productId: string; color: string };
+  finish_selected:           { productId: string; finishId: string };
+  configure_clicked:         { productId: string; finishId: string };
+  configurator_opened:       { productId: string; finishId: string };
+  config_size_selected:      { productId: string; finishId: string; width: number };
+  config_et_selected:        { productId: string; finishId: string; et: number };
   size_selected:             { productId: string; size: string };
   gallery_viewed:            { category?: string };
   technology_page_viewed:    Record<string, never>;

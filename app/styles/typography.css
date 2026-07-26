@@ -3,6 +3,15 @@
    (body + h1–h3 + .script + .overline los define samorai/base.css)
    ============================================================ */
 
+/* H1 — titular display, más grande y con interlineado apretado (0.7).
+   Funciona por ser texto en mayúsculas (cap-height ~0.7em → líneas justas).
+   .hero__model-name y .product-detail__name mantienen su propio tamaño. */
+h1 {
+  /* 70px en desktop (como en Figma); baja en móvil para no desbordar. */
+  font-size: clamp(2.5rem, 6vw, 70px);
+  line-height: 0.7;
+}
+
 /* h4–h6 no cubiertos por base.css → fuente display */
 h4, h5, h6 {
   font-family: var(--font-display);

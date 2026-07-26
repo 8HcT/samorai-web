@@ -23,7 +23,8 @@ export function Footer() {
         <h4>{t.footer.colBrand}</h4>
         <ul role="list">
           <li><Link to="/the-dynasty">{t.footer.dynasty}</Link></li>
-          <li><Link to="/the-dealers">{t.footer.dealers}</Link></li>
+          {/* The Dealers oculto hasta una fase más avanzada del proyecto.
+          <li><Link to="/the-dealers">{t.footer.dealers}</Link></li> */}
           <li><Link to="/contacto">{t.footer.contact}</Link></li>
         </ul>
       </div>

@@ -12,6 +12,8 @@ export type ProductCategory = 'wheel' | 'hub_ring' | 'accessory';
 
 export interface WheelVariant {
   id: string;
+  /** Identificador estable del acabado (no depende del texto visible). */
+  finishId: string;
   diameter: number;
   width: number;
   et: number;
@@ -21,15 +23,36 @@ export interface WheelVariant {
   vehicleFitment: string[];
   maxLoad: number;
   capLogo: string;
+  /**
+   * Valor técnico adicional de la tabla original (significado sin
+   * confirmar — NO renombrar como carga, peso, concavidad, etc.).
+   */
+  technicalValue: number;
   stockStatus: StockStatus;
   priceLabel: string;
   /**
-   * Precio unitario en céntimos de EUR (Stripe usa la unidad mínima).
-   * TODO (config manual): rellenar el importe real de cada variante.
-   * Si queda `undefined`, el checkout lo rechaza salvo que se defina
-   * STRIPE_FALLBACK_PRICE_CENTS para pruebas.
+   * Precio unitario FINAL en céntimos de EUR (IVA incluido). El importe
+   * depende exclusivamente del ancho (ver ~/lib/pricing). Es la fuente de
+   * verdad del servidor; el frontend nunca decide cuánto se cobra.
    */
   priceCents?: number;
+  /** IDs reales de Stripe — se rellenan cuando el cliente los facilite. */
+  stripeProductId?: string;
+  stripePriceId?: string;
+}
+
+/** Acabado disponible de un producto. El nombre visible puede cambiar. */
+export interface ProductFinish {
+  id: string;
+  name: string;
+  /** Color base para el swatch/placeholder mientras no hay fotos reales. */
+  color: WheelColor;
+  /**
+   * Imágenes del acabado (rutas en public/images/). La primera es la
+   * PRINCIPAL; la segunda, la secundaria (hover del card); el resto, extras
+   * para la galería (zooms / perspectivas). Al menos 2 por referencia.
+   */
+  images: string[];
 }
 
 export interface WheelSpecs {
@@ -52,6 +75,8 @@ export interface Product {
   description: string;
   shortDescription: string;
   colors: WheelColor[];
+  /** Acabados disponibles (fuente de verdad de id ↔ nombre visible). */
+  finishes: ProductFinish[];
   variants: WheelVariant[];
   specs: WheelSpecs;
   imagePlaceholder: string;

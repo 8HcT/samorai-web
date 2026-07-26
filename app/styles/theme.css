@@ -79,6 +79,17 @@
   box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.12);
 }
 
+/* Heroes con imagen/velo oscuro (The Dynasty, The Wheels…): el velo `::after`
+   es SIEMPRE oscuro, así que el texto debe seguir claro también en tema claro
+   (si no, el texto se volvería oscuro y no se leería sobre la imagen). */
+:root[data-theme="light"] .page-hero h1,
+:root[data-theme="light"] .page-hero__subtitle {
+  color: #ededed;
+}
+:root[data-theme="light"] .page-hero .eyebrow {
+  color: rgba(216, 180, 91, 0.9); /* gold claro, como en tema oscuro */
+}
+
 /* Transición suave al conmutar tema. */
 body,
 .navbar,

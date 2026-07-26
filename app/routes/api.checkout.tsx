@@ -1,9 +1,12 @@
 import type { Route } from './+types/api.checkout';
 import { redirect } from 'react-router';
+import type Stripe from 'stripe';
 import { getStripe } from '~/lib/stripe/stripe.server';
-import { getVariantById } from '~/data/products';
+import { getVariantById, getFinish } from '~/data/products';
 import { CURRENCY } from '~/lib/money';
-import { fallbackPriceCents, siteUrl } from '~/lib/env.server';
+import { unitPriceCentsForWidth, priceTierKeyForWidth } from '~/lib/pricing';
+import { formatSize, formatEt } from '~/lib/format';
+import { fallbackPriceCents, siteUrl, stripePriceId } from '~/lib/env.server';
 
 /** Países a los que se permite envío (España + UE principal). Ajustable. */
 const SHIPPING_COUNTRIES = [
@@ -38,39 +41,60 @@ export async function action({ request }: Route.ActionArgs) {
   if (lines.length === 0) return redirect('/cart?error=empty');
 
   const fallback = fallbackPriceCents();
-  const lineItems: {
-    quantity: number;
-    price_data: {
-      currency: string;
-      unit_amount: number;
-      product_data: { name: string; metadata: Record<string, string> };
-    };
-  }[] = [];
+  const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
+  const summaryParts: string[] = [];
   let missingPrice = false;
 
   for (const line of lines) {
     const quantity = Math.max(1, Math.floor(Number(line.quantity) || 0));
+    // Validación en el servidor: la referencia debe existir.
     const found = getVariantById(String(line.variantId));
     if (!found) continue;
 
-    const unitAmount = found.variant.priceCents ?? fallback;
-    if (unitAmount == null) {
+    const { product, variant } = found;
+
+    // El precio lo decide SIEMPRE el servidor a partir del ancho de la
+    // referencia (IVA incluido). El importe del frontend nunca es autoridad.
+    const expected = unitPriceCentsForWidth(variant.width);
+    const unitAmount = variant.priceCents ?? expected ?? fallback;
+
+    // Coherencia: el precio guardado debe coincidir con la regla de ancho.
+    if (unitAmount == null || (variant.priceCents != null && variant.priceCents !== expected)) {
       missingPrice = true;
       continue;
     }
 
-    const { product, variant } = found;
-    lineItems.push({
-      quantity,
-      price_data: {
-        currency: CURRENCY,
-        unit_amount: unitAmount,
-        product_data: {
-          name: `${product.name} — ${variant.diameter}×${variant.width}J ET${variant.et} · ${variant.color}`,
-          metadata: { variantId: variant.id, productId: product.id },
+    const finishName = getFinish(product, variant.finishId)?.name ?? variant.color;
+    const size = formatSize(variant.diameter, variant.width);
+    summaryParts.push(`${product.model} ${finishName} ${size} ${formatEt(variant.et)} ×${quantity}`);
+
+    // Si hay un Price real de Stripe para este nivel, se usa su ID (fuente de
+    // verdad en Stripe). Si no, se cae a price_data con el importe del servidor.
+    const priceId = stripePriceId(priceTierKeyForWidth(variant.width));
+    if (priceId) {
+      lineItems.push({ price: priceId, quantity });
+    } else {
+      lineItems.push({
+        quantity,
+        price_data: {
+          currency: CURRENCY,
+          // Importe FINAL con IVA incluido; sin impuesto añadido encima.
+          unit_amount: expected,
+          product_data: {
+            name: `${product.name} · ${finishName} · ${size} ${formatEt(variant.et)}`,
+            metadata: {
+              model: product.model,
+              finish: finishName,
+              finishId: variant.finishId,
+              size,
+              et: formatEt(variant.et),
+              variantId: variant.id,
+              taxIncluded: 'true',
+            },
+          },
         },
-      },
-    });
+      });
+    }
   }
 
   if (missingPrice || lineItems.length === 0) {
@@ -91,7 +115,10 @@ export async function action({ request }: Route.ActionArgs) {
       phone_number_collection: { enabled: true },
       automatic_tax: { enabled: false }, // activar tras configurar Stripe Tax
       metadata: {
+        // `cart` es la fuente autoritativa (el webhook resuelve todo desde el
+        // variantId); `summary` es legible e incluye modelo/acabado/medida/ET.
         cart: lines.map((l) => `${l.variantId}:${l.quantity}`).join(','),
+        summary: summaryParts.join('; ').slice(0, 490),
         itemCount: String(lines.reduce((s, l) => s + (Number(l.quantity) || 0), 0)),
       },
     });

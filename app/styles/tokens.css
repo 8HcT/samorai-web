@@ -125,7 +125,7 @@
   /* ---- layout ---- */
   --container-max:     var(--max-w);
   --container-padding: var(--pad-x);
-  --header-height:     72px;
+  --header-height:     68px;
   --section-padding-y: clamp(48px, 8vw, 120px);
 
   /* ---- z-index ---- */

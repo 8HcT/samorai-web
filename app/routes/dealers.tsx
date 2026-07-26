@@ -1,12 +1,20 @@
 import type { Route } from './+types/dealers';
 import { useEffect } from 'react';
+import { redirect } from 'react-router';
 import { trackEvent } from '~/lib/analytics/trackEvent';
 import { SectionHeader } from '~/components/SectionHeader';
 import { Button } from '~/components/Button';
 
+// The Dealers está bloqueada hasta una fase más avanzada del proyecto.
+// El redirect deja la ruta inaccesible; el componente de abajo se conserva
+// intacto para retomarla — para reactivar, elimina este loader.
+export function loader() {
+  return redirect('/', 307);
+}
+
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: 'Dealers — SAMORAI Wheels' },
+    { title: 'The Dealers | SAMORAI' },
     { name: 'description', content: 'Find an authorized SAMORAI dealer or enquire about becoming a distribution partner.' },
   ];
 }

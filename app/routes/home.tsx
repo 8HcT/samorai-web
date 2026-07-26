@@ -1,27 +1,36 @@
 import type { Route } from './+types/home';
+import type { CSSProperties } from 'react';
+import { useRef } from 'react';
 import { Link } from 'react-router';
 import { getFeaturedProducts } from '~/data/products';
 import { SectionHeader } from '~/components/SectionHeader';
-import { ProductGrid } from '~/components/ProductGrid';
+import { ProductCard } from '~/components/ProductCard';
+import { MediaPlaceholder } from '~/components/MediaPlaceholder';
 import { Button } from '~/components/Button';
 import { useT } from '~/i18n/useT';
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: 'SAMORAI Wheels — Precision Engineered' },
+    { title: 'SAMORAI | Precision Wheels' },
     { name: 'description', content: 'SAMORAI Victoria — premium alloy wheels. Precision cast, performance driven. Available in 18" with 5×120 PCD.' },
   ];
 }
 
 export default function Home() {
   const featured = getFeaturedProducts();
+  const victoria = featured[0];
   const t = useT();
   const h = t.home;
 
   return (
     <>
-      {/* Hero */}
-      <section className="hero" aria-label="Hero">
+      {/* Hero — placeholder de imagen de fondo: cuando exista el archivo se
+          muestra automáticamente; hasta entonces se ve el patrón rayado. */}
+      <section
+        className="hero hero--ph"
+        aria-label="Hero"
+        style={{ '--hero-bg': "url('/images/home-hero.jpg')" } as CSSProperties}
+      >
         <div className="hero__bg" aria-hidden="true" />
 
         {/* large decorative wheel */}
@@ -38,7 +47,7 @@ export default function Home() {
           </div>
 
           <h1 className="hero__model-name" aria-label="Victoria by SAMORAI">
-            Vic<em>toria</em>
+            Victoria
           </h1>
 
           <p className="hero__tagline">
@@ -50,45 +59,9 @@ export default function Home() {
             <Button href="/the-wheels" variant="primary" size="large">
               {h.heroCtaPrimary}
             </Button>
-            <Button href="/contacto" variant="ghost" size="large">
+            <Button href="/the-dynasty" variant="ghost" size="large">
               {h.heroCtaSecondary}
             </Button>
-          </div>
-        </div>
-
-        {/* specs strip anchored to bottom */}
-        <div className="hero__specs-strip" aria-label="Victoria key specs">
-          <div className="container">
-            <div className="hero__specs-inner">
-              <div className="hero__spec-item">
-                <span className="hero__spec-label">{h.specModel}</span>
-                <span className="hero__spec-value hero__spec-value--accent">Victoria</span>
-              </div>
-              <div className="hero__spec-item">
-                <span className="hero__spec-label">{h.specDiameter}</span>
-                <span className="hero__spec-value">18″</span>
-              </div>
-              <div className="hero__spec-item">
-                <span className="hero__spec-label">{h.specPcd}</span>
-                <span className="hero__spec-value">5×120</span>
-              </div>
-              <div className="hero__spec-item">
-                <span className="hero__spec-label">{h.specCb}</span>
-                <span className="hero__spec-value">72.6mm</span>
-              </div>
-              <div className="hero__spec-item">
-                <span className="hero__spec-label">{h.specLoad}</span>
-                <span className="hero__spec-value">650kg</span>
-              </div>
-              <div className="hero__spec-item">
-                <span className="hero__spec-label">{h.specFinishes}</span>
-                <span className="hero__spec-value">3</span>
-              </div>
-              <div className="hero__spec-item">
-                <span className="hero__spec-label">{h.specBrand}</span>
-                <span className="hero__spec-value">SAMORAI</span>
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -101,7 +74,13 @@ export default function Home() {
             title={h.featuredTitle}
             subtitle={h.featuredSubtitle}
           />
-          <ProductGrid products={featured} />
+          {victoria && (
+            <div className="product-grid product-grid--models">
+              {victoria.finishes.map((finish) => (
+                <ProductCard key={finish.id} product={victoria} finish={finish} />
+              ))}
+            </div>
+          )}
           <div style={{ marginTop: 'var(--space-10)', textAlign: 'center' }}>
             <Button href="/the-wheels" variant="secondary">
               {h.featuredBtn}
@@ -110,7 +89,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Hub rings feature */}
+      {/* Hub rings feature — OCULTO: los hub rings aún no están a la venta.
+          Para reactivar, descomenta esta sección.
       <section className="section" aria-label="Hub rings">
         <div className="container">
           <div className="hub-rings-section">
@@ -139,6 +119,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+      */}
 
       {/* Brand values */}
       <section className="section section--bordered" aria-label="Why SAMORAI">
@@ -181,24 +162,56 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="section" aria-label="Call to action">
-        <div className="container" style={{ textAlign: 'center' }}>
-          <span className="eyebrow">{h.finalEyebrow}</span>
-          <h2 style={{ marginBottom: 'var(--space-5)' }}>{h.finalTitle}</h2>
-          <p style={{ marginInline: 'auto', marginBottom: 'var(--space-10)' }}>
-            {h.finalDesc}
-          </p>
-          <div style={{ display: 'flex', gap: 'var(--space-4)', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Button href="/the-wheels" variant="primary" size="large">
-              {h.finalBtnPrimary}
-            </Button>
-            <Button href="/contacto" variant="secondary" size="large">
-              {h.finalBtnSecondary}
-            </Button>
+      {/* Galería / carrusel de imágenes (placeholders) */}
+      <HomeGallery />
+    </>
+  );
+}
+
+/** Elementos del carrusel. Sustituye cada MediaPlaceholder por su <img> real
+ *  (archivos en public/images/). El `caption` es la guía editable de cada foto. */
+const GALLERY_ITEMS = [
+  { file: '/images/home-gallery-1.jpg', caption: '[Pie de foto — describe esta imagen]' },
+  { file: '/images/home-gallery-2.jpg', caption: '[Pie de foto — describe esta imagen]' },
+  { file: '/images/home-gallery-3.jpg', caption: '[Pie de foto — describe esta imagen]' },
+  { file: '/images/home-gallery-4.jpg', caption: '[Pie de foto — describe esta imagen]' },
+  { file: '/images/home-gallery-5.jpg', caption: '[Pie de foto — describe esta imagen]' },
+];
+
+function HomeGallery() {
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  function scrollBy(dir: number) {
+    const track = trackRef.current;
+    if (!track) return;
+    const card = track.querySelector('.carousel__item');
+    const step = card ? card.getBoundingClientRect().width + 16 : track.clientWidth * 0.8;
+    track.scrollBy({ left: dir * step, behavior: 'smooth' });
+  }
+
+  return (
+    <section className="section section--elevated" aria-label="Galería">
+      <div className="container">
+        <div className="carousel-head">
+          <div>
+            <span className="eyebrow">Galería</span>
+            <h2>El mundo SAMORAI</h2>
+          </div>
+          <div className="carousel-nav" aria-hidden="true">
+            <button type="button" aria-label="Anterior" onClick={() => scrollBy(-1)}>‹</button>
+            <button type="button" aria-label="Siguiente" onClick={() => scrollBy(1)}>›</button>
           </div>
         </div>
-      </section>
-    </>
+
+        <div className="carousel" ref={trackRef} role="region" aria-label="Galería de imágenes" tabIndex={0}>
+          {GALLERY_ITEMS.map((item, i) => (
+            <figure className="carousel__item" key={i}>
+              <MediaPlaceholder label={`Galería ${i + 1}`} file={item.file} ratio="4 / 3" />
+              <figcaption className="carousel__caption">{item.caption}</figcaption>
+            </figure>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
