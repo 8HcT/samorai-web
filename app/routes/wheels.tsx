@@ -35,7 +35,7 @@ export default function Wheels({ loaderData }: Route.ComponentProps) {
         style={{ '--hero-bg': "url('/images/wheels-hero.jpg')" } as CSSProperties}
       >
         <div className="container">
-          <span className="eyebrow">{w.heroEyebrow}</span>
+          <span className="eyebrow" style={{ color: '#ededed' }}>{w.heroEyebrow}</span>
           <h1>{w.heroTitle}</h1>
           <p className="page-hero__subtitle">{w.heroSubtitle}</p>
         </div>

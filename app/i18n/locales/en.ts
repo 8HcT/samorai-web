@@ -29,51 +29,30 @@ export const en = {
     reject: 'Reject',
   },
   home: {
-    heroEyebrow: 'First Model — 2025',
-    heroTagline1: 'Precision cast. Performance driven.',
-    heroTagline2: 'Three elegant finishes.',
-    heroCtaPrimary: 'Shop Now',
-    heroCtaSecondary: 'The Dynasty',
-    specModel: 'Model',
-    specDiameter: 'Diameter',
-    specPcd: 'PCD',
-    specCb: 'Center Bore',
-    specLoad: 'Max Load',
-    specFinishes: 'Finishes',
-    specBrand: 'Brand',
-    featuredEyebrow: 'First Commercial Model',
-    featuredTitle: 'Victoria',
-    featuredSubtitle:
-      'A five-spoke alloy wheel with motorsport-grade geometry, 5×120 PCD, and precision powder finishes. Engineered to fit precisely.',
-    featuredBtn: 'View All Sizes & Finishes',
-    hubEyebrow: 'Precision Fitment',
-    hubTitle: 'Custom Hub Rings',
-    hubDesc1:
-      "No fitment adapter should be an afterthought. SAMORAI hub rings are precision-machined to adapt our 72.6mm center bore to your vehicle's exact specification — eliminating harmonic vibration and ensuring a factory-grade seat on every drive.",
-    hubDesc2:
-      'Select your wheel CB and vehicle CB. We machine your rings to tolerance. Available in billet aluminum with optional SAMORAI logo engraving.',
-    hubBtn: 'Fitment help',
-    valuesEyebrow: 'Why SAMORAI',
-    valuesTitle: 'Built to a Higher Standard',
-    value1Title: 'Precision Geometry',
-    value1Desc:
-      'Every spoke angle, every radius, every tolerance is calculated before the first mold is cut. No compromises.',
-    value2Title: 'Exact Fitment',
-    value2Desc:
-      'Designed from OEM specifications. The Victoria seats on the hub as if it left the factory that way.',
-    value3Title: 'Premium Finish',
-    value3Desc:
-      'Multi-coat powder applied under controlled conditions. Resistant to brake dust, road chemicals, and time.',
-    manifestoScript: 'Born to stand out',
-    manifestoBody:
-      '[Brand attitude paragraph — 3 to 5 sentences. The heart of the SAMORAI voice: who it speaks to, what it stands for, its attitude.]',
-    manifestoBy: 'The Dynasty →',
-    finalEyebrow: 'Ready to Build',
-    finalTitle: 'Find Your Set',
-    finalDesc:
-      'Browse the Victoria range. Choose your size, finish, and offset. Custom hub rings available for non-standard center bore fitments.',
-    finalBtnPrimary: 'Shop Now',
-    finalBtnSecondary: 'Fitment help',
+    heroEyebrow: 'Welcome to the new Dynasty',
+    heroTitle: 'Every one of our wheels, a statement of identity.',
+    heroSubtitle:
+      'Precision geometry, signature finishes, exact fit. Designed for those who take their identity to the wheel.',
+    heroCta: 'See our catalog',
+    s2Title: 'We design aluminum wheels, down to the detail',
+    s2Body:
+      'At Samorai we design and build every wheel for those who see the car as an extension of their character. Geometry calculated to the millimeter, precision casting and signature finishes in different colors and textures. We build identity, wheel by wheel.',
+    s2Tag: 'Design · Precision manufacturing · Customization',
+    s3TitlePre: 'Discover the ',
+    s3TitleAccent: 'Victoria',
+    s3TitlePost: ' model, at its most elegant',
+    s3Subtitle: 'Precision aluminum casting, piece by piece.',
+    s3Body:
+      'Five spokes with motorsport-grade geometry, calculated mold by mold before casting the first piece. Precision aluminum casting, 5×120 PCD, millimetric fit to OEM spec. The black-metallic powder finish is applied in several coats, under controlled conditions, resistant to brake dust and the passing of time. Technical presence, character of its own.',
+    s3Cta: 'See Victoria in detail →',
+    quotePre: '“',
+    quoteAccent: 'Balance',
+    quotePost: ' isn’t a destination. It’s the starting point.”',
+    cTag: 'let’s talk?',
+    cTitle: 'Every build is different. Let’s talk about yours.',
+    cBody:
+      'Sizes, finishes, fitment — our technical team replies in under 24 hours.',
+    cCta: 'Contact us',
   },
   dynasty: {
     heroEyebrow: 'The Dynasty',
@@ -105,10 +84,14 @@ export const en = {
     quoteAccent: 'We choose to listen.',
   },
   wheels: {
-    heroEyebrow: 'Collection',
-    heroTitle: 'SAMORAI Victoria Alloy Wheels',
+    heroEyebrow: 'The Wheels',
+    heroTitle: 'Our products',
     heroSubtitle:
-      'Premium 18″ alloy wheels in 5×120 PCD with a 72.6 mm center bore. Three finishes — Anthracite Grey, Black Metallic and Silver Metallic. Choose your size and ET for a precise, vehicle-specific fit.',
+      'We design wheels for those who turn every decision behind the wheel into a statement of character.',
+  },
+  product: {
+    description:
+      "The Victoria is SAMORAI's first commercial wheel, our statement of what precision engineering looks like when it's driven by a passion for cars. Built around a 5×120 PCD with a 72.6 mm center bore, it delivers exact OEM tolerances and a look that elevates any build. It comes in three finishes: Anthracite Grey, Black Metallic and Silver Metallic. It fits a wide range of 5×120 vehicles; for center bores other than 72.6 mm, use hub rings.",
   },
 };
 

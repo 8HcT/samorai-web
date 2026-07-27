@@ -3,20 +3,20 @@ import type { TranslationKeys } from './en';
 export const es: TranslationKeys = {
   nav: {
     home: 'Inicio',
-    dynasty: 'Dinastía',
-    wheels: 'The Wheels',
+    dynasty: 'The Dynasty',
+    wheels: 'Las llantas',
     dealers: 'The Dealers',
     contact: 'Contacto',
     cart: 'Carrito',
   },
   footer: {
     tagline: 'Llantas de automoción premium, diseñadas con precisión.',
-    colWheels: 'The Wheels',
+    colWheels: 'Las llantas',
     colBrand: 'Marca',
     colLegal: 'Legal',
     catalog: 'Catálogo',
     finishes: 'Acabados',
-    dynasty: 'Dinastía',
+    dynasty: 'The Dynasty',
     dealers: 'The Dealers',
     contact: 'Contacto',
     legalNotice: 'Aviso legal',
@@ -31,54 +31,33 @@ export const es: TranslationKeys = {
     reject: 'Rechazar',
   },
   home: {
-    heroEyebrow: 'Primer modelo — 2025',
-    heroTagline1: 'Fundición de precisión. Rendimiento puro.',
-    heroTagline2: 'Tres elegantes acabados.',
-    heroCtaPrimary: 'Comprar',
-    heroCtaSecondary: 'The Dynasty',
-    specModel: 'Modelo',
-    specDiameter: 'Diámetro',
-    specPcd: 'PCD',
-    specCb: 'Buje central',
-    specLoad: 'Carga máx.',
-    specFinishes: 'Acabados',
-    specBrand: 'Marca',
-    featuredEyebrow: 'Primer modelo comercial',
-    featuredTitle: 'Victoria',
-    featuredSubtitle:
-      'Una llanta de aleación de cinco radios con geometría de competición, PCD 5×120 y acabados en polvo de precisión. Diseñada para encajar con exactitud.',
-    featuredBtn: 'Ver todas las medidas y acabados',
-    hubEyebrow: 'Montaje de precisión',
-    hubTitle: 'Anillos de centrado a medida',
-    hubDesc1:
-      'Ningún adaptador de montaje debería ser un añadido de última hora. Los anillos de centrado SAMORAI se mecanizan con precisión para adaptar nuestro buje de 72,6 mm a la especificación exacta de tu vehículo, eliminando la vibración armónica y garantizando un asentamiento de nivel de fábrica.',
-    hubDesc2:
-      'Elige el buje de tu llanta y el de tu vehículo. Mecanizamos tus anillos a tolerancia. Disponibles en aluminio macizo con grabado opcional del logo SAMORAI.',
-    hubBtn: 'Consultar fitment',
-    valuesEyebrow: 'Por qué SAMORAI',
-    valuesTitle: 'Hechas para un estándar superior',
-    value1Title: 'Geometría de precisión',
-    value1Desc:
-      'Cada ángulo de radio, cada radio, cada tolerancia se calcula antes de cortar el primer molde. Sin concesiones.',
-    value2Title: 'Montaje exacto',
-    value2Desc:
-      'Diseñada a partir de especificaciones OEM. La Victoria se asienta en el buje como si hubiera salido así de fábrica.',
-    value3Title: 'Acabado premium',
-    value3Desc:
-      'Polvo multicapa aplicado en condiciones controladas. Resistente al polvo de freno, a los químicos de la carretera y al tiempo.',
-    manifestoScript: 'Born to stand out',
-    manifestoBody:
-      '[Párrafo de actitud de marca — 3 a 5 frases. El corazón del tono SAMORAI: a quién habla, qué valores defiende, qué actitud tiene.]',
-    manifestoBy: 'The Dynasty →',
-    finalEyebrow: 'Listo para montar',
-    finalTitle: 'Encuentra tu juego',
-    finalDesc:
-      'Explora la gama Victoria. Elige medida, acabado y offset. Anillos de centrado a medida disponibles para bujes no estándar.',
-    finalBtnPrimary: 'Comprar',
-    finalBtnSecondary: 'Consultar fitment',
+    heroEyebrow: 'Welcome to the new Dynasty',
+    heroTitle: 'Cada una de nuestras llantas, una declaración de identidad.',
+    heroSubtitle:
+      'Geometría de precisión, acabados de autor, ajuste exacto. Diseñadas para quienes llevan su identidad al volante.',
+    heroCta: 'Conoce nuestro catálogo',
+    s2Title: 'Diseñamos llantas de aluminio, al detalle',
+    s2Body:
+      'En Samorai diseñamos y fabricamos cada llanta para quienes entienden el coche como extensión de su carácter. Geometría calculada al milímetro, fundición de precisión y acabados de autor en distintos colores y texturas. Construimos identidad, rueda a rueda.',
+    s2Tag: 'Diseño · Fabricación de precisión · Personalización',
+    s3TitlePre: 'Descubre el Modelo ',
+    s3TitleAccent: 'Victoria',
+    s3TitlePost: ', en su versión más elegante',
+    s3Subtitle: 'Fundición de aluminio de precisión, pieza a pieza.',
+    s3Body:
+      'Cinco radios con geometría de nivel competición, calculados molde a molde antes de fundir la primera pieza. Fundición de aluminio de precisión, PCD 5×120, ajuste milimétrico a especificación OEM. El acabado en polvo negro metálico se aplica en varias capas, bajo condiciones controladas, resistente al polvo de freno y al paso del tiempo. Presencia técnica, carácter propio.',
+    s3Cta: 'Ver Victoria en detalle →',
+    quotePre: '“El ',
+    quoteAccent: 'equilibrio',
+    quotePost: ' no es un destino. Es el punto de partida.”',
+    cTag: '¿hablamos?',
+    cTitle: 'Cada montaje es distinto. Hablemos del tuyo.',
+    cBody:
+      'Medidas, acabados, ajuste, nuestro equipo técnico responde en menos de 24 horas.',
+    cCta: 'Contacta con nosotros',
   },
   dynasty: {
-    heroEyebrow: 'Dinastía',
+    heroEyebrow: 'The Dynasty',
     heroTitle: 'Devolver el arte de la personalización a la automoción',
     heroSubtitle:
       'Diseñamos llantas para quienes convierten cada decisión al volante en una declaración de carácter.',
@@ -107,9 +86,13 @@ export const es: TranslationKeys = {
     quoteAccent: 'Nosotros elegimos escuchar.',
   },
   wheels: {
-    heroEyebrow: 'Colección',
-    heroTitle: 'Llantas SAMORAI Victoria',
+    heroEyebrow: 'Las llantas',
+    heroTitle: 'Nuestros productos',
     heroSubtitle:
-      'Llantas de aleación premium de 18″ en PCD 5×120 con buje central de 72,6 mm. Tres acabados — Antracita Grey, Black Metallic y Silver Metallic. Elige medida y ET para un ajuste exacto según tu vehículo.',
+      'Diseñamos llantas para quienes convierten cada decisión al volante en una declaración de carácter.',
+  },
+  product: {
+    description:
+      'La Victoria es la primera llanta comercial de SAMORAI, nuestra declaración de lo que significa la ingeniería de precisión guiada por la pasión por el automóvil. Diseñada en torno a un PCD 5×120 con buje central de 72,6 mm, ofrece tolerancias OEM exactas y una estética que eleva cualquier proyecto. Está disponible en tres acabados: Antracita Grey, Black Metallic y Silver Metallic. Es compatible con una amplia gama de vehículos 5×120; para bujes distintos de 72,6 mm, usa anillos de centrado.',
   },
 };

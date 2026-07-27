@@ -56,6 +56,10 @@
   background: rgba(237, 237, 237, .72);
 }
 
+/* Logo: el SVG es bicolor (#1D1D1D + blanco), pensado para fondo claro. En
+   tema oscuro se invierte para que se lea sobre el fondo oscuro. */
+:root[data-theme="dark"] .nv-logo__img { filter: invert(1); }
+
 /* Hero de la home: fondo claro y rueda decorativa visible sobre claro. */
 :root[data-theme="light"] .hero__bg {
   background:

@@ -1323,7 +1323,7 @@
   position: relative;
   min-height: 80vh;            /* altura dinámica: al menos el 80% del viewport */
   display: flex;
-  align-items: flex-end;       /* contenido anclado abajo, look editorial */
+  align-items: center;         /* texto centrado en el eje vertical */
   overflow: hidden;
   border-bottom: 1px solid var(--color-border);
   background-color: var(--color-bg);
@@ -1346,7 +1346,7 @@
   z-index: 1;
   pointer-events: none;
   background:
-    linear-gradient(0deg, rgba(12, 12, 12, 0.92) 0%, rgba(12, 12, 12, 0.35) 55%, rgba(12, 12, 12, 0.55) 100%),
+    linear-gradient(0deg, rgba(12, 12, 12, 0.92) 0%, rgba(12, 12, 12, 0.62) 50%, rgba(12, 12, 12, 0.72) 100%),
     radial-gradient(ellipse 70% 80% at 75% 45%, rgba(216, 180, 91, 0.05) 0%, transparent 65%);
 }
 
@@ -1360,6 +1360,9 @@
   /* tamaño = h1 global (70px desktop) */
   margin-bottom: var(--space-5);
   max-width: 18ch;
+  /* corrige el side-bearing del display font: alinea ópticamente el título
+     con el eyebrow y el subtítulo (que no tienen ese margen interno). */
+  margin-left: -0.1rem;
 }
 
 .page-hero__subtitle {
@@ -1373,7 +1376,7 @@
   min-height: 0;
   aspect-ratio: 2048 / 683;
   padding-block: var(--space-8);
-  /* texto anclado abajo (base .page-hero), sobre la zona más oscura del velo */
+  /* texto centrado verticalmente (hereda align-items:center de .page-hero) */
 }
 .page-hero--compact h1 {
   /* tamaño = h1 global (70px desktop) */
@@ -1388,7 +1391,7 @@
   }
   .page-hero h1 { max-width: none; }
   /* En móvil el banner 3:1 queda muy bajo → mínimo para que quepa el texto */
-  .page-hero.page-hero--compact { min-height: 46vh; align-items: flex-end; }
+  .page-hero.page-hero--compact { min-height: 46vh; }
 }
 
 /* â”€â”€â”€ Gallery â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
@@ -1932,6 +1935,7 @@
 /* ─── Placeholder de imagen (media pendiente de subir) ─────────────── */
 .media-ph {
   position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1945,6 +1949,23 @@
     repeating-linear-gradient(45deg, rgba(216, 180, 91, 0.05) 0 12px, transparent 12px 24px),
     var(--color-bg-elevated);
 }
+/* Imagen real: cubre el hueco; y quitamos el borde/patrón del placeholder */
+.media-ph__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.media-ph--filled {
+  border: none;
+  padding: 0;
+  background: none;
+}
+/* Con imagen real, ocultar la etiqueta/ruta del placeholder (asomaba por las
+   zonas de letterbox de object-fit: contain). */
+.media-ph--filled .media-ph__label { display: none; }
 .media-ph__label {
   font-size: var(--text-xs);
   text-transform: uppercase;
@@ -1985,14 +2006,27 @@
   transition: opacity 0.35s var(--ease);
 }
 
-/* Ruta del archivo de la imagen activa en la galería (guía) */
-.gallery-path {
-  margin-top: var(--space-3);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--color-text-muted);
-  word-break: break-all;
+/* Tira de miniaturas de imágenes, debajo de la foto grande */
+.gallery-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: var(--space-4);
+  max-width: 520px;
 }
+.gallery-strip button {
+  width: 72px;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 1.5px solid var(--hairline);
+  background: none;
+  overflow: hidden;
+  cursor: pointer;
+  border-radius: var(--radius-input);
+  transition: border-color 0.2s var(--ease);
+}
+.gallery-strip button:hover { border-color: var(--gold-50); }
+.gallery-strip button.active { border-color: var(--s-gold); }
 
 /* ─── Carrusel de imágenes (Home) ──────────────────────────────────── */
 .carousel-head {
@@ -2047,7 +2081,7 @@
 
 /* ─── The Dynasty · sección de valores (fondo claro, como en Figma) ── */
 .dynasty-values {
-  background: #f4f4f2;
+  background: var(--color-bg-elevated); /* theme-aware: claro #fff · oscuro #232323 */
   border-top: 1px solid var(--gold-30);
   border-bottom: 1px solid var(--gold-30);
 }
@@ -2056,7 +2090,7 @@
   text-align: center;
 }
 .dynasty-values__intro {
-  color: #333;
+  color: var(--color-text-secondary);
   text-align: center;
   max-width: 66ch;
   margin: var(--space-4) auto 0;
@@ -2078,7 +2112,7 @@
   margin-bottom: var(--space-3);
 }
 .dynasty-value__text {
-  color: #333;
+  color: var(--color-text-secondary);
   text-align: center;
   font-size: var(--text-sm);
   max-width: none;
@@ -2122,6 +2156,101 @@
 .dynasty-quote em {
   font-style: normal;
   color: var(--s-gold);
+}
+
+/* ─── Home · secciones alternas (theme-aware) ──────────────────────────
+   Claras en tema claro, oscuras en tema oscuro (usan tokens que se invierten).
+   La banda de cita (.band-dark) es siempre oscura, como en el diseño. */
+.home-light,
+.home-white {
+  border-top: 1px solid var(--gold-30);
+  border-bottom: 1px solid var(--gold-30);
+  color: var(--color-text-primary);
+}
+.home-light { background: var(--color-bg); }          /* claro: #EDEDED · oscuro: #1d1d1d */
+.home-white { background: var(--color-bg-elevated); } /* claro: #fff · oscuro: #232323 */
+.home-light h2,
+.home-white h2 { color: var(--color-text-primary); }
+.home-light p,
+.home-white p { color: var(--color-text-secondary); max-width: none; }
+.home-white h2 em,
+.home-light h2 em,
+.home-feature h2 em { font-style: normal; color: var(--s-gold); }
+
+/* Sección "Descubre Victoria": fondo normal (no banda blanca). La imagen sale a
+   sangre por el borde IZQUIERDO de la pantalla (fuera del contenedor), grande y
+   completa (contain, anclada a la izquierda). */
+.home-feature {
+  border-top: 1px solid var(--gold-30);
+  border-bottom: 1px solid var(--gold-30);
+  overflow: hidden;               /* evita scroll horizontal por el sangrado */
+}
+.home-victoria-img {
+  /* distancia del borde del contenedor al borde del viewport */
+  --bleed-left: calc(max((100vw - var(--container-max)) / 2, 0px) + var(--container-padding));
+  aspect-ratio: 4 / 3;
+  width: calc(100% + var(--bleed-left));
+  margin-left: calc(-1 * var(--bleed-left));
+}
+.home-victoria-img .media-ph__img {
+  object-fit: contain;
+  object-position: left center;   /* la llanta se ancla al borde izquierdo */
+}
+@media (max-width: 640px) {
+  .home-victoria-img { width: 100%; margin-left: 0; }
+}
+
+/* Banda de cita: fondo oscuro fijo en ambos temas */
+.band-dark {
+  background: #1d1d1d;
+  border-top: 1px solid var(--gold-30);
+  border-bottom: 1px solid var(--gold-30);
+}
+.band-dark .dynasty-quote { color: #ededed; }
+.band-dark .dynasty-quote em { color: var(--s-gold); }
+
+/* la etiqueta dorada debe ganar al color de párrafo de la sección clara */
+.home-light .home-tag,
+.home-white .home-tag { color: var(--s-gold); }
+
+/* fila texto + imagen */
+.home-split { gap: var(--space-16); }
+.home-split .media-ph { border-color: var(--gold-30); }
+
+/* etiqueta dorada (Diseño · … / ¿hablamos?) */
+.home-tag {
+  margin-top: var(--space-6);
+  margin-bottom: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--s-gold);
+  font-size: 1rem;
+  max-width: none;
+}
+.home-tag--lg {
+  margin-top: 0;
+  text-transform: none;
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  line-height: 1;
+}
+
+/* subtítulo display (lead) en sección clara */
+.home-white .home-lead,
+.home-light .home-lead,
+.home-feature .home-lead {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: 0.02em;
+  color: var(--color-text-primary);
+  max-width: none;
+}
+
+@media (max-width: 640px) {
+  .home-split { gap: var(--space-8); }
 }
 
 /* Precio dinámico en la ficha, encima del botón de compra */

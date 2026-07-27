@@ -1,12 +1,9 @@
-import type { CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 
 /**
- * Placeholder de imagen reutilizable. Muestra una etiqueta + la ruta del
- * archivo esperado. Cuando exista la imagen, sustituye
- *   <MediaPlaceholder label=… file="/images/…" />
- * por:
- *   <img src="/images/…" alt="…" className="media-fill" />
- * (los archivos van en `public/images/`).
+ * Hueco de imagen. Si el archivo `file` existe, muestra la imagen; si no (o si
+ * falla la carga), muestra un patrón rayado con la etiqueta y la ruta esperada.
+ * Así basta con soltar el archivo en `public/images/…` para que aparezca sola.
  */
 export function MediaPlaceholder({
   label,
@@ -21,17 +18,30 @@ export function MediaPlaceholder({
   className?: string;
   style?: CSSProperties;
 }) {
+  const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [file]);
+
+  const showImg = Boolean(file) && !failed;
+
   return (
     <div
-      className={`media-ph ${className}`}
+      className={`media-ph ${showImg ? 'media-ph--filled' : ''} ${className}`}
       role="img"
-      aria-label={`Imagen pendiente: ${label}`}
+      aria-label={showImg ? label : `Imagen pendiente: ${label}`}
       style={{ aspectRatio: ratio, ...style }}
     >
       <span className="media-ph__label">
         {label}
         <span className="media-ph__file">{file}</span>
       </span>
+      {showImg && (
+        <img
+          src={file}
+          alt={label}
+          className="media-ph__img"
+          onError={() => setFailed(true)}
+        />
+      )}
     </div>
   );
 }

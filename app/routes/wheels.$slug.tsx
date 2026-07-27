@@ -15,6 +15,8 @@ import { formatSize, formatEt } from '~/lib/format';
 import { Button } from '~/components/Button';
 import { SpecList } from '~/components/SpecList';
 import { ProductMedia } from '~/components/ProductMedia';
+import { readFinishImages } from '~/lib/product-images.server';
+import { useT } from '~/i18n/useT';
 
 export function meta({ data }: Route.MetaArgs) {
   if (!data?.product) return [{ title: 'Producto no encontrado | SAMORAI' }];
@@ -24,16 +26,22 @@ export function meta({ data }: Route.MetaArgs) {
   ];
 }
 
-export function loader({ params }: Route.LoaderArgs) {
+export async function loader({ params }: Route.LoaderArgs) {
   const product = getProductBySlug(params.slug);
   if (!product) {
     throw new Response('Product not found', { status: 404 });
   }
-  return { product };
+  // Imágenes reales por acabado (lee la carpeta; si no, usa la lista por defecto).
+  const galleryImages: Record<string, string[]> = {};
+  for (const f of product.finishes) {
+    galleryImages[f.id] = await readFinishImages(product.slug, f.id, f.images);
+  }
+  return { product, galleryImages };
 }
 
 export default function WheelDetail({ loaderData }: Route.ComponentProps) {
-  const { product } = loaderData;
+  const { product, galleryImages } = loaderData;
+  const t = useT();
   const { add } = useCart();
   const [searchParams] = useSearchParams();
 
@@ -55,6 +63,11 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
 
   const previewFinish =
     product.finishes.find((f) => f.id === finishId) ?? product.finishes[0];
+
+  // Imágenes de la galería del acabado activo (las reales de la carpeta, o la
+  // lista por defecto si el loader no pudo leerla).
+  const galleryList =
+    galleryImages[previewFinish?.id ?? ''] ?? previewFinish?.images ?? [];
 
   // Al cambiar de acabado, volver a la imagen principal.
   useEffect(() => {
@@ -151,24 +164,22 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
     <div className="section">
       <div className="container">
         <div className="product-detail">
-          {/* Gallery — imágenes del acabado (principal + extras), clicables */}
+          {/* Gallery — swatches de color al lado, miniaturas debajo de la foto */}
           <div className="product-detail__gallery">
             <div className="gallery">
-              <div className="thumbs" role="list" aria-label="Imágenes de la llanta">
-                {previewFinish?.images.map((img, i) => (
+              {/* Selector visual de acabado (swatches) */}
+              <div className="thumbs" role="list" aria-label="Seleccionar acabado">
+                {product.finishes.map((f) => (
                   <button
-                    key={i}
+                    key={f.id}
                     role="listitem"
-                    className={i === activeImage ? 'active' : undefined}
-                    onClick={() => setActiveImage(i)}
-                    aria-label={`Ver imagen ${i + 1}`}
-                    aria-pressed={i === activeImage}
+                    className={f.id === previewFinish?.id ? 'active' : undefined}
+                    onClick={() => handleFinishSelect(f.id)}
+                    aria-label={`Ver ${f.name}`}
+                    aria-pressed={f.id === finishId}
+                    title={f.name}
                   >
-                    <ProductMedia
-                      color={previewFinish.color}
-                      src={img}
-                      alt={`${product.name} — ${previewFinish.name} (${i + 1})`}
-                    />
+                    <ProductMedia color={f.color} src={f.images[0]} alt={f.name} />
                   </button>
                 ))}
               </div>
@@ -180,7 +191,7 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
               >
                 <ProductMedia
                   color={previewFinish?.color ?? 'Anthracite Grey'}
-                  src={previewFinish?.images[activeImage]}
+                  src={galleryList[activeImage]}
                   alt={`${product.name} — ${previewFinish?.name}`}
                 />
                 {product.featured && (
@@ -190,8 +201,29 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
                 )}
               </div>
             </div>
-            {/* Guía: ruta del archivo de la imagen mostrada (para saber qué subir) */}
-            <p className="caption gallery-path">{previewFinish?.images[activeImage]}</p>
+
+            {/* Miniaturas de imágenes (debajo de la foto grande) */}
+            {galleryList.length > 1 && (
+              <div className="gallery-strip" role="list" aria-label="Imágenes de la llanta">
+                {galleryList.map((img, i) => (
+                  <button
+                    key={i}
+                    role="listitem"
+                    className={i === activeImage ? 'active' : undefined}
+                    onMouseEnter={() => setActiveImage(i)}
+                    onClick={() => setActiveImage(i)}
+                    aria-label={`Ver imagen ${i + 1}`}
+                    aria-pressed={i === activeImage}
+                  >
+                    <ProductMedia
+                      color={previewFinish?.color ?? 'Anthracite Grey'}
+                      src={img}
+                      alt={`${product.name} — ${previewFinish?.name} (${i + 1})`}
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Info + configuración inline */}
@@ -279,20 +311,17 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
               <SpecList specs={specs} />
             </div>
 
-            {/* Precio dinámico (según medida/ET/cantidad), antes de añadir */}
+            {/* Precio dinámico. El precio depende SOLO del ancho, así que se
+                muestra el total en cuanto se elige la medida (aunque falte el
+                ET); si falta el ET, se añade el aviso "elige ET". */}
             {finishId && (
               <div className="product-detail__summary" aria-live="polite">
-                {variant && unitCents != null ? (
+                {width != null && unitCents != null ? (
                   <>
                     <span className="product-detail__summary-total">{formatPrice(unitCents * quantity)}</span>
                     <span className="product-detail__summary-detail">
-                      {quantity} × {formatPrice(unitCents)} · IVA incluido
+                      {quantity} × {formatPrice(unitCents)} · IVA incluido{variant ? '' : ' — elige ET'}
                     </span>
-                  </>
-                ) : width != null && unitCents != null ? (
-                  <>
-                    <span className="product-detail__summary-total">{formatPrice(unitCents)}</span>
-                    <span className="product-detail__summary-detail">por llanta · IVA incluido — elige ET</span>
                   </>
                 ) : (
                   <span className="product-detail__summary-detail">Selecciona una medida para ver el precio</span>
@@ -348,7 +377,7 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
             {/* Description */}
             <div style={{ marginTop: 'var(--space-10)', paddingTop: 'var(--space-8)', borderTop: '1px solid var(--color-border)' }}>
               <p className="label" style={{ marginBottom: 'var(--space-4)' }}>Sobre esta llanta</p>
-              <p style={{ maxWidth: 'none' }}>{product.description}</p>
+              <p style={{ maxWidth: 'none' }}>{t.product.description}</p>
             </div>
           </div>
         </div>

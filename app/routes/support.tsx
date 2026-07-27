@@ -1,14 +1,45 @@
 import type { Route } from './+types/support';
 import { useEffect } from 'react';
+import { Form, useActionData, useNavigation } from 'react-router';
 import { trackEvent } from '~/lib/analytics/trackEvent';
 import { SectionHeader } from '~/components/SectionHeader';
 import { Button } from '~/components/Button';
+import { sendContactEmail } from '~/lib/email/email.server';
 
 export function meta({}: Route.MetaArgs) {
   return [
     { title: 'Contacto | SAMORAI' },
     { name: 'description', content: 'Contacta con SAMORAI — asistencia de fitment, consultas de pedido, preguntas técnicas y formulario de contacto.' },
   ];
+}
+
+export async function action({ request }: Route.ActionArgs) {
+  const form = await request.formData();
+
+  // Honeypot: si el campo oculto viene relleno es un bot → fingir éxito.
+  if (String(form.get('company') || '').trim() !== '') return { ok: true as const };
+
+  const name = String(form.get('name') || '').trim();
+  const email = String(form.get('email') || '').trim();
+  const subject = String(form.get('subject') || '').trim();
+  const message = String(form.get('message') || '').trim();
+
+  if (!name || !email || !message) {
+    return { ok: false as const, error: 'Rellena tu nombre, email y mensaje.' };
+  }
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    return { ok: false as const, error: 'Introduce un email válido.' };
+  }
+
+  const res = await sendContactEmail({ name, email, subject, message });
+  if (!res.ok) {
+    return {
+      ok: false as const,
+      error:
+        'No se pudo enviar el mensaje. Inténtalo más tarde o escríbenos a isainzmorales@samoraiwheels.com.',
+    };
+  }
+  return { ok: true as const };
 }
 
 const FAQ_ITEMS = [
@@ -47,6 +78,10 @@ const FAQ_ITEMS = [
 ];
 
 export default function Support() {
+  const actionData = useActionData<typeof action>();
+  const nav = useNavigation();
+  const submitting = nav.state === 'submitting';
+
   useEffect(() => {
     trackEvent('support_page_viewed', {});
   }, []);
@@ -63,69 +98,76 @@ export default function Support() {
           />
 
           <div className="contact-card contact-card--top">
-            <form
-              onSubmit={(e) => e.preventDefault()}
-              aria-label="Formulario de contacto"
-              noValidate
-              style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}
-            >
-              <div className="field-group" style={{ maxWidth: 'none' }}>
-                <label htmlFor="cf-name">Nombre</label>
-                <input
-                  id="cf-name"
-                  type="text"
-                  className="s-input"
-                  placeholder="Tu nombre"
-                  autoComplete="name"
-                />
-              </div>
-
-              <div className="field-group" style={{ maxWidth: 'none' }}>
-                <label htmlFor="cf-email">Email</label>
-                <input
-                  id="cf-email"
-                  type="email"
-                  className="s-input"
-                  placeholder="tu@email.com"
-                  autoComplete="email"
-                />
-              </div>
-
-              <div className="field-group" style={{ maxWidth: 'none' }}>
-                <label htmlFor="cf-subject">Asunto</label>
-                <div className="s-select" style={{ maxWidth: 'none' }}>
-                  <select id="cf-subject">
-                    <option value="">Selecciona un tema</option>
-                    <option value="fitment">Fitment / Compatibilidad</option>
-                    <option value="order">Pedido / Precio</option>
-                    <option value="dealer">Consulta de distribuidor</option>
-                    <option value="hub-rings">Anillos de centrado</option>
-                    <option value="technical">Pregunta técnica</option>
-                    <option value="other">Otro</option>
-                  </select>
-                  <span className="chev" aria-hidden="true">▾</span>
-                </div>
-              </div>
-
-              <div className="field-group" style={{ maxWidth: 'none' }}>
-                <label htmlFor="cf-message">Mensaje</label>
-                <textarea
-                  id="cf-message"
-                  className="s-input"
-                  rows={4}
-                  placeholder="Describe tu consulta o solicitud..."
-                  style={{ resize: 'vertical' }}
-                />
-              </div>
-
-              <Button type="submit" variant="primary" disabled>
-                Enviar mensaje
-              </Button>
-
-              <p className="caption" style={{ textAlign: 'center', textTransform: 'uppercase', letterSpacing: '.08em' }}>
-                El envío del formulario aún no está activo
+            {actionData?.ok ? (
+              <p
+                role="status"
+                style={{
+                  borderLeft: '3px solid var(--color-success)',
+                  background: 'var(--gold-10)',
+                  color: 'var(--color-text-primary)',
+                  padding: 'var(--space-5) var(--space-6)',
+                  fontSize: 'var(--text-sm)',
+                  lineHeight: 'var(--leading-relaxed)',
+                }}
+              >
+                <strong>¡Mensaje enviado!</strong> Gracias por escribirnos. Te responderemos lo antes posible.
               </p>
-            </form>
+            ) : (
+              <Form
+                method="post"
+                aria-label="Formulario de contacto"
+                style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}
+              >
+                {actionData?.error && (
+                  <p className="cart-error" role="alert">{actionData.error}</p>
+                )}
+
+                {/* honeypot anti-spam (oculto para usuarios) */}
+                <input
+                  type="text"
+                  name="company"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                  style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }}
+                />
+
+                <div className="field-group" style={{ maxWidth: 'none' }}>
+                  <label htmlFor="cf-name">Nombre</label>
+                  <input id="cf-name" name="name" type="text" required className="s-input" placeholder="Tu nombre" autoComplete="name" />
+                </div>
+
+                <div className="field-group" style={{ maxWidth: 'none' }}>
+                  <label htmlFor="cf-email">Email</label>
+                  <input id="cf-email" name="email" type="email" required className="s-input" placeholder="tu@email.com" autoComplete="email" />
+                </div>
+
+                <div className="field-group" style={{ maxWidth: 'none' }}>
+                  <label htmlFor="cf-subject">Asunto</label>
+                  <div className="s-select" style={{ maxWidth: 'none' }}>
+                    <select id="cf-subject" name="subject" defaultValue="">
+                      <option value="">Selecciona un tema</option>
+                      <option value="Fitment / Compatibilidad">Fitment / Compatibilidad</option>
+                      <option value="Pedido / Precio">Pedido / Precio</option>
+                      <option value="Consulta de distribuidor">Consulta de distribuidor</option>
+                      <option value="Anillos de centrado">Anillos de centrado</option>
+                      <option value="Pregunta técnica">Pregunta técnica</option>
+                      <option value="Otro">Otro</option>
+                    </select>
+                    <span className="chev" aria-hidden="true">▾</span>
+                  </div>
+                </div>
+
+                <div className="field-group" style={{ maxWidth: 'none' }}>
+                  <label htmlFor="cf-message">Mensaje</label>
+                  <textarea id="cf-message" name="message" required className="s-input" rows={4} placeholder="Describe tu consulta o solicitud..." style={{ resize: 'vertical' }} />
+                </div>
+
+                <Button type="submit" variant="primary" disabled={submitting}>
+                  {submitting ? 'Enviando…' : 'Enviar mensaje'}
+                </Button>
+              </Form>
+            )}
           </div>
         </div>
       </section>

@@ -26,25 +26,22 @@ export function ProductMedia({
   color: WheelColor;
   className?: string;
 }) {
-  const [loaded, setLoaded] = useState(false);
-
-  // Al cambiar de imagen (p. ej. hover o click en miniatura), reintentar carga.
+  // La imagen se muestra por defecto (evita el problema del `onLoad` que no
+  // dispara con SSR/caché). Solo se oculta si FALLA la carga → se ve el swatch.
+  const [failed, setFailed] = useState(false);
   useEffect(() => {
-    setLoaded(false);
+    setFailed(false);
   }, [src]);
 
   return (
     <div className={`product-card__image-placeholder ${FINISH_SWATCH_CLASS[color]} product-media ${className}`}>
       <div className="product-card__wheel-icon" aria-hidden="true" />
-      {src && (
+      {src && !failed && (
         <img
           src={src}
           alt={alt}
           className="product-media__img"
-          loading="lazy"
-          style={{ opacity: loaded ? 1 : 0 }}
-          onLoad={() => setLoaded(true)}
-          onError={() => setLoaded(false)}
+          onError={() => setFailed(true)}
         />
       )}
     </div>

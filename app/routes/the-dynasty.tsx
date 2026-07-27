@@ -24,7 +24,7 @@ export default function TheDynasty() {
           se muestra automáticamente; hasta entonces se ve el patrón rayado. */}
       <div
         className="page-hero page-hero--ph"
-        style={{ '--hero-bg': "url('/images/dynasty-hero.jpg')" } as CSSProperties}
+        style={{ '--hero-bg': "url('/images/dynasty-hero.png')" } as CSSProperties}
       >
         <div className="container">
           <span className="eyebrow">{d.heroEyebrow}</span>
@@ -51,7 +51,7 @@ export default function TheDynasty() {
 
             <MediaPh
               label="Historia / fundador"
-              file="/images/dynasty-historia.jpg"
+              file="/images/dynasty-historia.png"
               ratio="10 / 9"
               style={{ position: 'sticky', top: 'calc(var(--header-height) + var(--space-8))' }}
             />
@@ -69,26 +69,26 @@ export default function TheDynasty() {
             <div className="dynasty-value">
               <h3 className="dynasty-value__title">{d.value1Title}</h3>
               <p className="dynasty-value__text">{d.value1Text}</p>
-              <MediaPh label="Valor 1" file="/images/dynasty-valor-1.jpg" ratio="5 / 4" />
+              <MediaPh label="Valor 1" file="/images/dynasty-valor-1.png" ratio="5 / 4" />
             </div>
 
             <div className="dynasty-value">
               <h3 className="dynasty-value__title">{d.value2Title}</h3>
               <p className="dynasty-value__text">{d.value2Text}</p>
-              <MediaPh label="Valor 2" file="/images/dynasty-valor-2.jpg" ratio="5 / 4" />
+              <MediaPh label="Valor 2" file="/images/dynasty-valor-2.png" ratio="5 / 4" />
             </div>
 
             <div className="dynasty-value">
               <h3 className="dynasty-value__title">{d.value3Title}</h3>
               <p className="dynasty-value__text">{d.value3Text}</p>
-              <MediaPh label="Valor 3" file="/images/dynasty-valor-3.jpg" ratio="5 / 4" />
+              <MediaPh label="Valor 3" file="/images/dynasty-valor-3.png" ratio="5 / 4" />
             </div>
           </div>
         </div>
       </section>
 
-      {/* 4 · Cita de cierre */}
-      <section className="section section--elevated" aria-label="Manifiesto">
+      {/* 4 · Cita de cierre (banda oscura fija) */}
+      <section className="section band-dark" aria-label="Manifiesto">
         <div className="container">
           <hr className="sep-line" style={{ marginBottom: 'var(--space-12)' }} />
           <blockquote className="dynasty-quote">

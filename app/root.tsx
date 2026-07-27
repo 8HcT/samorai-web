@@ -22,6 +22,9 @@ export function loader({ request }: Route.LoaderArgs) {
 }
 
 export const links: Route.LinksFunction = () => [
+  // Icono de la web: SVG (moderno) con fallback al .ico para navegadores viejos.
+  { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
+  { rel: 'alternate icon', href: '/favicon.ico' },
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
   {
     rel: 'preconnect',
@@ -40,7 +43,7 @@ export const links: Route.LinksFunction = () => [
 export function Layout({ children }: { children: React.ReactNode }) {
   const data = useRouteLoaderData('root') as { locale?: string } | undefined;
   return (
-    <html lang={data?.locale ?? 'en'}>
+    <html lang={data?.locale ?? 'en'} suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -48,7 +51,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "try{var t=localStorage.getItem('samorai_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}",
+              "try{var t=localStorage.getItem('samorai_theme')||'light';document.documentElement.setAttribute('data-theme',t);}catch(e){}",
           }}
         />
         <Meta />

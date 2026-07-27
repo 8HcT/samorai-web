@@ -139,3 +139,51 @@ export async function sendOrderEmails(order: OrderRecord): Promise<void> {
     }
   }
 }
+
+/** Escapa el input del usuario para incrustarlo con seguridad en el HTML. */
+function esc(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/**
+ * Envía el mensaje del formulario de contacto a la dirección de la tienda
+ * (`CONTACT_EMAIL`, por defecto isainzmorales@samoraiwheels.com), con
+ * `replyTo` = email del remitente para poder responderle directamente.
+ */
+export async function sendContactEmail(input: {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}): Promise<{ ok: boolean; error?: string }> {
+  const resend = getResend();
+  const from = env('EMAIL_FROM');
+  const to = env('CONTACT_EMAIL') || 'isainzmorales@samoraiwheels.com';
+  if (!resend || !from) return { ok: false, error: 'not-configured' };
+
+  try {
+    await resend.emails.send({
+      from,
+      to,
+      replyTo: input.email,
+      subject: `Contacto web${input.subject ? ` · ${esc(input.subject)}` : ''} — ${esc(input.name)}`,
+      html: shell(
+        'Nuevo mensaje de contacto',
+        `<p style="color:#444;font-size:14px;line-height:1.7;margin:0 0 14px;">
+           <strong>Nombre:</strong> ${esc(input.name)}<br>
+           <strong>Email:</strong> ${esc(input.email)}<br>
+           ${input.subject ? `<strong>Asunto:</strong> ${esc(input.subject)}<br>` : ''}
+         </p>
+         <p style="color:${INK};font-size:14px;line-height:1.7;white-space:pre-wrap;margin:0;">${esc(input.message)}</p>`
+      ),
+    });
+    return { ok: true };
+  } catch (err) {
+    console.error('[email] fallo enviando contacto', err);
+    return { ok: false, error: 'send-failed' };
+  }
+}

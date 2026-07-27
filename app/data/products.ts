@@ -64,7 +64,7 @@ export const products: Product[] = [
     status: 'active',
     priceLabel: 'Desde 275 €',
     shortDescription: 'Llanta de aleación de precisión para aplicaciones 5×120. Arquitectura de cinco radios con geometría de competición.',
-    description: 'La Victoria es la primera llanta comercial de SAMORAI — una declaración de lo que significa la ingeniería de precisión guiada por la pasión por el automóvil. Diseñada en torno a un PCD 5×120 con buje central de 72,6 mm, la Victoria ofrece tolerancias OEM exactas con una estética que eleva cualquier proyecto. Disponible en tres acabados: Antracita Grey, Black Metallic y Silver Metallic. Compatible con una amplia gama de vehículos 5×120 — usa anillos de centrado para bujes distintos de 72,6 mm.',
+    description: 'La Victoria es la primera llanta comercial de SAMORAI, nuestra declaración de lo que significa la ingeniería de precisión guiada por la pasión por el automóvil. Diseñada en torno a un PCD 5×120 con buje central de 72,6 mm, ofrece tolerancias OEM exactas y una estética que eleva cualquier proyecto. Está disponible en tres acabados: Antracita Grey, Black Metallic y Silver Metallic. Es compatible con una amplia gama de vehículos 5×120; para bujes distintos de 72,6 mm, usa anillos de centrado.',
     colors: ['Anthracite Grey', 'Black Metallic', 'Silver Metallic'],
     finishes: [
       { id: 'anthracite-grey', name: 'Antracita Grey', color: 'Anthracite Grey', images: finishImages('victoria', 'anthracite-grey') },
