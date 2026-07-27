@@ -121,7 +121,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
           <code>{stack}</code>
         </pre>
       )}
-      <a href="/" style={{ color: '#d8b45b', marginTop: '1rem' }}>
+      <a href="/" style={{ color: '#D7B55B', marginTop: '1rem' }}>
         ← Back to home
       </a>
     </div>

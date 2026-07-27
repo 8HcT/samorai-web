@@ -48,7 +48,7 @@ export default function Dealers() {
           {/* Mapa (componente 23) — Fase 1: dark theme sin pins */}
           <div className="map-demo" aria-label="Mapa de distribuidores" style={{ marginBottom: 'var(--sp-6)' }}>
             <svg className="map-svg" viewBox="0 0 1200 340" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-              <g stroke="rgba(216,180,91,.08)" strokeWidth="1" fill="none">
+              <g stroke="rgba(215,181,91,.08)" strokeWidth="1" fill="none">
                 {[60, 120, 180, 240, 300].map((y) => (
                   <line key={`h${y}`} x1="0" y1={y} x2="1200" y2={y} />
                 ))}
@@ -56,7 +56,7 @@ export default function Dealers() {
                   <line key={`v${x}`} x1={x} y1="0" x2={x} y2="340" />
                 ))}
               </g>
-              <g fill="rgba(216,180,91,.06)" stroke="rgba(216,180,91,.16)" strokeWidth="1">
+              <g fill="rgba(215,181,91,.06)" stroke="rgba(215,181,91,.16)" strokeWidth="1">
                 <path d="M540 90 q60 -20 120 10 q40 30 20 80 q-30 50 -110 40 q-70 -10 -60 -80 q5 -35 30 -50 Z" />
                 <path d="M700 150 q50 -10 70 30 q10 40 -40 55 q-55 5 -55 -45 q0 -30 25 -40 Z" />
               </g>

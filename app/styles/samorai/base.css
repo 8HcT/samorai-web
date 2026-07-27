@@ -87,7 +87,7 @@ p, h1, h2, h3, h4, h5, h6 { overflow-wrap: break-word; }
   position: absolute; inset: 0;
   background:
     repeating-conic-gradient(from 0deg at 50% 50%,
-      rgba(216,180,91,.05) 0deg 1.2deg, transparent 1.2deg 15deg);
+      rgba(215,181,91,.05) 0deg 1.2deg, transparent 1.2deg 15deg);
   -webkit-mask: radial-gradient(circle at 50% 50%, #000 18%, transparent 72%);
   mask: radial-gradient(circle at 50% 50%, #000 18%, transparent 72%);
 }

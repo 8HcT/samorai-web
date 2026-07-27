@@ -328,7 +328,7 @@
 /* lienzo de preview — variables locales conmutables por data-bg */
 .tp {
   --bg: #1D1D1D; --fg: #EDEDED; --muted: rgba(237,237,237,.7);
-  --card: #232323; --hair: rgba(216,180,91,.2); --accent: #D8B45B; --accent-2: #C28036;
+  --card: #232323; --hair: rgba(215,181,91,.2); --accent: #D7B55B; --accent-2: #C28036;
   background: var(--bg); color: var(--fg);
   border: 1px solid var(--hairline);
   padding: clamp(28px, 4vw, 56px);
@@ -337,7 +337,7 @@
 }
 .tp[data-bg="light"] {
   --bg: #EDEDED; --fg: #1D1D1D; --muted: rgba(29,29,29,.62);
-  --card: #FFFFFF; --hair: rgba(29,29,29,.14); --accent: #C28036; --accent-2: #75280A;
+  --card: #FFFFFF; --hair: rgba(29,29,29,.14); --accent: #D7B55B; --accent-2: #75280A;
 }
 @media (max-width: 820px) { .tp { grid-template-columns: 1fr; } }
 

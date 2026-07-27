@@ -7,7 +7,7 @@
 :root {
   /* ---------- 00 · COLOR (7 bases) ---------- */
   --s-black:      #1D1D1D;   /* fondo principal, texto sobre claro */
-  --s-gold:       #D8B45B;   /* CTAs primarios, acentos, hover */
+  --s-gold:       #D7B55B;   /* CTAs primarios, acentos, hover */
   --s-gold-dark:  #C28036;   /* hover botón primary, énfasis */
   --s-brown:      #3E1C00;   /* badge edición limitada, fondo profundo */
   --s-red:        #75280A;   /* error, acento secundario */
@@ -17,7 +17,7 @@
 
   /* ---- canales RGB para construir stops de opacidad ---- */
   --rgb-black:  29, 29, 29;
-  --rgb-gold:   216, 180, 91;
+  --rgb-gold:   215, 181, 91;
   --rgb-gold-d: 194, 128, 54;
   --rgb-brown:  62, 28, 0;
   --rgb-red:    117, 40, 10;

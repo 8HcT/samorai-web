@@ -24,12 +24,12 @@
   --light-10: rgba(29, 29, 29, .06);
 
   /* --- Acento: gold-dark para legibilidad sobre claro --- */
-  --s-gold: #C28036;
+  --s-gold: #D7B55B;
   --s-gold-dark: #75280A;
-  --gold-70: rgba(194, 128, 54, .90);
-  --gold-50: rgba(194, 128, 54, .62);
-  --gold-30: rgba(194, 128, 54, .38);
-  --gold-10: rgba(194, 128, 54, .12);
+  --gold-70: rgba(215, 181, 91, .90);
+  --gold-50: rgba(215, 181, 91, .62);
+  --gold-30: rgba(215, 181, 91, .38);
+  --gold-10: rgba(215, 181, 91, .12);
 
   /* líneas / superficies derivadas */
   --hairline:      rgba(29, 29, 29, .16);
@@ -63,7 +63,7 @@
 /* Hero de la home: fondo claro y rueda decorativa visible sobre claro. */
 :root[data-theme="light"] .hero__bg {
   background:
-    radial-gradient(ellipse 70% 80% at 75% 50%, rgba(194, 128, 54, 0.12) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 80% at 75% 50%, rgba(215, 181, 91, 0.12) 0%, transparent 65%),
     radial-gradient(ellipse 40% 60% at 100% 10%, rgba(0, 0, 0, 0.02) 0%, transparent 55%),
     linear-gradient(175deg, #f4f3f1 0%, #ededed 60%, #e3e1dd 100%);
 }
@@ -91,7 +91,7 @@
   color: #ededed;
 }
 :root[data-theme="light"] .page-hero .eyebrow {
-  color: rgba(216, 180, 91, 0.9); /* gold claro, como en tema oscuro */
+  color: rgba(215, 181, 91, 0.9); /* gold claro, como en tema oscuro */
 }
 
 /* Transición suave al conmutar tema. */

@@ -37,7 +37,7 @@ function describeLine(variantId: string): string {
   return `${product.name} · ${finishName} · ${formatSize(variant.diameter, variant.width)} ${formatEt(variant.et)}`;
 }
 
-const GOLD = '#d8b45b';
+const GOLD = '#D7B55B';
 const INK = '#1d1d1d';
 
 function rowsHtml(order: OrderRecord): string {
