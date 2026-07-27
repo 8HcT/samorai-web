@@ -93,7 +93,10 @@
   padding-block: 0;
 }
 .navbar .nv-logo { font-size: 1.05rem; letter-spacing: .24em; display: inline-flex; align-items: center; }
-.nv-logo__img { height: 28px; width: auto; display: block; }
+.nv-logo__img { height: 24px; width: auto; display: block; }
+@media (max-width: 640px) {
+  .nv-logo__img { height: 20px; }
+}
 .navbar .nv-links { gap: 34px; }
 .navbar .nv-links a { font-size: .8rem; }
 .navbar .nv-cta { gap: 20px; }
