@@ -2244,6 +2244,7 @@
   text-transform: uppercase;
   font-weight: 700;
   font-size: 1.1rem;
+  line-height: var(--leading-snug);
   letter-spacing: 0.02em;
   color: var(--color-text-primary);
   max-width: none;
