@@ -38,14 +38,14 @@ export const es: TranslationKeys = {
     heroCta: 'Conoce nuestro catálogo',
     s2Title: 'Diseñamos llantas de aluminio, al detalle',
     s2Body:
-      'En Samorai diseñamos y fabricamos cada llanta para quienes entienden el coche como extensión de su carácter. Geometría calculada al milímetro, fundición de precisión y acabados de autor en distintos colores y texturas. Construimos identidad, rueda a rueda.',
-    s2Tag: 'Diseño · Fabricación de precisión · Personalización',
+      'En Samorai diseñamos y fabricamos cada llanta para quienes entienden el coche como extensión de su carácter. Geometría calculada al milímetro, proceso de fabricación en FlowForming, mejora de propiedades mecánicas y 3 acabados distintos aportando una identidad única a cada diseño. Construimos identidad, rueda a rueda.',
+    s2Tag: 'Diseño · Fabricación de precisión · Mejora de las propiedades mecánicas',
     s3TitlePre: 'Descubre el Modelo ',
     s3TitleAccent: 'Victoria',
-    s3TitlePost: ', en su versión más elegante',
-    s3Subtitle: 'Fundición de aluminio de precisión, pieza a pieza.',
+    s3TitlePost: ', de su versión más elegante a la más radical',
+    s3Subtitle: 'Diseño y fabricación realizada con tecnologías de alta precisión.',
     s3Body:
-      'Cinco radios con geometría de nivel competición, calculados molde a molde antes de fundir la primera pieza. Fundición de aluminio de precisión, PCD 5×120, ajuste milimétrico a especificación OEM. El acabado en polvo negro metálico se aplica en varias capas, bajo condiciones controladas, resistente al polvo de freno y al paso del tiempo. Presencia técnica, carácter propio.',
+      'El modelo se caracteriza por 10 radios divididos que aportan altas prestaciones de rigidez, diseño y geometría a nivel competición. Proceso de fabricación flow forming, PCD 5×120, ajuste milimétrico a especificación OEM. El acabado en polvo negro metálico se aplica en varias capas, bajo condiciones controladas, resistente al polvo de freno y al paso del tiempo. Presencia técnica, carácter propio.',
     s3Cta: 'Ver Victoria en detalle →',
     quotePre: '“El ',
     quoteAccent: 'equilibrio',
@@ -67,18 +67,18 @@ export const es: TranslationKeys = {
     story2: 'En 2026, la idea encontró su forma.',
     visionTitle: 'Una visión motivada por el pasado',
     story3:
-      'Antes de la cadena de montaje, cada coche nacía distinto. Carroceros y artesanos construían pieza a pieza, a medida del cliente, y el resultado era, en la práctica, una obra única. La estandarización llegó después, con la promesa de eficiencia, y con ella, la repetición. Miramos a ese pasado por una razón concreta: ahí sigue la respuesta. La industria ya sabía construir coches con carácter mucho antes de aprender a hacerlos todos iguales.',
+      'Antes de la cadena de montaje, cada coche nacía distinto. Carroceros y artesanos construían pieza a pieza, a medida del cliente y el resultado era, en la práctica, una obra única. La estandarización llegó después, con la promesa de eficiencia, y con ella, la repetición. Miramos a ese pasado por una razón concreta: ahí sigue la respuesta. La industria ya sabía construir coches con carácter mucho antes de aprender a hacerlos todos iguales.',
     story4: 'Nuestra visión mira al futuro. Nuestros valores, al origen.',
     valuesTitle: 'Nuestros valores',
     valuesIntro:
       'Fusionamos ingeniería de precisión con la filosofía del bushi, el código de honor samurái que convierte cada decisión en un acto de carácter.',
-    value1Title: 'Lealtad',
+    value1Title: 'Honor al detalle',
     value1Text:
       'Cada llanta se diseña con la exigencia con la que un samurái forja su espada: precisión absoluta, paso a paso. La rectitud se nota en el resultado.',
-    value2Title: 'Convicción',
+    value2Title: 'Valentía como motor',
     value2Text:
       'Ser diferente exige valor. Vestimos el coche con la misma honestidad con la que vivimos: de frente, con convicción.',
-    value3Title: 'Honestidad',
+    value3Title: 'Lealtad que se construye',
     value3Text:
       'Una Dynasty se construye entre iguales. Respeto y compromiso definen cada relación: con cada distribuidor, cada cliente, cada kilómetro compartido.',
     quoteMain:
