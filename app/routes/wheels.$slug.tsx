@@ -15,6 +15,7 @@ import { formatSize, formatEt } from '~/lib/format';
 import { Button } from '~/components/Button';
 import { SpecList } from '~/components/SpecList';
 import { ProductMedia } from '~/components/ProductMedia';
+import { FinishDot } from '~/components/FinishDot';
 import { readFinishImages } from '~/lib/product-images.server';
 import { useT } from '~/i18n/useT';
 
@@ -60,6 +61,8 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
   const [added, setAdded] = useState(false);
   // Imagen activa de la galería (índice dentro de las imágenes del acabado).
   const [activeImage, setActiveImage] = useState(0);
+  // Lightbox de zoom sobre la imagen grande.
+  const [zoomOpen, setZoomOpen] = useState(false);
 
   const previewFinish =
     product.finishes.find((f) => f.id === finishId) ?? product.finishes[0];
@@ -73,6 +76,24 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
   useEffect(() => {
     setActiveImage(0);
   }, [finishId]);
+
+  // Lightbox: cerrar con Esc, navegar con flechas y bloquear el scroll de fondo.
+  useEffect(() => {
+    if (!zoomOpen) return;
+    const total = galleryList.length;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setZoomOpen(false);
+      if (total > 1 && e.key === 'ArrowRight') setActiveImage((i) => (i + 1) % total);
+      if (total > 1 && e.key === 'ArrowLeft') setActiveImage((i) => (i - 1 + total) % total);
+    }
+    document.addEventListener('keydown', onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [zoomOpen, galleryList.length]);
 
   useEffect(() => {
     trackEvent('product_viewed', {
@@ -156,6 +177,7 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
     { label: 'Anclaje (PCD)', value: product.specs.pcd },
     { label: 'Buje central', value: `${String(product.specs.cbBase).replace('.', ',')} mm` },
     { label: 'Material', value: product.specs.material },
+    { label: 'Fabricación', value: product.specs.process },
     { label: 'Acabado', value: product.specs.finish },
     { label: 'Tapabuje', value: product.specs.capLogo },
   ];
@@ -167,8 +189,8 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
           {/* Gallery — swatches de color al lado, miniaturas debajo de la foto */}
           <div className="product-detail__gallery">
             <div className="gallery">
-              {/* Selector visual de acabado (swatches) */}
-              <div className="thumbs" role="list" aria-label="Seleccionar acabado">
+              {/* Selector visual de acabado (discos de color) */}
+              <div className="thumbs thumbs--finish" role="list" aria-label="Seleccionar acabado">
                 {product.finishes.map((f) => (
                   <button
                     key={f.id}
@@ -179,27 +201,31 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
                     aria-pressed={f.id === finishId}
                     title={f.name}
                   >
-                    <ProductMedia color={f.color} src={f.images[0]} alt={f.name} />
+                    <FinishDot color={f.color} size="lg" />
                   </button>
                 ))}
               </div>
-              <div
-                className="main"
-                role="img"
-                aria-label={`${product.name} en ${previewFinish?.name}`}
-                style={{ position: 'relative' }}
+              <button
+                type="button"
+                className="main main--zoomable"
+                onClick={() => setZoomOpen(true)}
+                aria-label={`Ampliar imagen de ${product.name} en ${previewFinish?.name}`}
               >
                 <ProductMedia
                   color={previewFinish?.color ?? 'Anthracite Grey'}
                   src={galleryList[activeImage]}
                   alt={`${product.name} — ${previewFinish?.name}`}
                 />
+                <span className="main__zoom-hint" aria-hidden="true">
+                  <span className="main__zoom-icon" />
+                  Ampliar
+                </span>
                 {product.featured && (
-                  <div className="badges" style={{ position: 'absolute', top: '14px', left: '14px', zIndex: 2 }}>
+                  <span className="badges" style={{ position: 'absolute', top: '14px', left: '14px', zIndex: 2 }}>
                     <span className="badge badge-new">New</span>
-                  </div>
+                  </span>
                 )}
-              </div>
+              </button>
             </div>
 
             {/* Miniaturas de imágenes (debajo de la foto grande) */}
@@ -256,11 +282,12 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
                 {product.finishes.map((f) => (
                   <button
                     key={f.id}
-                    className={`pill${f.id === finishId ? ' active' : ''}`}
+                    className={`pill pill--finish${f.id === finishId ? ' active' : ''}`}
                     onClick={() => handleFinishSelect(f.id)}
                     aria-pressed={f.id === finishId}
                     aria-label={f.name}
                   >
+                    <FinishDot color={f.color} />
                     {f.name}
                   </button>
                 ))}
@@ -388,6 +415,67 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
         </div>
         */}
       </div>
+
+      {/* Lightbox de zoom: imagen a tamaño completo sobre fondo oscurecido. */}
+      {zoomOpen && (
+        <div
+          className="lightbox"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${product.name} — ${previewFinish?.name}`}
+          onClick={() => setZoomOpen(false)}
+        >
+          <button
+            type="button"
+            className="lightbox__close"
+            onClick={() => setZoomOpen(false)}
+            aria-label="Cerrar"
+            autoFocus
+          >
+            ×
+          </button>
+
+          {galleryList.length > 1 && (
+            <button
+              type="button"
+              className="lightbox__nav lightbox__nav--prev"
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveImage((i) => (i - 1 + galleryList.length) % galleryList.length);
+              }}
+              aria-label="Imagen anterior"
+            >
+              ‹
+            </button>
+          )}
+
+          <img
+            className="lightbox__img"
+            src={galleryList[activeImage]}
+            alt={`${product.name} — ${previewFinish?.name}`}
+            onClick={(e) => e.stopPropagation()}
+          />
+
+          {galleryList.length > 1 && (
+            <>
+              <button
+                type="button"
+                className="lightbox__nav lightbox__nav--next"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveImage((i) => (i + 1) % galleryList.length);
+                }}
+                aria-label="Imagen siguiente"
+              >
+                ›
+              </button>
+              <p className="lightbox__counter">
+                {activeImage + 1} / {galleryList.length}
+              </p>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }

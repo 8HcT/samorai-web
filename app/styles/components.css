@@ -2028,6 +2028,180 @@
 .gallery-strip button:hover { border-color: var(--gold-50); }
 .gallery-strip button.active { border-color: var(--s-gold); }
 
+/* ─── Selector de acabado: disco de color ──────────────────────────── */
+.finish-dot {
+  display: inline-block;
+  flex-shrink: 0;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+.finish-dot--sm { width: 15px; height: 15px; }
+.finish-dot--lg { width: 100%; height: 100%; }
+
+/* Pill de acabado: disco + nombre */
+.pill--finish {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+/* Sobre el fondo dorado del estado activo, el disco necesita un aro oscuro */
+.pill--finish.active .finish-dot {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2), 0 0 0 1.5px var(--s-black);
+}
+
+/* Columna de acabados junto a la foto grande: mismos discos, en redondo.
+   La columna se estrecha (los discos ocupan menos que las miniaturas) para
+   que la foto grande gane ancho. */
+.product-detail__gallery .gallery { grid-template-columns: 64px 1fr; }
+.gallery .thumbs--finish { align-items: center; gap: 16px; }
+.gallery .thumbs--finish button {
+  display: flex;
+  border: none;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  aspect-ratio: 1;
+  padding: 4px;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1.5px var(--hairline);
+  transition: box-shadow 0.2s var(--ease), transform 0.2s var(--ease);
+}
+.gallery .thumbs--finish button:hover {
+  box-shadow: inset 0 0 0 1.5px var(--gold-50);
+  transform: scale(1.06);
+}
+.gallery .thumbs--finish button.active { box-shadow: inset 0 0 0 2px var(--s-gold); }
+
+/* ─── Imagen principal ampliable + lightbox ────────────────────────── */
+.main--zoomable {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  background: none;
+  cursor: zoom-in;
+  color: inherit;
+  font: inherit;
+  transition: border-color 0.2s var(--ease);
+}
+.main--zoomable:hover { border-color: var(--gold-50); }
+.main--zoomable .product-media__img { transition: transform 0.5s var(--ease), opacity 0.35s var(--ease); }
+.main--zoomable:hover .product-media__img { transform: scale(1.04); }
+
+/* Pista de "Ampliar": aparece al hacer hover sobre la imagen grande */
+.main__zoom-hint {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--gold-30, rgba(215, 181, 91, 0.3));
+  color: #fff;
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.25s var(--ease), transform 0.25s var(--ease);
+  pointer-events: none;
+}
+.main--zoomable:hover .main__zoom-hint,
+.main--zoomable:focus-visible .main__zoom-hint { opacity: 1; transform: translateY(0); }
+
+.main__zoom-icon {
+  width: 13px;
+  height: 13px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  position: relative;
+  flex-shrink: 0;
+}
+.main__zoom-icon::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 100%;
+  width: 6px;
+  height: 1.5px;
+  background: currentColor;
+  transform: rotate(45deg) translate(-1px, -1px);
+  transform-origin: left center;
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(16px, 5vw, 64px);
+  background: rgba(0, 0, 0, 0.9);
+  cursor: zoom-out;
+  animation: lightbox-in 0.2s var(--ease);
+}
+@keyframes lightbox-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.lightbox__img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  cursor: default;
+}
+.lightbox__close,
+.lightbox__nav {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #fff;
+  cursor: pointer;
+  line-height: 1;
+  transition: background 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+.lightbox__close:hover,
+.lightbox__nav:hover { background: rgba(255, 255, 255, 0.14); border-color: var(--s-gold); }
+.lightbox__close {
+  top: clamp(12px, 3vw, 28px);
+  right: clamp(12px, 3vw, 28px);
+  width: 44px;
+  height: 44px;
+  font-size: 28px;
+}
+.lightbox__nav {
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 64px;
+  font-size: 32px;
+}
+.lightbox__nav--prev { left: clamp(8px, 2vw, 24px); }
+.lightbox__nav--next { right: clamp(8px, 2vw, 24px); }
+.lightbox__counter {
+  position: absolute;
+  bottom: clamp(12px, 3vw, 28px);
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .main--zoomable:hover .product-media__img { transform: none; }
+  .lightbox { animation: none; }
+}
+
 /* ─── Carrusel de imágenes (Home) ──────────────────────────────────── */
 .carousel-head {
   display: flex;

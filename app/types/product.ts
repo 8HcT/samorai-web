@@ -61,6 +61,8 @@ export interface WheelSpecs {
   maxLoad: number;
   capLogo: string;
   material: string;
+  /** Proceso de fabricación (p. ej. FlowForming). */
+  process: string;
   finish: string;
 }
 

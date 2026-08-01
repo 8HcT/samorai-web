@@ -91,7 +91,7 @@ export const en = {
   },
   product: {
     description:
-      "The Victoria is SAMORAI's first commercial wheel, our statement of what precision engineering looks like when it's driven by a passion for cars. Built around a 5×120 PCD with a 72.6 mm center bore, it delivers exact OEM tolerances and a look that elevates any build. It comes in three finishes: Anthracite Grey, Black Metallic and Silver Metallic. It fits a wide range of 5×120 vehicles; for center bores other than 72.6 mm, use hub rings.",
+      "The Victoria is SAMORAI's first commercial wheel, our statement of what precision engineering looks like when it's driven by a passion for cars. Built around a 5×120 PCD with a 72.6 mm center bore, it delivers exact OEM tolerances and a look that elevates any build. It comes in three finishes: Anthracite Grey, Black Metallic and Silver Metallic. It fits a wide range of 5×120 vehicles with a 72.6 mm center bore. Always check fitment for your vehicle before buying.",
   },
 };
 
