@@ -226,9 +226,9 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
                   </span>
                 )}
               </button>
-            </div>
 
-            {/* Miniaturas de imágenes (debajo de la foto grande) */}
+            {/* Miniaturas de imágenes: dentro de la retícula, alineadas a la
+                columna de la foto grande (misma anchura y mismo módulo). */}
             {galleryList.length > 1 && (
               <div className="gallery-strip" role="list" aria-label="Imágenes de la llanta">
                 {galleryList.map((img, i) => (
@@ -250,6 +250,7 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
                 ))}
               </div>
             )}
+            </div>
           </div>
 
           {/* Info + configuración inline */}

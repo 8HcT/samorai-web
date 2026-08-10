@@ -2049,17 +2049,28 @@
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2), 0 0 0 1.5px var(--s-black);
 }
 
-/* Columna de acabados junto a la foto grande: mismos discos, en redondo.
-   La columna se estrecha (los discos ocupan menos que las miniaturas) para
-   que la foto grande gane ancho. */
-.product-detail__gallery .gallery { grid-template-columns: 64px 1fr; }
-.gallery .thumbs--finish { align-items: center; gap: 16px; }
+/* Retícula modular de la galería.
+   Todo el bloque se divide en 6 módulos cuadrados iguales separados por el
+   mismo gap: 1 módulo para la columna de acabados y 5 para la foto grande.
+   La foto es cuadrada → mide exactamente 5 × 5 módulos, y la tira de
+   miniaturas de debajo son 5 módulos de 1 × 1. Así la proporción entre la
+   imagen y los cuadrados de la galería es siempre un múltiplo exacto. */
+.product-detail__gallery .gallery {
+  --gallery-gap: 12px;
+  --gallery-module: calc((100% - 5 * var(--gallery-gap)) / 6);
+  grid-template-columns: var(--gallery-module) 1fr;
+  gap: var(--gallery-gap);
+  align-items: start;
+}
+
+/* Columna de acabados: un módulo de ancho, discos que lo llenan */
+.gallery .thumbs--finish { gap: var(--gallery-gap); }
 .gallery .thumbs--finish button {
   display: flex;
   border: none;
   border-radius: 50%;
-  width: 60px;
-  height: 60px;
+  width: 100%;
+  height: auto;
   aspect-ratio: 1;
   padding: 4px;
   cursor: pointer;
@@ -2071,6 +2082,25 @@
   transform: scale(1.06);
 }
 .gallery .thumbs--finish button.active { box-shadow: inset 0 0 0 2px var(--s-gold); }
+
+/* Tira de miniaturas: 5 módulos alineados con la foto grande */
+.gallery .gallery-strip {
+  grid-column: 2;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--gallery-gap);
+  margin-top: 0;
+  max-width: none;
+}
+.gallery .gallery-strip button { width: 100%; }
+
+/* En pantallas estrechas, 4 módulos de imagen (5 en total) */
+@media (max-width: 560px) {
+  .product-detail__gallery .gallery {
+    --gallery-module: calc((100% - 4 * var(--gallery-gap)) / 5);
+  }
+  .gallery .gallery-strip { grid-template-columns: repeat(4, 1fr); }
+}
 
 /* ─── Imagen principal ampliable + lightbox ────────────────────────── */
 .main--zoomable {

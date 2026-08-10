@@ -33,4 +33,6 @@ export default [
   /* — Endpoints de API (resource routes, sin layout) — */
   route('api/checkout', 'routes/api.checkout.tsx'),
   route('api/stripe-webhook', 'routes/api.stripe-webhook.tsx'),
+  // Vista previa de los correos de compra (404 en producción).
+  route('api/email-preview', 'routes/api.email-preview.tsx'),
 ] satisfies RouteConfig;

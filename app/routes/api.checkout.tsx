@@ -114,6 +114,24 @@ export async function action({ request }: Route.ActionArgs) {
       shipping_address_collection: { allowed_countries: [...SHIPPING_COUNTRIES] },
       phone_number_collection: { enabled: true },
       automatic_tax: { enabled: false }, // activar tras configurar Stripe Tax
+      // Envío gratuito: se declara explícitamente para que el cliente vea en
+      // el checkout que el precio con IVA es el total, sin cargos añadidos.
+      shipping_options: [
+        {
+          shipping_rate_data: {
+            type: 'fixed_amount',
+            fixed_amount: { amount: 0, currency: CURRENCY },
+            display_name: 'Envío gratuito',
+          },
+        },
+      ],
+      // El resumen también en el pago, para verlo desde el dashboard de Stripe.
+      payment_intent_data: {
+        description: summaryParts.join('; ').slice(0, 300),
+        metadata: {
+          cart: lines.map((l) => `${l.variantId}:${l.quantity}`).join(',').slice(0, 490),
+        },
+      },
       metadata: {
         // `cart` es la fuente autoritativa (el webhook resuelve todo desde el
         // variantId); `summary` es legible e incluye modelo/acabado/medida/ET.
