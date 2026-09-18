@@ -45,17 +45,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 3 · Descubre el Modelo Victoria (imagen grande que sangra + texto) */}
+      {/* 3 · Descubre el Modelo Victoria (imagen sangra izquierda y desborda sección) */}
       <section className="section home-feature" aria-label="Victoria">
+        <MediaPlaceholder className="home-victoria-img" label="Victoria" file="/images/home-victoria.png" />
         <div className="container">
-          <div className="grid-2 home-split" style={{ alignItems: 'center' }}>
-            <MediaPlaceholder className="home-victoria-img" label="Victoria" file="/images/home-victoria.png" ratio="4 / 3" />
-            <div>
-              <h2>{h.s3TitlePre}<em>{h.s3TitleAccent}</em>{h.s3TitlePost}</h2>
-              <p className="home-lead" style={{ marginTop: 'var(--space-4)' }}>{h.s3Subtitle}</p>
-              <p style={{ marginTop: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>{h.s3Body}</p>
-              <Button href="/the-wheels/victoria" variant="secondary">{h.s3Cta}</Button>
-            </div>
+          <div className="home-victoria-text">
+            <h2>{h.s3TitlePre}<em>{h.s3TitleAccent}</em>{h.s3TitlePost}</h2>
+            <p className="home-lead" style={{ marginTop: 'var(--space-4)' }}>{h.s3Subtitle}</p>
+            <p style={{ marginTop: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>{h.s3Body}</p>
+            <Button href="/the-wheels/victoria" variant="secondary">{h.s3Cta}</Button>
           </div>
         </div>
       </section>
@@ -69,13 +67,18 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 5 · ¿Hablamos? — CTA de contacto (solo texto; imagen pendiente) */}
+      {/* 5 · ¿Hablamos? — CTA de contacto */}
       <section className="section home-light" aria-label={h.cTitle}>
         <div className="container">
-          <p className="home-tag home-tag--lg">{h.cTag}</p>
-          <h2 style={{ marginTop: 'var(--space-3)' }}>{h.cTitle}</h2>
-          <p style={{ marginTop: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>{h.cBody}</p>
-          <Button href="/contacto" variant="primary">{h.cCta}</Button>
+          <div className="grid-2 home-split" style={{ alignItems: 'center' }}>
+            <div>
+              <p className="home-tag home-tag--lg">{h.cTag}</p>
+              <h2 style={{ marginTop: 'var(--space-3)' }}>{h.cTitle}</h2>
+              <p style={{ marginTop: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>{h.cBody}</p>
+              <Button href="/contacto" variant="primary">{h.cCta}</Button>
+            </div>
+            <MediaPlaceholder label="Contacto" file="/images/home-contacto.png" ratio="7 / 5" />
+          </div>
         </div>
       </section>
     </>

@@ -2387,21 +2387,58 @@
 .home-feature {
   border-top: 1px solid var(--gold-30);
   border-bottom: 1px solid var(--gold-30);
-  overflow: hidden;               /* evita scroll horizontal por el sangrado */
+  position: relative;       /* bloque contenedor de la imagen absoluta */
+  padding-bottom: calc(var(--section-padding-y) + var(--space-16));
 }
+
+/* Imagen fuera del flujo del grid: sangra al borde izquierdo del viewport
+   y desborda la sección por arriba cruzando la línea de separación. */
 .home-victoria-img {
-  /* distancia del borde del contenedor al borde del viewport */
   --bleed-left: calc(max((100vw - var(--container-max)) / 2, 0px) + var(--container-padding));
-  aspect-ratio: 4 / 3;
-  width: calc(100% + var(--bleed-left));
-  margin-left: calc(-1 * var(--bleed-left));
+
+  position: absolute;
+  left:   calc(-1 * var(--bleed-left));
+  top:    calc(-1 * var(--section-padding-y) + var(--space-10));
+  bottom: var(--space-10);
+  width:  calc(42% + var(--bleed-left) - var(--space-8));
+  z-index: 1;
+
+  /* anula estilos de placeholder que no aplican en absolute */
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
 }
 .home-victoria-img .media-ph__img {
   object-fit: contain;
-  object-position: left center;   /* la llanta se ancla al borde izquierdo */
+  object-position: left center;
 }
-@media (max-width: 640px) {
-  .home-victoria-img { width: 100%; margin-left: 0; }
+
+/* Columna de texto: compensa el espacio que ocuparía la imagen en el grid */
+.home-victoria-text {
+  position: relative;
+  z-index: 2;                               /* siempre encima de la imagen */
+  padding-left: calc(50% + var(--space-8));
+  min-height: clamp(360px, 45vw, 560px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+@media (max-width: 900px) {
+  .home-feature {
+    padding-bottom: var(--section-padding-y);
+  }
+  .home-victoria-img {
+    position: static;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    margin-bottom: var(--space-8);
+  }
+  .home-victoria-text {
+    padding-left: 0;
+    min-height: auto;
+  }
 }
 
 /* Banda de cita: fondo oscuro fijo en ambos temas */
@@ -2454,6 +2491,9 @@
   max-width: none;
 }
 
+@media (max-width: 768px) {
+  .home-split { gap: var(--space-10); }
+}
 @media (max-width: 640px) {
   .home-split { gap: var(--space-8); }
 }
