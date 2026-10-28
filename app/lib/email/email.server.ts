@@ -21,22 +21,22 @@ import { formatSize, formatEt } from '~/lib/format';
 
 let _resend: Resend | null = null;
 
-function getResend(): Resend | null {
+export function getResend(): Resend | null {
   const key = env('RESEND_API_KEY');
   if (!key) return null;
   if (!_resend) _resend = new Resend(key);
   return _resend;
 }
 
-const GOLD = '#D7B55B';
-const INK = '#1d1d1d';
+export const GOLD = '#D7B55B';
+export const INK = '#1d1d1d';
 
 /**
  * Lista de destinatarios a partir de una variable de entorno. Admite varias
  * direcciones separadas por comas, para que el aviso llegue a todo el equipo
  * que gestiona pedidos (p. ej. "pedidos@…, administracion@…").
  */
-function recipients(name: string): string[] {
+export function recipients(name: string): string[] {
   return (env(name) ?? '')
     .split(',')
     .map((s) => s.trim())
@@ -69,7 +69,7 @@ function totalUnits(order: OrderRecord): number {
   return order.lines.reduce((sum, l) => sum + l.quantity, 0);
 }
 
-function formatDate(iso: string): string {
+export function formatDate(iso: string): string {
   try {
     return new Intl.DateTimeFormat('es-ES', {
       dateStyle: 'long',
@@ -85,7 +85,7 @@ function formatDate(iso: string): string {
  * Nombre del país a partir del código ISO que devuelve Stripe ("ES" → "España").
  * Se usa `Intl.DisplayNames` para no mantener una lista a mano.
  */
-function countryName(code: string | null): string | null {
+export function countryName(code: string | null): string | null {
   if (!code) return null;
   try {
     return new Intl.DisplayNames(['es'], { type: 'region' }).of(code) ?? code;
@@ -95,7 +95,7 @@ function countryName(code: string | null): string | null {
 }
 
 /** Dirección en varias líneas, lista para copiar en una etiqueta de envío. */
-function addressHtml(address: OrderAddress | null): string {
+export function addressHtml(address: OrderAddress | null): string {
   if (!address) return '<span style="color:#999;">No facilitada</span>';
   const region = [address.postalCode, address.city].filter(Boolean).join(' ');
   // La provincia solo aporta si no repite la ciudad (Madrid, Madrid…).
@@ -179,7 +179,11 @@ function detailsHtml(order: OrderRecord, opts: { showBilling: boolean }): string
     </table>`;
 }
 
-function shell(title: string, bodyHtml: string): string {
+export function shell(
+  title: string,
+  bodyHtml: string,
+  footer = 'SAMORAI Wheels · Precio por llanta, IVA incluido.'
+): string {
   return `
   <div style="background:#f4f4f4;padding:32px 0;font-family:Arial,Helvetica,sans-serif;">
     <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;border:1px solid #e5e5e5;">
@@ -191,7 +195,7 @@ function shell(title: string, bodyHtml: string): string {
         ${bodyHtml}
       </div>
       <div style="padding:18px 28px;background:#fafafa;border-top:1px solid #eee;color:#999;font-size:12px;">
-        SAMORAI Wheels · Precio por llanta, IVA incluido.
+        ${esc(footer)}
       </div>
     </div>
   </div>`;
@@ -384,12 +388,14 @@ export async function sendOrderEmails(order: OrderRecord): Promise<void> {
   // 1 · Confirmación al cliente
   if (order.customerEmail) {
     try {
-      await resend.emails.send({
+      const { error } = await resend.emails.send({
         from,
         to: order.customerEmail,
         subject: `Tu pedido SAMORAI #${ref} · confirmado`,
         html: customerEmailHtml(order),
       });
+      // El SDK devuelve el error en lugar de lanzarlo.
+      if (error) console.error('[email] Resend rechazó la confirmación al cliente', error);
     } catch (err) {
       console.error('[email] fallo enviando confirmación al cliente', err);
     }
@@ -399,7 +405,7 @@ export async function sendOrderEmails(order: OrderRecord): Promise<void> {
   const shopTo = recipients('SHOP_ORDER_EMAIL');
   if (shopTo.length > 0) {
     try {
-      await resend.emails.send({
+      const { error } = await resend.emails.send({
         from,
         to: shopTo,
         // Responder al aviso escribe directamente al cliente.
@@ -410,6 +416,7 @@ export async function sendOrderEmails(order: OrderRecord): Promise<void> {
         // y al reenviarlo a una agencia de transporte.
         text: shopEmailText(order),
       });
+      if (error) console.error('[email] Resend rechazó el aviso a la tienda', error);
     } catch (err) {
       console.error('[email] fallo enviando aviso a la tienda', err);
     }
@@ -417,7 +424,7 @@ export async function sendOrderEmails(order: OrderRecord): Promise<void> {
 }
 
 /** Escapa el input del usuario para incrustarlo con seguridad en el HTML. */
-function esc(s: string): string {
+export function esc(s: string): string {
   return s
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -443,7 +450,7 @@ export async function sendContactEmail(input: {
   if (!resend || !from) return { ok: false, error: 'not-configured' };
 
   try {
-    await resend.emails.send({
+    const { error } = await resend.emails.send({
       from,
       to,
       replyTo: input.email,
@@ -458,6 +465,10 @@ export async function sendContactEmail(input: {
          <p style="color:${INK};font-size:14px;line-height:1.7;white-space:pre-wrap;margin:0;">${esc(input.message)}</p>`
       ),
     });
+    if (error) {
+      console.error('[email] Resend rechazó el mensaje de contacto', error);
+      return { ok: false, error: 'send-failed' };
+    }
     return { ok: true };
   } catch (err) {
     console.error('[email] fallo enviando contacto', err);

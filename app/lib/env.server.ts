@@ -66,6 +66,10 @@ const REQUIRED_IN_PRODUCTION = [
   'RESEND_API_KEY',
   'EMAIL_FROM',
   'SHOP_ORDER_EMAIL',
+  // Preventa, cuentas y tareas programadas
+  'SUPABASE_ANON_KEY',
+  'ACCESS_LINK_SECRET',
+  'CRON_SECRET',
 ] as const;
 
 /**
@@ -76,6 +80,7 @@ export function configProblems(): string[] {
   const problems: string[] = [];
 
   for (const name of REQUIRED_IN_PRODUCTION) {
+    if (name === 'SUPABASE_ANON_KEY' && env('SUPABASE_PUBLISHABLE_KEY')) continue;
     if (!env(name)) problems.push(`falta ${name}`);
   }
 
@@ -92,6 +97,15 @@ export function configProblems(): string[] {
   const site = env('SITE_URL');
   if (site && isProduction() && !site.startsWith('https://')) {
     problems.push('SITE_URL debe ser https:// en producción');
+  }
+
+  const linkSecret = env('ACCESS_LINK_SECRET');
+  if (linkSecret && linkSecret.length < 32) {
+    problems.push('ACCESS_LINK_SECRET es demasiado corto (mínimo 32 caracteres aleatorios)');
+  }
+
+  if (key && /^(sk|rk)_live_/.test(key) && env('PRESALE_LIVE_PAYMENTS_ENABLED') !== 'true') {
+    problems.push('Stripe en LIVE pero PRESALE_LIVE_PAYMENTS_ENABLED no es "true": la preventa y la venta directa no cobrarán');
   }
 
   if (env('STRIPE_FALLBACK_PRICE_CENTS') && isProduction()) {

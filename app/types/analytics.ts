@@ -19,6 +19,8 @@ export type AnalyticsEventName =
   | 'add_to_cart_clicked'
   | 'cart_viewed'
   | 'checkout_started'
+  | 'reserve_clicked'
+  | 'buy_now_clicked'
   | 'language_selected'
   | 'newsletter_signup_attempted';
 
@@ -43,6 +45,8 @@ export interface AnalyticsEventPayloads {
   add_to_cart_clicked:       { productId: string; variantId: string; quantity: number };
   cart_viewed:               { itemCount: number };
   checkout_started:          { itemCount: number };
+  reserve_clicked:           { productId: string; variantId: string; sets: number };
+  buy_now_clicked:           { productId: string; variantId: string; sets: number };
   language_selected:         { language: string };
   newsletter_signup_attempted: Record<string, never>;
 }

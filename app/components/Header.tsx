@@ -53,6 +53,12 @@ export function Header() {
 
       <div className="nv-cta nv-desktop">
         <NavLink
+          to="/cuenta"
+          className={({ isActive }) => `nv-cart nv-account${isActive ? ' active' : ''}`}
+        >
+          {t.nav.account}
+        </NavLink>
+        <NavLink
           to="/cart"
           className={({ isActive }) => `nv-cart${isActive ? ' active' : ''}`}
           aria-label={cartLabel}
@@ -92,6 +98,11 @@ export function Header() {
                   </NavLink>
                 </li>
               ))}
+              <li>
+                <NavLink to="/cuenta" onClick={() => setOpen(false)}>
+                  {t.nav.account}
+                </NavLink>
+              </li>
               <li>
                 <NavLink to="/cart" onClick={() => setOpen(false)} className="nv-mobile__cart">
                   {cartLabel}

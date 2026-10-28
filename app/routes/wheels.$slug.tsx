@@ -1,6 +1,6 @@
 import type { Route } from './+types/wheels.$slug';
 import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { data, useActionData, useNavigation, useSearchParams } from 'react-router';
 import {
   getProductBySlug,
   getWidthsForFinish,
@@ -18,6 +18,10 @@ import { ProductMedia } from '~/components/ProductMedia';
 import { FinishDot } from '~/components/FinishDot';
 import { readFinishImages } from '~/lib/product-images.server';
 import { useT } from '~/i18n/useT';
+import { getProductOffer } from '~/lib/presale/offers.server';
+import { getSessionUser } from '~/lib/auth/session.server';
+import { handleProductPurchase, type PurchaseActionData } from '~/lib/presale/product-actions.server';
+import { PresalePanel } from '~/components/presale/PresalePanel';
 
 export function meta({ data }: Route.MetaArgs) {
   if (!data?.product) return [{ title: 'Producto no encontrado | SAMORAI' }];
@@ -27,7 +31,7 @@ export function meta({ data }: Route.MetaArgs) {
   ];
 }
 
-export async function loader({ params }: Route.LoaderArgs) {
+export async function loader({ params, request }: Route.LoaderArgs) {
   const product = getProductBySlug(params.slug);
   if (!product) {
     throw new Response('Product not found', { status: 404 });
@@ -37,14 +41,28 @@ export async function loader({ params }: Route.LoaderArgs) {
   for (const f of product.finishes) {
     galleryImages[f.id] = await readFinishImages(product.slug, f.id, f.images);
   }
-  return { product, galleryImages };
+  // Tirada de fabricación y stock REAL (PostgreSQL, en cada petición). Sin
+  // tirada → la ficha funciona con el carrito como siempre.
+  const [offer, session] = await Promise.all([getProductOffer(product), getSessionUser(request)]);
+  return data(
+    { product, galleryImages, offer, userEmail: session.user?.email ?? null },
+    { headers: session.auth?.headers }
+  );
+}
+
+/** «Reservar mi juego» / «Comprar ahora» → Stripe Checkout. */
+export async function action({ request, params }: Route.ActionArgs) {
+  return handleProductPurchase(request, params.slug);
 }
 
 export default function WheelDetail({ loaderData }: Route.ComponentProps) {
-  const { product, galleryImages } = loaderData;
+  const { product, galleryImages, offer, userEmail } = loaderData;
   const t = useT();
   const { add } = useCart();
   const [searchParams] = useSearchParams();
+  const actionData = useActionData<PurchaseActionData>();
+  const navigation = useNavigation();
+  const purchasing = navigation.state !== 'idle' && navigation.formMethod?.toLowerCase() === 'post';
 
   // Acabado preseleccionado vía ?finish=<id> (desde la lista de /the-wheels).
   const finishFromUrl = searchParams.get('finish');
@@ -339,10 +357,25 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
               <SpecList specs={specs} />
             </div>
 
+            {/* Producto con tirada de fabricación: preventa / compra directa
+                por juegos con stock real (sustituye al carrito). */}
+            {offer.mode !== 'legacy' && (
+              <PresalePanel
+                offer={offer}
+                productId={product.id}
+                variant={variant}
+                width={width}
+                finishSelected={finishId != null}
+                defaultEmail={userEmail}
+                error={actionData?.error ?? null}
+                submitting={purchasing}
+              />
+            )}
+
             {/* Precio dinámico. El precio depende SOLO del ancho, así que se
                 muestra el total en cuanto se elige la medida (aunque falte el
                 ET); si falta el ET, se añade el aviso "elige ET". */}
-            {finishId && (
+            {offer.mode === 'legacy' && finishId && (
               <div className="product-detail__summary" aria-live="polite">
                 {width != null && unitCents != null ? (
                   <>
@@ -357,8 +390,8 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
               </div>
             )}
 
-            {/* Cantidad + añadir al carrito */}
-            {finishId ? (
+            {/* Cantidad + añadir al carrito (solo productos sin tirada) */}
+            {offer.mode !== 'legacy' ? null : finishId ? (
               <div className="product-detail__buy">
                 <div className="config-qty" aria-label="Cantidad">
                   <button className="config-qty__btn" onClick={() => setQuantity((q) => Math.max(1, q - 1))} aria-label="Disminuir cantidad">−</button>
@@ -378,11 +411,13 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
             ) : (
               <p className="caption">Selecciona un acabado para continuar.</p>
             )}
-            <p className="product-detail__note">
-              {finishId && !variant
-                ? 'Elige medida y ET para obtener una referencia válida.'
-                : 'El pago se procesa de forma segura con Stripe.'}
-            </p>
+            {offer.mode === 'legacy' && (
+              <p className="product-detail__note">
+                {finishId && !variant
+                  ? 'Elige medida y ET para obtener una referencia válida.'
+                  : 'El pago se procesa de forma segura con Stripe.'}
+              </p>
+            )}
 
             {/* Fitment note */}
             <div

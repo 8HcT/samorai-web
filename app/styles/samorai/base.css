@@ -13,6 +13,16 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Red de seguridad contra el scroll lateral en móvil: si algún elemento se
+   pasa de ancho, se recorta en vez de aparecer una barra horizontal.
+   Se usa `clip` y NO `hidden` a propósito: `hidden` convierte el body en
+   contenedor de scroll y rompería el `position: sticky` de la galería de
+   producto; `clip` no crea contexto de scroll y lo respeta. */
+html,
+body {
+  overflow-x: clip;
+}
+
 body {
   background: var(--s-black);
   color: var(--s-light);

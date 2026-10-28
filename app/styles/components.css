@@ -627,7 +627,10 @@
 /* â”€â”€â”€ Product Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  /* `min(300px, 100%)`: en pantallas más estrechas que 300px la columna se
+     adapta en vez de desbordar (un `minmax(300px, …)` a secas provoca scroll
+     lateral en móviles pequeños). */
+  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
   gap: var(--space-6);
 }
 
@@ -1320,6 +1323,11 @@
   /* Imagen de fondo por página: style={{ '--hero-bg': "url('/img/x.jpg')" }}.
      Sin imagen cae a un degradado editorial oscuro. */
   --hero-bg: linear-gradient(175deg, #1d1d1d 0%, #1d1d1d 55%, #0c0c0c 100%);
+  /* Encuadre de la imagen de fondo. Las fotos de hero son mucho más anchas
+     que altas, así que en móvil `cover` recorta a los lados y solo se ve la
+     franja central. Con esta variable cada página puede elegir su punto de
+     interés, p. ej. style={{ '--hero-bg-position': 'left center' }}. */
+  --hero-bg-position: center;
   position: relative;
   min-height: 80vh;            /* altura dinámica: al menos el 80% del viewport */
   display: flex;
@@ -1335,7 +1343,7 @@
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: var(--hero-bg) center / cover no-repeat;
+  background: var(--hero-bg) var(--hero-bg-position) / cover no-repeat;
 }
 
 /* velo para legibilidad del texto + toque dorado */
@@ -1392,6 +1400,15 @@
   .page-hero h1 { max-width: none; }
   /* En móvil el banner 3:1 queda muy bajo → mínimo para que quepa el texto */
   .page-hero.page-hero--compact { min-height: 46vh; }
+  /* Heros que no se muestran en móvil (p. ej. /the-wheels: se va directo
+     al listado de llantas, sin banner). */
+  .page-hero--desktop-only { display: none; }
+}
+
+/* El h1 de respaldo solo existe cuando el hero está oculto (móvil): fuera de
+   ese tamaño se quita del todo para no duplicar el encabezado. */
+@media (min-width: 641px) {
+  .sr-only--mobile-heading { display: none; }
 }
 
 /* â”€â”€â”€ Gallery â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
@@ -2339,7 +2356,7 @@
    que aparece automáticamente cuando existe el archivo de --hero-bg. */
 .page-hero--ph::before {
   background:
-    var(--hero-bg) center / cover no-repeat,
+    var(--hero-bg) var(--hero-bg-position) / cover no-repeat,
     repeating-linear-gradient(45deg, rgba(215, 181, 91, 0.07) 0 16px, transparent 16px 32px),
     var(--color-bg-elevated);
 }

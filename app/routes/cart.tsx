@@ -28,6 +28,8 @@ const CHECKOUT_ERRORS: Record<string, string> = {
   empty: 'Tu carrito está vacío.',
   price: 'Algún artículo no tiene precio configurado todavía. Inténtalo más tarde.',
   stripe: 'No se pudo iniciar el pago. Revisa la configuración de Stripe e inténtalo de nuevo.',
+  managed:
+    'Las llantas Victoria se venden ahora por juegos de 4 desde su ficha (preventa o compra directa con stock limitado). Quita el artículo del carrito y resérvalo o cómpralo desde la ficha del producto.',
 };
 
 export default function Cart() {

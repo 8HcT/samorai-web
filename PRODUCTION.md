@@ -55,26 +55,29 @@ Usa una **restricted key** (`rk_live_…`), nunca la secret key completa: una
 `sk_live_…` filtrada puede mover dinero, hacer reembolsos y leer todos los
 datos de clientes; esta solo puede abrir sesiones de pago.
 
-La web hace **exactamente dos llamadas** a Stripe (`checkout.sessions.create`
-al pagar y `checkout.sessions.retrieve` en la página de confirmación), así que
-un único permiso basta:
+La web usa Stripe para abrir, consultar y expirar sesiones de Checkout
+(carrito, reservas de preventa, pago final y compra directa) y, desde el panel
+`/admin`, para crear devoluciones. Bastan **dos permisos**:
 
 1. Dashboard, **modo Live** (interruptor "Modo de prueba" apagado) →
    **Developers → API keys → Create restricted key**.
 2. Nombre: `samorai-web-produccion`.
 3. Busca **Checkout Sessions** y ponlo en **Write**.
    *Write incluye Read, así que la página `/success` también funciona.*
-4. **Todo lo demás déjalo en None.** No hace falta PaymentIntents, ni
-   Customers, ni Products, ni Refunds.
-5. Crear → copiar la clave (**solo se muestra una vez**) → va a
+4. Busca **Refunds** y ponlo en **Write** (devoluciones de reservas y pedidos
+   desde el panel de administración).
+5. **Todo lo demás déjalo en None.** No hace falta PaymentIntents, ni
+   Customers, ni Products.
+6. Crear → copiar la clave (**solo se muestra una vez**) → va a
    `STRIPE_SECRET_KEY` en Vercel.
 
 Extra recomendable: en la propia clave, **Access policy → restringir por IP**
 no es viable en Vercel (las IP de salida cambian), pero sí conviene revisar
 periódicamente *Developers → API keys* y borrar claves que ya no uses.
 
-> Si en algún momento se añaden reembolsos desde la web, habrá que ampliar
-> permisos. Hoy los reembolsos se hacen desde el dashboard, que no usa esta clave.
+> Las devoluciones hechas directamente en el dashboard de Stripe también se
+> reflejan en la web: el webhook recibe `charge.refunded` y actualiza la
+> reserva o el pedido.
 
 ---
 
@@ -100,9 +103,12 @@ cliente pague correctamente. Es el paso que más se olvida.
    > `samoraiwheels.com/api/stripe-webhook` → **308** (mal) ·
    > `www.samoraiwheels.com/api/stripe-webhook` → **400 Missing
    > stripe-signature header** (bien: el endpoint existe y valida la firma).
-3. **Select events** → añade estos dos y ninguno más:
+3. **Select events** → añade estos cinco y ninguno más:
    - `checkout.session.completed`
    - `checkout.session.async_payment_succeeded`
+   - `checkout.session.async_payment_failed` (libera la plaza si un pago diferido falla)
+   - `checkout.session.expired` (libera la plaza de un checkout abandonado)
+   - `charge.refunded` (sincroniza devoluciones hechas en Stripe)
 4. Crear el endpoint → **Signing secret → Reveal** → copiar el `whsec_…` →
    va a `STRIPE_WEBHOOK_SECRET` en Vercel.
 5. Con las variables ya puestas y el sitio redesplegado, pulsa
@@ -210,6 +216,13 @@ leen al arrancar).
 | `EMAIL_FROM` | `SAMORAI <pedidos@samoraiwheels.com>` |
 | `SHOP_ORDER_EMAIL` | destino del aviso de venta |
 | `CONTACT_EMAIL` | destino del formulario de contacto |
+| `SUPABASE_ANON_KEY` | clave pública de Supabase (cuentas de cliente) |
+| `ACCESS_LINK_SECRET` | ≥ 32 caracteres aleatorios (enlaces de reserva/pedido sin login) |
+| `CRON_SECRET` | secreto de `/api/cron/presale` (el mismo que en Supabase Vault) |
+| `PRESALE_BULK_EMAILS_ENABLED` | `true` solo cuando se validen los correos automáticos |
+| `PRESALE_LIVE_PAYMENTS_ENABLED` | `true` solo cuando se validen los cobros reales de preventa |
+
+Las cinco últimas son del sistema de preventa: detalle en **`PRESALE.md`**.
 
 **No definas** `STRIPE_FALLBACK_PRICE_CENTS` en producción (es solo para
 pruebas: haría que una referencia sin precio se cobrase a un importe inventado).
@@ -231,6 +244,11 @@ RESEND_API_KEY=re_
 EMAIL_FROM=SAMORAI <pedidos@samoraiwheels.com>
 SHOP_ORDER_EMAIL=pedidos@samoraiwheels.com
 CONTACT_EMAIL=isainzmorales@samoraiwheels.com
+SUPABASE_ANON_KEY=
+ACCESS_LINK_SECRET=
+CRON_SECRET=
+PRESALE_BULK_EMAILS_ENABLED=
+PRESALE_LIVE_PAYMENTS_ENABLED=
 ```
 
 Marca el entorno **Production** (no Preview ni Development) y **vuelve a
@@ -261,8 +279,9 @@ Si falta algo, el servidor lo avisa al arrancar en los logs de Vercel:
 ## 8 · Pendientes conocidos (decisión de negocio, no bugs)
 
 - **Envío gratuito.** El checkout declara "Envío gratuito" y el precio con IVA
-  es el total. Si algún día se cobra envío, se añade en `shipping_options`
-  (`app/routes/api.checkout.tsx`).
+  es el total. Si algún día se cobra envío, se cambia `FREE_SHIPPING_OPTION`
+  (`app/lib/stripe/checkout-options.server.ts`, común a carrito, compra directa
+  y pago final de la preventa).
 - **Países de envío.** Hoy: ES, PT, FR, DE, IT, NL, BE, AT, IE, LU, FI
   (`SHIPPING_COUNTRIES`, mismo archivo).
 - **IVA.** `automatic_tax` está **desactivado** a propósito: los precios ya son
@@ -274,8 +293,9 @@ Si falta algo, el servidor lo avisa al arrancar en los logs de Vercel:
   devoluciones es un problema legal, no técnico. Stripe además permite exigir
   aceptación de los términos en el checkout (Settings → Checkout → *Terms of
   service*), recomendable una vez existan.
-- **Stock.** Sin control de inventario, **decisión aceptada** (2026-08-02): el
-  stock es limitado pero no hay datos de existencias y no se espera un volumen
-  alto de ventas. Se gestiona manualmente con el aviso de venta por correo. Si
-  algún día se agota una referencia, lo rápido es desactivar su precio en
-  Stripe o quitar la variante de `app/data/products.ts`.
+- **Stock.** *Actualizado 2026-10-20:* el stock lo controla el sistema de
+  preventa por **tiradas de fabricación** (capacidad en juegos, reservas de
+  50 €, venta directa con stock real, caducidad automática). Puesta en marcha,
+  variables, migraciones y pruebas en **`PRESALE.md`**. Mientras un producto no
+  pertenezca a ninguna tirada sigue vendiéndose por el carrito sin control de
+  stock, como antes.

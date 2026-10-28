@@ -8,6 +8,7 @@ export const es: TranslationKeys = {
     dealers: 'The Dealers',
     contact: 'Contacto',
     cart: 'Carrito',
+    account: 'Mi cuenta',
   },
   footer: {
     tagline: 'Llantas de automoción premium, diseñadas con precisión.',

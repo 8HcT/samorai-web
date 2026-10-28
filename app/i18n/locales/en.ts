@@ -6,6 +6,7 @@ export const en = {
     dealers: 'The Dealers',
     contact: 'Contact',
     cart: 'Cart',
+    account: 'My account',
   },
   footer: {
     tagline: 'Premium automotive wheels, engineered for precision.',

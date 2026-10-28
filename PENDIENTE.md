@@ -8,6 +8,11 @@ todo lo de **modo Live** (claves distintas) más los textos legales.
 
 Detalle técnico paso a paso de cada punto: **`PRODUCTION.md`**.
 
+> **Actualizado 2026-10-20 · sistema de preventa.** Ya está programado el
+> sistema de tiradas, reservas de 50 €, stock real, cuentas de cliente y panel
+> `/admin`. Lo que hay que aportar para activarlo está en la sección **P** de
+> abajo; el detalle técnico, en **`PRESALE.md`**.
+
 ---
 
 ## A · Sin esto no se puede cobrar
@@ -16,8 +21,8 @@ Detalle técnico paso a paso de cada punto: **`PRODUCTION.md`**.
 |---|---|---|---|
 | ~~A1~~ | ~~**Activar la cuenta de Stripe en Live**~~ — **confirmado activo** (4 ago 2026) | — | ✅ |
 | ~~A2~~ | ~~**Crear los 2 precios en Live**~~ — **HECHO** (4 ago 2026), IDs abajo | — | ✅ |
-| A3 | **Restricted key** `rk_live_…` con permiso *Checkout Sessions: Write* | Tú (nunca me la pases) | `STRIPE_SECRET_KEY` |
-| A4 | **Webhook** a `https://www.samoraiwheels.com/api/stripe-webhook` con los 2 eventos | Tú | `STRIPE_WEBHOOK_SECRET` |
+| A3 | **Restricted key** `rk_live_…` con permisos *Checkout Sessions: Write* y *Refunds: Write* | Tú (nunca me la pases) | `STRIPE_SECRET_KEY` |
+| A4 | **Webhook** a `https://www.samoraiwheels.com/api/stripe-webhook` con los 5 eventos (lista en `PRODUCTION.md` §3) | Tú | `STRIPE_WEBHOOK_SECRET` |
 | ~~A5~~ | ~~**Dominio**~~ — `samoraiwheels.com` ya sirve desde Vercel (4 ago 2026) | — | ✅ |
 
 ### ⚠️ El `www` no es opcional
@@ -126,7 +131,27 @@ No bloquean el cobro, pero el cliente las pregunta y hoy no hay respuesta:
   ¿Se queda así? ¿Baleares/Canarias tienen condiciones distintas?
 - **Devoluciones**: quién paga el porte de vuelta
 - **Envío gratuito**: confirmado, ya está declarado en el checkout
-- **Stock**: sin control, gestión manual por el aviso de venta — **decidido**
+- **Stock**: ~~sin control~~ → *2026-10-20:* lo controla el sistema de preventa
+  por tiradas (ver sección **P**)
+
+---
+
+## P · Preventa y tiradas (activar el sistema nuevo)
+
+Guía técnica completa: **`PRESALE.md`**. En resumen:
+
+| # | Qué | Quién |
+|---|---|---|
+| P1 | Aplicar las migraciones de `supabase/migrations/` en el proyecto "Samorai Wheels" (SQL Editor, en orden) | Tú |
+| P2 | Activar `pg_cron` y `pg_net` (Database → Extensions) y guardar en Vault la URL y el secreto del cron | Tú |
+| P3 | Variables nuevas en Vercel: `SUPABASE_ANON_KEY`, `ACCESS_LINK_SECRET`, `CRON_SECRET` | Tú |
+| P4 | Supabase Auth: URL de redirección `/auth/confirm`, SMTP propio (Resend) y plantillas de email | Tú |
+| P5 | Nombrar al primer administrador (una línea de SQL en `PRESALE.md`) | Tú |
+| P6 | **Textos legales de la preventa**: condiciones de reserva, cancelación, devolución y caducidad de la señal | Cliente + abogado |
+| P7 | Datos de la primera tirada: nombre, capacidad en juegos, fechas, entrega estimada | Cliente |
+| P8 | **Validación expresa** para activar `PRESALE_LIVE_PAYMENTS_ENABLED` (cobros reales) y `PRESALE_BULK_EMAILS_ENABLED` (correos automáticos) | Cliente |
+
+Mientras no se haga P1 la web sigue exactamente como ahora (carrito sin tiradas).
 
 ---
 
@@ -148,6 +173,11 @@ RESEND_API_KEY=re_.......................................
 EMAIL_FROM=SAMORAI <pedidos@samoraiwheels.com>
 SHOP_ORDER_EMAIL=pedidos@samoraiwheels.com
 CONTACT_EMAIL=isainzmorales@samoraiwheels.com
+SUPABASE_ANON_KEY=.......................................
+ACCESS_LINK_SECRET=......................................
+CRON_SECRET=.............................................
+PRESALE_BULK_EMAILS_ENABLED=
+PRESALE_LIVE_PAYMENTS_ENABLED=
 ```
 
 De dónde sale cada una:
@@ -165,6 +195,11 @@ De dónde sale cada una:
 | `EMAIL_FROM` | Buzón del dominio verificado | **No** `onboarding@resend.dev` |
 | `SHOP_ORDER_EMAIL` | Decisión tuya | Admite varias separadas por comas |
 | `CONTACT_EMAIL` | Decisión tuya | Admite varias separadas por comas |
+| `SUPABASE_ANON_KEY` | Supabase → Project Settings → API (clave *anon* / *publishable*) | Pública, pero solo la usa el servidor |
+| `ACCESS_LINK_SECRET` | Genéralo tú: `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"` | Cambiarlo invalida todos los enlaces enviados |
+| `CRON_SECRET` | Genéralo igual | El mismo valor va en Supabase Vault (`presale_cron_secret`) |
+| `PRESALE_BULK_EMAILS_ENABLED` | Vacío hasta que el cliente lo valide | `true` = salen lanzamiento, recordatorios y caducidades |
+| `PRESALE_LIVE_PAYMENTS_ENABLED` | Vacío hasta que el cliente lo valide | Con clave Live y sin `true`, la preventa **no cobra** |
 
 **No pongas** `STRIPE_FALLBACK_PRICE_CENTS` en producción: haría que una
 referencia sin precio se cobrase a un importe inventado.

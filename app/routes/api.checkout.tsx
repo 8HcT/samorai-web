@@ -7,11 +7,8 @@ import { CURRENCY } from '~/lib/money';
 import { unitPriceCentsForWidth, priceTierKeyForWidth } from '~/lib/pricing';
 import { formatSize, formatEt } from '~/lib/format';
 import { fallbackPriceCents, siteUrl, stripePriceId } from '~/lib/env.server';
-
-/** Países a los que se permite envío (España + UE principal). Ajustable. */
-const SHIPPING_COUNTRIES = [
-  'ES', 'PT', 'FR', 'DE', 'IT', 'NL', 'BE', 'AT', 'IE', 'LU', 'FI',
-] as const;
+import { shippingCheckoutParams } from '~/lib/stripe/checkout-options.server';
+import { isManagedByBatches } from '~/lib/presale/offers.server';
 
 interface IncomingLine {
   variantId: string;
@@ -44,6 +41,7 @@ export async function action({ request }: Route.ActionArgs) {
   const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
   const summaryParts: string[] = [];
   let missingPrice = false;
+  const managedChecked = new Map<string, boolean>();
 
   for (const line of lines) {
     const quantity = Math.max(1, Math.floor(Number(line.quantity) || 0));
@@ -52,6 +50,16 @@ export async function action({ request }: Route.ActionArgs) {
     if (!found) continue;
 
     const { product, variant } = found;
+
+    // Los productos con tirada de fabricación tienen stock limitado y se
+    // venden por juegos desde su ficha (reserva o compra directa), nunca por
+    // este carrito sin control de stock.
+    if (!managedChecked.has(product.slug)) {
+      managedChecked.set(product.slug, await isManagedByBatches(product));
+    }
+    if (managedChecked.get(product.slug)) {
+      return redirect('/cart?error=managed');
+    }
 
     // El precio lo decide SIEMPRE el servidor a partir del ancho de la
     // referencia (IVA incluido). El importe del frontend nunca es autoridad.
@@ -110,21 +118,8 @@ export async function action({ request }: Route.ActionArgs) {
       line_items: lineItems,
       success_url: `${base}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${base}/cancel`,
-      billing_address_collection: 'required',
-      shipping_address_collection: { allowed_countries: [...SHIPPING_COUNTRIES] },
-      phone_number_collection: { enabled: true },
+      ...shippingCheckoutParams(),
       automatic_tax: { enabled: false }, // activar tras configurar Stripe Tax
-      // Envío gratuito: se declara explícitamente para que el cliente vea en
-      // el checkout que el precio con IVA es el total, sin cargos añadidos.
-      shipping_options: [
-        {
-          shipping_rate_data: {
-            type: 'fixed_amount',
-            fixed_amount: { amount: 0, currency: CURRENCY },
-            display_name: 'Envío gratuito',
-          },
-        },
-      ],
       // El resumen también en el pago, para verlo desde el dashboard de Stripe.
       payment_intent_data: {
         description: summaryParts.join('; ').slice(0, 300),

@@ -1,9 +1,10 @@
 /**
  * Persistencia de pedidos (solo servidor).
  *
- * Siempre registra el pedido por consola. Si Supabase está configurado
- * (`SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`), además lo inserta en las
- * tablas `orders` / `order_items` (esquema en `app/lib/orders/schema.sql`).
+ * Si Supabase está configurado (`SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`)
+ * inserta el pedido en las tablas `orders` / `order_items` (esquema en
+ * `supabase/migrations/`) y deja en consola solo un resumen sin datos
+ * personales. Sin Supabase (desarrollo) el pedido completo queda en consola.
  * La escritura usa la service-role key (salta RLS) y es idempotente por
  * `stripe_session_id` (unique) para tolerar reintentos del webhook.
  */
@@ -57,11 +58,24 @@ export interface OrderRecord {
  * siempre (situación de desarrollo; en producción Supabase es obligatorio).
  */
 export async function recordOrder(order: OrderRecord): Promise<{ isNew: boolean }> {
-  // Registro estructurado (visible en los logs del servidor / `stripe listen`).
-  console.log('[stripe][order]', JSON.stringify(order));
+  // Sin Supabase (desarrollo) el log es el único registro del pedido.
+  if (!isSupabaseConfigured()) {
+    console.log('[stripe][order]', JSON.stringify(order));
+    return { isNew: true };
+  }
 
-  // Si Supabase no está configurado, nos quedamos con el log (dev / sin BD).
-  if (!isSupabaseConfigured()) return { isNew: true };
+  // Con base de datos, el log no lleva datos personales (RGPD: minimización).
+  // Basta para cruzarlo con Stripe y con la fila guardada.
+  console.log(
+    '[stripe][order]',
+    JSON.stringify({
+      session: order.stripeSessionId,
+      paymentIntent: order.stripePaymentIntentId,
+      amountTotalCents: order.amountTotalCents,
+      paymentStatus: order.paymentStatus,
+      lines: order.lines.map((l) => `${l.variantId}×${l.quantity}`),
+    })
+  );
 
   const supabase = getSupabaseAdmin();
 
@@ -77,20 +91,31 @@ export async function recordOrder(order: OrderRecord): Promise<{ isNew: boolean 
   const isNew = !existing;
 
   if (!orderId) {
-    const { data, error } = await supabase
-      .from('orders')
-      .insert({
-        stripe_session_id: order.stripeSessionId,
-        stripe_payment_intent_id: order.stripePaymentIntentId,
-        amount_total_cents: order.amountTotalCents,
-        currency: order.currency,
-        customer_email: order.customerEmail,
-        payment_status: order.paymentStatus,
-      })
-      .select('id')
-      .single();
+    const base = {
+      stripe_session_id: order.stripeSessionId,
+      stripe_payment_intent_id: order.stripePaymentIntentId,
+      amount_total_cents: order.amountTotalCents,
+      currency: order.currency,
+      customer_email: order.customerEmail,
+      payment_status: order.paymentStatus,
+    };
+    // Columnas añadidas por la migración de preventa (panel de pedidos). Si
+    // aún no está aplicada, se guarda el pedido con el formato anterior.
+    const extended = {
+      ...base,
+      customer_name: order.customerName,
+      customer_phone: order.customerPhone,
+      shipping_address: order.shippingAddress,
+      billing_address: order.billingAddress,
+      subtotal_cents: order.amountSubtotalCents,
+      amount_paid_cents: order.amountTotalCents,
+    };
+    let { data, error } = await supabase.from('orders').insert(extended).select('id').single();
+    if (error && (error.code === 'PGRST204' || error.code === '42703')) {
+      ({ data, error } = await supabase.from('orders').insert(base).select('id').single());
+    }
     if (error) throw error;
-    orderId = data.id;
+    orderId = data!.id;
   }
 
   // Las líneas se insertan solo si faltan: si un intento anterior guardó la

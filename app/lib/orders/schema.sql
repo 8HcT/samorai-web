@@ -1,6 +1,11 @@
 -- ============================================================
+-- ⚠ HISTÓRICO · Sustituido por supabase/migrations/ (ver PRESALE.md).
+-- Esta es la versión inicial (2026-07-25), ya aplicada en producción y
+-- recogida tal cual en supabase/migrations/20260725000000_orders_baseline.sql.
+-- El esquema vigente (preventa, stock, cuentas, RLS…) está en las
+-- migraciones: aplica esas, no este archivo.
+-- ------------------------------------------------------------
 -- SAMORAI · Esquema de pedidos (Postgres / Supabase)
--- Aplicar en: Supabase → SQL Editor (o `supabase db push`).
 -- Lo escribe el webhook de Stripe vía service-role (RLS no aplica a
 -- service-role). No exponer estas tablas al cliente anónimo.
 -- ============================================================

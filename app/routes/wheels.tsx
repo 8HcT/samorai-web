@@ -29,9 +29,10 @@ export default function Wheels({ loaderData }: Route.ComponentProps) {
 
   return (
     <>
-      {/* Hero compacto (~30vh) con imagen de fondo (placeholder) + SEO */}
+      {/* Hero compacto (~30vh) con imagen de fondo (placeholder) + SEO.
+          En móvil se oculta: se va directo a las llantas. */}
       <section
-        className="page-hero page-hero--ph page-hero--compact"
+        className="page-hero page-hero--ph page-hero--compact page-hero--desktop-only"
         style={{ '--hero-bg': "url('/images/wheels-hero.jpg')" } as CSSProperties}
       >
         <div className="container">
@@ -40,6 +41,11 @@ export default function Wheels({ loaderData }: Route.ComponentProps) {
           <p className="page-hero__subtitle">{w.heroSubtitle}</p>
         </div>
       </section>
+
+      {/* Con el hero oculto en móvil la página se quedaría sin h1. Este lo
+          sustituye solo en ese tamaño: no se ve, pero lo leen los buscadores
+          y los lectores de pantalla. */}
+      <h1 className="sr-only sr-only--mobile-heading">{w.heroTitle}</h1>
 
       <div className="section">
       <div className="container">

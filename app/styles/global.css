@@ -21,6 +21,8 @@
 @import './layout.css';
 @import './components.css';
 @import './utilities.css';
+@import './presale.css';           /* preventa, cuenta, reserva/pedido */
+@import './admin.css';             /* panel /admin */
 
 /* --- Temas claro/oscuro (debe ir al final para poder sobrescribir) --- */
 @import './theme.css';
