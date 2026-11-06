@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { useT } from '~/i18n/useT';
-
-const STORAGE_KEY = 'samorai_cookie_consent';
+import { CONSENT_STORAGE_KEY as STORAGE_KEY, updateAnalyticsConsent } from '~/lib/analytics/google';
 
 /**
  * Banner de cookies (componente 24 del sistema oficial · clase .cookies).
@@ -23,6 +22,7 @@ export function CookieBanner() {
 
   function decide(value: 'accepted' | 'rejected') {
     try { localStorage.setItem(STORAGE_KEY, value); } catch { /* ignore */ }
+    updateAnalyticsConsent(value === 'accepted');
     setVisible(false);
   }
 

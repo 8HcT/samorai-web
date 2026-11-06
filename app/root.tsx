@@ -11,6 +11,14 @@ import {
 import type { Route } from './+types/root';
 import '~/styles/global.css';
 import { resolveLocale } from '~/i18n/config';
+import {
+  GA_MEASUREMENT_ID,
+  GTM_CONTAINER_ID,
+  googleHeadScript,
+} from '~/lib/analytics/google';
+
+// Solo medimos en producción (no ensuciar GA con tráfico de localhost).
+const ANALYTICS_ENABLED = import.meta.env.PROD;
 
 export function loader({ request }: Route.LoaderArgs) {
   // Idioma: cookie explícita del usuario > detección por Accept-Language.
@@ -54,10 +62,28 @@ export function Layout({ children }: { children: React.ReactNode }) {
               "try{var t=localStorage.getItem('samorai_theme')||'light';document.documentElement.setAttribute('data-theme',t);}catch(e){}",
           }}
         />
+        {ANALYTICS_ENABLED && (
+          <>
+            {/* Google Analytics 4 + Tag Manager (consent mode v2, ver lib/analytics/google.ts) */}
+            <script dangerouslySetInnerHTML={{ __html: googleHeadScript }} />
+            <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} />
+            <script async src={`https://www.googletagmanager.com/gtm.js?id=${GTM_CONTAINER_ID}`} />
+          </>
+        )}
         <Meta />
         <Links />
       </head>
       <body>
+        {ANALYTICS_ENABLED && (
+          <noscript>
+            <iframe
+              src={`https://www.googletagmanager.com/ns.html?id=${GTM_CONTAINER_ID}`}
+              height="0"
+              width="0"
+              style={{ display: 'none', visibility: 'hidden' }}
+            />
+          </noscript>
+        )}
         {children}
         <ScrollRestoration />
         <Scripts />
