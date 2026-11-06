@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Product, ProductFinish, WheelColor } from '~/types/product';
 import { getWidthsForFinish } from '~/data/products';
 import { formatSize } from '~/lib/format';
+import { useLocalePath } from '~/i18n/useT';
 import { ProductMedia, FINISH_SWATCH_CLASS as PLACEHOLDER_CLASS } from './ProductMedia';
 
 interface ProductCardProps {
@@ -19,6 +20,7 @@ export function ProductCard({ product, activeColor, finish }: ProductCardProps) 
   // Hover largo (~3 s) → cambia a la imagen secundaria del acabado.
   const [showSecondary, setShowSecondary] = useState(false);
   const timer = useRef<number | null>(null);
+  const lp = useLocalePath();
 
   function clearTimer() {
     if (timer.current) window.clearTimeout(timer.current);
@@ -46,7 +48,7 @@ export function ProductCard({ product, activeColor, finish }: ProductCardProps) 
     return (
       <Link
         className="pcard"
-        to={`/the-wheels/${product.slug}?finish=${finish.id}`}
+        to={lp(`/the-wheels/${product.slug}?finish=${finish.id}`)}
         aria-label={`${product.model} — ${finish.name}`}
         onMouseEnter={() => onEnter(finish.images)}
         onMouseLeave={onLeave}
@@ -84,7 +86,7 @@ export function ProductCard({ product, activeColor, finish }: ProductCardProps) 
   ).slice(0, 4);
 
   return (
-    <Link className="pcard" to={`/the-wheels/${product.slug}`}>
+    <Link className="pcard" to={lp(`/the-wheels/${product.slug}`)}>
       <div className="ph">
         {/* Placeholder hasta tener fotografía real (PRD-XXA) */}
         <div className={`product-card__image-placeholder ${placeholderClass}`}>

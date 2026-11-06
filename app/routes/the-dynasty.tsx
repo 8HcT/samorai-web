@@ -1,13 +1,13 @@
 import type { Route } from './+types/the-dynasty';
+import { cssBackground } from '~/lib/images';
+import { seoMeta, seoStrings } from '~/lib/seo';
 import type { CSSProperties } from 'react';
 import { MediaPlaceholder as MediaPh } from '~/components/MediaPlaceholder';
 import { useT } from '~/i18n/useT';
 
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: 'The Dynasty | SAMORAI' },
-    { name: 'description', content: 'Devolver el arte de la personalización a la automoción. La visión, la historia y los valores detrás de SAMORAI.' },
-  ];
+export function meta(args: Route.MetaArgs) {
+  const s = seoStrings(args).dynasty;
+  return seoMeta(args, { title: s.title, description: s.description });
 }
 
 /**
@@ -24,7 +24,7 @@ export default function TheDynasty() {
           se muestra automáticamente; hasta entonces se ve el patrón rayado. */}
       <div
         className="page-hero page-hero--ph"
-        style={{ '--hero-bg': "url('/images/dynasty-hero.png')" } as CSSProperties}
+        style={{ '--hero-bg': cssBackground('/images/dynasty-hero.png') } as CSSProperties}
       >
         <div className="container">
           <span className="eyebrow">{d.heroEyebrow}</span>
@@ -51,6 +51,7 @@ export default function TheDynasty() {
 
             <MediaPh
               label="Historia / fundador"
+              alt={d.altHistory}
               file="/images/dynasty-historia.png"
               ratio="10 / 9"
               style={{ position: 'sticky', top: 'calc(var(--header-height) + var(--space-8))' }}
@@ -69,19 +70,19 @@ export default function TheDynasty() {
             <div className="dynasty-value">
               <h3 className="dynasty-value__title">{d.value1Title}</h3>
               <p className="dynasty-value__text">{d.value1Text}</p>
-              <MediaPh label="Valor 1" file="/images/dynasty-valor-1.png" ratio="5 / 4" />
+              <MediaPh label="Valor 1" alt={d.altValue1} file="/images/dynasty-valor-1.png" ratio="5 / 4" />
             </div>
 
             <div className="dynasty-value">
               <h3 className="dynasty-value__title">{d.value2Title}</h3>
               <p className="dynasty-value__text">{d.value2Text}</p>
-              <MediaPh label="Valor 2" file="/images/dynasty-valor-2.png" ratio="5 / 4" />
+              <MediaPh label="Valor 2" alt={d.altValue2} file="/images/dynasty-valor-2.png" ratio="5 / 4" />
             </div>
 
             <div className="dynasty-value">
               <h3 className="dynasty-value__title">{d.value3Title}</h3>
               <p className="dynasty-value__text">{d.value3Text}</p>
-              <MediaPh label="Valor 3" file="/images/dynasty-valor-3.png" ratio="5 / 4" />
+              <MediaPh label="Valor 3" alt={d.altValue3} file="/images/dynasty-valor-3.png" ratio="5 / 4" />
             </div>
           </div>
         </div>

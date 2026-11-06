@@ -136,3 +136,20 @@ export function siteUrl(): string {
   // 3) Desarrollo local.
   return 'http://localhost:5173';
 }
+
+/**
+ * Origen para URLs canónicas, hreflang y sitemap. A diferencia de `siteUrl`,
+ * sin SITE_URL usa el host de la propia petición (nunca la URL del
+ * deployment de Vercel, que duplicaría el contenido en buscadores).
+ */
+export function canonicalOrigin(request: Request): string {
+  const explicit = env('SITE_URL');
+  if (explicit) return explicit.replace(/\/$/, '');
+  return new URL(request.url).origin;
+}
+
+/** Los previews de Vercel no deben indexarse (contenido duplicado). */
+export function allowIndexing(): boolean {
+  const vercelEnv = env('VERCEL_ENV');
+  return !vercelEnv || vercelEnv === 'production';
+}

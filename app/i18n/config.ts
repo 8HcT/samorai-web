@@ -59,4 +59,20 @@ export function resolveLocale(
   return getLocaleFromCookie(cookieHeader) ?? detectLocale(acceptLanguage);
 }
 
+const BOT_UA = /bot|crawl|spider|slurp|lighthouse|facebookexternalhit|whatsapp|telegram|preview/i;
+
+/**
+ * Idioma que el visitante ha mostrado preferir (cookie o navegador), o
+ * `null` si no hay señal. Los buscadores y previsualizadores de enlaces
+ * nunca tienen preferencia: deben ver cada URL en su propio idioma.
+ */
+export function preferredLocale(
+  cookieHeader: string | null | undefined,
+  acceptLanguage: string | null | undefined,
+  userAgent: string | null | undefined
+): Locale | null {
+  if (userAgent && BOT_UA.test(userAgent)) return null;
+  return getLocaleFromCookie(cookieHeader) ?? (acceptLanguage ? detectLocale(acceptLanguage) : null);
+}
+
 export const strings = en;

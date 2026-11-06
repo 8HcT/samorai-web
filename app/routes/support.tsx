@@ -1,4 +1,5 @@
 import type { Route } from './+types/support';
+import { seoMeta, seoStrings } from '~/lib/seo';
 import { useEffect } from 'react';
 import { Form, useActionData, useNavigation } from 'react-router';
 import { trackEvent } from '~/lib/analytics/trackEvent';
@@ -6,11 +7,9 @@ import { SectionHeader } from '~/components/SectionHeader';
 import { Button } from '~/components/Button';
 import { sendContactEmail } from '~/lib/email/email.server';
 
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: 'Contacto | SAMORAI' },
-    { name: 'description', content: 'Contacta con SAMORAI — asistencia de fitment, consultas de pedido, preguntas técnicas y formulario de contacto.' },
-  ];
+export function meta(args: Route.MetaArgs) {
+  const s = seoStrings(args).contact;
+  return seoMeta(args, { title: s.title, description: s.description });
 }
 
 export async function action({ request }: Route.ActionArgs) {

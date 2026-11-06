@@ -1,12 +1,10 @@
 import type { Route } from './+types/privacidad';
+import { seoMeta, seoStrings } from '~/lib/seo';
 import { LegalPage } from '~/components/LegalPage';
 
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: 'Política de privacidad | SAMORAI' },
-    { name: 'description', content: 'Política de privacidad de SAMORAI Wheels: tratamiento de datos personales conforme al RGPD.' },
-    { name: 'robots', content: 'noindex' },
-  ];
+export function meta(args: Route.MetaArgs) {
+  const s = seoStrings(args).privacy;
+  return seoMeta(args, { title: s.title, description: s.description, noindex: true });
 }
 
 export default function Privacidad() {

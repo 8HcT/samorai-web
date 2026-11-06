@@ -8,3 +8,6 @@
 
 # Vercel
 /.vercel/
+
+# Variantes WebP generadas por scripts/optimize-images.mjs (predev/prebuild)
+/public/images/_opt/

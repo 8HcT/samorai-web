@@ -1,4 +1,5 @@
 import type { Route } from './+types/cart';
+import { seoMeta, seoStrings } from '~/lib/seo';
 import { useEffect } from 'react';
 import { useSearchParams } from 'react-router';
 import { useCart } from '~/lib/cart/CartContext';
@@ -10,11 +11,9 @@ import { trackEvent } from '~/lib/analytics/trackEvent';
 import { Button } from '~/components/Button';
 import { SectionHeader } from '~/components/SectionHeader';
 
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: 'Carrito | SAMORAI' },
-    { name: 'description', content: 'Your SAMORAI wheel selection.' },
-  ];
+export function meta(args: Route.MetaArgs) {
+  const s = seoStrings(args).cart;
+  return seoMeta(args, { title: s.title, description: s.description, noindex: true });
 }
 
 const PLACEHOLDER_COLOR_CLASS: Record<string, string> = {

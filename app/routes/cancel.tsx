@@ -1,8 +1,9 @@
 import type { Route } from './+types/cancel';
+
 import { Button } from '~/components/Button';
 
 export function meta({}: Route.MetaArgs) {
-  return [{ title: 'Pedido cancelado | SAMORAI' }];
+  return [{ title: 'Pedido cancelado | SAMORAI' }, { name: 'robots', content: 'noindex, nofollow' }];
 }
 
 export default function Cancel() {

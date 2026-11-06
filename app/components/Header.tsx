@@ -3,7 +3,7 @@ import { NavLink, useLocation } from 'react-router';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { ThemeToggle } from './ThemeToggle';
 import { useCart } from '~/lib/cart/CartContext';
-import { useT } from '~/i18n/useT';
+import { useLocalePath, useT } from '~/i18n/useT';
 
 type NavKey = 'home' | 'dynasty' | 'wheels' | 'dealers' | 'contact';
 
@@ -19,6 +19,7 @@ const NAV: { to: string; key: NavKey; end: boolean }[] = [
 export function Header() {
   const { count, ready } = useCart();
   const t = useT();
+  const lp = useLocalePath();
   const [open, setOpen] = useState(false);
   const location = useLocation();
 
@@ -34,7 +35,7 @@ export function Header() {
 
   return (
     <header className="navbar samorai-header">
-      <NavLink to="/" className="nv-logo" aria-label="SAMORAI — home" onClick={() => setOpen(false)}>
+      <NavLink to={lp('/')} className="nv-logo" aria-label="SAMORAI — home" onClick={() => setOpen(false)}>
         <img src="/logo.svg" alt="SAMORAI" className="nv-logo__img" />
       </NavLink>
 
@@ -43,7 +44,7 @@ export function Header() {
         <ul className="nv-links" role="list">
           {NAV.map(({ to, key, end }) => (
             <li key={to}>
-              <NavLink to={to} end={end} className={({ isActive }) => (isActive ? 'active' : undefined)}>
+              <NavLink to={lp(to)} end={end} className={({ isActive }) => (isActive ? 'active' : undefined)}>
                 {t.nav[key]}
               </NavLink>
             </li>
@@ -89,7 +90,7 @@ export function Header() {
               {NAV.map(({ to, key, end }) => (
                 <li key={to}>
                   <NavLink
-                    to={to}
+                    to={lp(to)}
                     end={end}
                     onClick={() => setOpen(false)}
                     className={({ isActive }) => (isActive ? 'active' : undefined)}

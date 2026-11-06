@@ -1,12 +1,10 @@
 import type { Route } from './+types/cookies';
+import { seoMeta, seoStrings } from '~/lib/seo';
 import { LegalPage } from '~/components/LegalPage';
 
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: 'Política de cookies | SAMORAI' },
-    { name: 'description', content: 'Política de cookies de SAMORAI Wheels: tipos de cookies utilizadas y su finalidad.' },
-    { name: 'robots', content: 'noindex' },
-  ];
+export function meta(args: Route.MetaArgs) {
+  const s = seoStrings(args).cookies;
+  return seoMeta(args, { title: s.title, description: s.description, noindex: true });
 }
 
 export default function Cookies() {

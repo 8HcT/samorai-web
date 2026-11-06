@@ -1,14 +1,24 @@
 import type { Route } from './+types/home';
+import { cssBackground, optimizedSrc } from '~/lib/images';
+import { organizationJsonLd, rootSeoData, seoMeta, seoStrings, websiteJsonLd } from '~/lib/seo';
 import type { CSSProperties } from 'react';
 import { Button } from '~/components/Button';
 import { MediaPlaceholder } from '~/components/MediaPlaceholder';
 import { useT } from '~/i18n/useT';
 
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: 'SAMORAI | Precision Wheels' },
-    { name: 'description', content: 'SAMORAI Victoria — llantas de aleación premium. Fundición de precisión, PCD 5×120 y acabados de autor. Construimos identidad, rueda a rueda.' },
-  ];
+export const links: Route.LinksFunction = () => [
+  // El hero es un fondo CSS (LCP): sin preload el navegador lo descubre tarde.
+  { rel: 'preload', as: 'image', href: optimizedSrc('/images/home-hero.png', 1920), type: 'image/webp', fetchPriority: 'high' },
+];
+
+export function meta(args: Route.MetaArgs) {
+  const { origin, locale } = rootSeoData(args);
+  const s = seoStrings(args).home;
+  return seoMeta(args, {
+    title: s.title,
+    description: s.description,
+    jsonLd: [organizationJsonLd(origin), websiteJsonLd(origin, locale)],
+  });
 }
 
 export default function Home() {
@@ -19,7 +29,7 @@ export default function Home() {
       {/* 1 · Hero — placeholder de imagen de fondo (/images/home-hero.jpg) */}
       <section
         className="page-hero page-hero--ph"
-        style={{ '--hero-bg': "url('/images/home-hero.png')" } as CSSProperties}
+        style={{ '--hero-bg': cssBackground('/images/home-hero.png') } as CSSProperties}
       >
         <div className="container">
           <span className="eyebrow" style={{ color: '#ededed' }}>{h.heroEyebrow}</span>
@@ -40,14 +50,14 @@ export default function Home() {
               <p style={{ marginTop: 'var(--space-5)' }}>{h.s2Body}</p>
               <p className="home-tag">{h.s2Tag}</p>
             </div>
-            <MediaPlaceholder label="Detalle" file="/images/home-detalle.png" ratio="9 / 10" />
+            <MediaPlaceholder label="Detalle" alt={h.altDetail} file="/images/home-detalle.png" ratio="9 / 10" />
           </div>
         </div>
       </section>
 
       {/* 3 · Descubre el Modelo Victoria (imagen sangra izquierda y desborda sección) */}
       <section className="section home-feature" aria-label="Victoria">
-        <MediaPlaceholder className="home-victoria-img" label="Victoria" file="/images/home-victoria.png" />
+        <MediaPlaceholder className="home-victoria-img" label="Victoria" alt={h.altVictoria} file="/images/home-victoria.png" />
         <div className="container">
           <div className="home-victoria-text">
             <h2>{h.s3TitlePre}<em>{h.s3TitleAccent}</em>{h.s3TitlePost}</h2>

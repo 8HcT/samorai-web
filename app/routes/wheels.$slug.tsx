@@ -1,6 +1,6 @@
 import type { Route } from './+types/wheels.$slug';
 import { useEffect, useMemo, useState } from 'react';
-import { data, useActionData, useNavigation, useSearchParams } from 'react-router';
+import { data, Link, useActionData, useNavigation, useSearchParams } from 'react-router';
 import {
   getProductBySlug,
   getWidthsForFinish,
@@ -17,18 +17,85 @@ import { SpecList } from '~/components/SpecList';
 import { ProductMedia } from '~/components/ProductMedia';
 import { FinishDot } from '~/components/FinishDot';
 import { readFinishImages } from '~/lib/product-images.server';
-import { useT } from '~/i18n/useT';
+import { useLocalePath, useT } from '~/i18n/useT';
+import { localizePath } from '~/i18n/paths';
+import { t as translations } from '~/i18n/config';
+import { optimizedSrc } from '~/lib/images';
+import { absoluteUrl, breadcrumbJsonLd, fill, rootSeoData, seoMeta, seoStrings } from '~/lib/seo';
+import type { ProductOffer } from '~/lib/presale/types';
 import { getProductOffer } from '~/lib/presale/offers.server';
 import { getSessionUser } from '~/lib/auth/session.server';
 import { handleProductPurchase, type PurchaseActionData } from '~/lib/presale/product-actions.server';
 import { PresalePanel } from '~/components/presale/PresalePanel';
 
-export function meta({ data }: Route.MetaArgs) {
-  if (!data?.product) return [{ title: 'Producto no encontrado | SAMORAI' }];
-  return [
-    { title: `${data.product.name} | SAMORAI` },
-    { name: 'description', content: data.product.shortDescription },
-  ];
+/** Disponibilidad schema.org según la tirada / venta directa. */
+const AVAILABILITY: Record<ProductOffer['mode'], string> = {
+  legacy: 'https://schema.org/InStock',
+  direct: 'https://schema.org/InStock',
+  presale: 'https://schema.org/PreOrder',
+  upcoming: 'https://schema.org/PreOrder',
+  sold_out: 'https://schema.org/SoldOut',
+  closed: 'https://schema.org/OutOfStock',
+  unavailable: 'https://schema.org/OutOfStock',
+};
+
+export function meta(args: Route.MetaArgs) {
+  const { data } = args;
+  if (!data?.product) return [{ title: 'SAMORAI' }, { name: 'robots', content: 'noindex' }];
+  const { product, galleryImages, offer } = data;
+  const { origin, locale } = rootSeoData(args);
+  const s = seoStrings(args);
+
+  const prices = product.variants.map((v) => v.priceCents).filter((c): c is number => c != null);
+  const low = Math.min(...prices) / 100;
+  const high = Math.max(...prices) / 100;
+  const price = locale === 'es' ? `${low} €` : `€${low}`;
+  const description = fill(s.product.description, { name: product.name, price });
+  const images = product.finishes
+    .map((f) => galleryImages[f.id]?.[0] ?? f.images[0])
+    .filter(Boolean)
+    .map((src) => absoluteUrl(origin, src));
+  const url = absoluteUrl(origin, localizePath(`/the-wheels/${product.slug}`, locale));
+
+  return seoMeta(args, {
+    title: fill(s.product.title, { name: product.name }),
+    description,
+    type: 'product',
+    image: images[0],
+    imageAlt: `SAMORAI ${product.name}`,
+    jsonLd: [
+      {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        '@id': `${url}#product`,
+        name: `SAMORAI ${product.name}`,
+        description,
+        image: images,
+        brand: { '@type': 'Brand', name: 'SAMORAI' },
+        category: 'Vehicles & Parts > Vehicle Parts & Accessories > Motor Vehicle Wheel Systems > Motor Vehicle Rims & Wheels',
+        material: product.specs.material,
+        color: product.finishes.map((f) => f.name).join(', '),
+        offers: {
+          '@type': 'AggregateOffer',
+          url,
+          priceCurrency: 'EUR',
+          lowPrice: low,
+          highPrice: high,
+          offerCount: product.variants.length,
+          // Si no se pudo leer el stock, mejor no declarar nada que declarar «agotado».
+          ...(offer.mode === 'unavailable' && offer.reason === 'error'
+            ? {}
+            : { availability: AVAILABILITY[offer.mode] }),
+          seller: { '@id': `${origin}/#organization` },
+        },
+      },
+      breadcrumbJsonLd(origin, [
+        { name: s.breadcrumbHome, path: localizePath('/', locale) },
+        { name: translations(locale).nav.wheels, path: localizePath('/the-wheels', locale) },
+        { name: product.name, path: localizePath(`/the-wheels/${product.slug}`, locale) },
+      ]),
+    ],
+  });
 }
 
 export async function loader({ params, request }: Route.LoaderArgs) {
@@ -58,6 +125,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 export default function WheelDetail({ loaderData }: Route.ComponentProps) {
   const { product, galleryImages, offer, userEmail } = loaderData;
   const t = useT();
+  const lp = useLocalePath();
   const { add } = useCart();
   const [searchParams] = useSearchParams();
   const actionData = useActionData<PurchaseActionData>();
@@ -233,6 +301,8 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
                   color={previewFinish?.color ?? 'Anthracite Grey'}
                   src={galleryList[activeImage]}
                   alt={`${product.name} — ${previewFinish?.name}`}
+                  sizes="(max-width: 900px) 100vw, 55vw"
+                  priority
                 />
                 <span className="main__zoom-hint" aria-hidden="true">
                   <span className="main__zoom-icon" />
@@ -263,6 +333,7 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
                       color={previewFinish?.color ?? 'Anthracite Grey'}
                       src={img}
                       alt={`${product.name} — ${previewFinish?.name} (${i + 1})`}
+                      sizes="120px"
                     />
                   </button>
                 ))}
@@ -434,7 +505,7 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
             >
               El fitment debe verificarse por vehículo. Comprueba PCD, buje central, rango de ET,
               diámetro y holgura de pinza de freno antes de instalar.{' '}
-              <a href="/contacto" style={{ color: 'var(--color-accent)' }}>Consultar fitment →</a>
+              <Link to={lp('/contacto')} style={{ color: 'var(--color-accent)' }}>Consultar fitment →</Link>
             </div>
 
             {/* Description */}
@@ -487,7 +558,12 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
 
           <img
             className="lightbox__img"
-            src={galleryList[activeImage]}
+            src={optimizedSrc(galleryList[activeImage], 1920)}
+            onError={(e) => {
+              // Sin variante WebP → imagen original.
+              const original = new URL(galleryList[activeImage], window.location.href).href;
+              if (e.currentTarget.src !== original) e.currentTarget.src = original;
+            }}
             alt={`${product.name} — ${previewFinish?.name}`}
             onClick={(e) => e.stopPropagation()}
           />

@@ -155,6 +155,26 @@ Mientras no se haga P1 la web sigue exactamente como ahora (carrito sin tiradas)
 
 ---
 
+## S · SEO (programado el 28 oct 2026; falta activarlo fuera del código)
+
+Ya hecho en el código: idioma por URL (castellano en la raíz, inglés en
+`/en/…`) con `hreflang`, `robots.txt` y `sitemap.xml` generados, canonical,
+Open Graph/Twitter, datos estructurados (Organization, WebSite, Product con
+precio y disponibilidad, Breadcrumb), `noindex` en carrito, cuenta y pedidos,
+iconos e imágenes WebP (`npm run images`, se ejecuta solo en `dev`/`build`).
+
+| # | Qué | Quién |
+|---|---|---|
+| S1 | `SITE_URL=https://www.samoraiwheels.com` en Vercel (lo usan canonical y sitemap; sin él se usa el host de la petición) | Tú |
+| S2 | Dar de alta **Google Search Console** (propiedad de dominio, verificación por DNS en Vercel) y enviar `https://www.samoraiwheels.com/sitemap.xml` | Tú |
+| S3 | Lo mismo en **Bing Webmaster Tools** (puede importar desde Search Console) | Tú |
+| S4 | Validar la ficha en [Rich Results Test](https://search.google.com/test/rich-results) tras el deploy | Tú |
+| S5 | URLs de redes sociales (Instagram, etc.) → las añado como `sameAs` en los datos de la marca | Cliente |
+| S6 | Al tener los textos legales definitivos: quitar el `noindex` de `/legal`, `/privacidad` y `/cookies`. Al activar The Dealers: quitar su `noindex` y añadirlo al sitemap | Yo |
+| S7 | Opcional: imagen para compartir con marca (logo + claim) en lugar del recorte del hero (`public/images/og/samorai-og.jpg`, 1200×630) | Diseño |
+
+---
+
 ## E · Variables para Vercel
 
 Vercel → proyecto → **Settings → Environment Variables** → entorno

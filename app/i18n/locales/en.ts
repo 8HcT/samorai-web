@@ -46,6 +46,8 @@ export const en = {
     s3Body:
       'The model is defined by 10 split spokes that deliver high stiffness, motorsport-grade design and geometry. Flow forming manufacturing, 5×120 PCD, millimetric fit to OEM spec. The black-metallic powder finish is applied in several coats, under controlled conditions, resistant to brake dust and the passing of time. Technical presence, character of its own.',
     s3Cta: 'See Victoria in detail →',
+    altDetail: 'SAMORAI Victoria wheels in three finishes, inspected by hand in the studio',
+    altVictoria: 'SAMORAI Victoria 18″ alloy wheel in Black Metallic',
     quotePre: '“',
     quoteAccent: 'Balance',
     quotePost: ' isn’t a destination. It’s the starting point.”',
@@ -80,6 +82,10 @@ export const en = {
     value3Title: 'Loyalty that is built',
     value3Text:
       'A Dynasty is built among equals. Respect and commitment define every relationship: with each dealer, each customer, each shared kilometer.',
+    altHistory: 'A member of the SAMORAI team in front of a Victoria wheel in Anthracite Grey',
+    altValue1: 'Barrel profile of the SAMORAI Victoria wheel',
+    altValue2: 'Hand-cleaning a SAMORAI Victoria wheel in Anthracite Grey',
+    altValue3: 'Centre cap with the SAMORAI emblem',
     quoteMain:
       "When the mind opens, it receives. Ideas don't disappear, they travel. If you don't listen to them, they find another mind willing to act.",
     quoteAccent: 'We choose to listen.',
@@ -93,6 +99,44 @@ export const en = {
   product: {
     description:
       "The Victoria is SAMORAI's first commercial wheel, our statement of what precision engineering looks like when it's driven by a passion for cars. Built around a 5×120 PCD with a 72.6 mm center bore, it delivers exact OEM tolerances and a look that elevates any build. It comes in three finishes: Anthracite Grey, Black Metallic and Silver Metallic. It fits a wide range of 5×120 vehicles with a 72.6 mm center bore. Always check fitment for your vehicle before buying.",
+  },
+  /** Títulos y descripciones para buscadores y redes (≈ 50–60 / 140–160 caracteres). */
+  seo: {
+    ogLocale: 'en_GB',
+    home: {
+      title: 'SAMORAI | Premium 18″ alloy wheels, 5×120',
+      description:
+        'SAMORAI Victoria: flow-formed 18″ alloy wheels, 5×120 PCD, 72.6 mm center bore. Three signature finishes, free shipping. We build identity, wheel by wheel.',
+    },
+    dynasty: {
+      title: 'The Dynasty | SAMORAI',
+      description:
+        'Bringing the art of personalization back to cars. The vision, the story and the values behind SAMORAI wheels.',
+    },
+    wheels: {
+      title: 'The Wheels | 18″ 5×120 alloy wheels | SAMORAI',
+      description:
+        'SAMORAI Victoria alloy wheels: 18″, 5×120 PCD, 72.6 mm center bore. Anthracite Grey, Black Metallic and Silver Metallic. Choose size and offset for your car.',
+    },
+    product: {
+      title: '{name} 18″ 5×120 alloy wheel | SAMORAI',
+      description:
+        '{name} by SAMORAI: flow-formed 18″ alloy wheel, 5×120 PCD, 72.6 mm center bore, A356.2 aluminium. Three finishes. From {price} per wheel, VAT included.',
+    },
+    dealers: {
+      title: 'The Dealers | SAMORAI',
+      description: 'Find an authorised SAMORAI dealer or enquire about becoming a distribution partner.',
+    },
+    contact: {
+      title: 'Contact | SAMORAI',
+      description:
+        'Contact SAMORAI: fitment help, order enquiries, technical questions and contact form.',
+    },
+    legal: { title: 'Legal notice | SAMORAI', description: 'SAMORAI Wheels legal notice.' },
+    privacy: { title: 'Privacy policy | SAMORAI', description: 'SAMORAI Wheels privacy policy.' },
+    cookies: { title: 'Cookie policy | SAMORAI', description: 'SAMORAI Wheels cookie policy.' },
+    cart: { title: 'Cart | SAMORAI', description: 'Your SAMORAI wheel selection.' },
+    breadcrumbHome: 'Home',
   },
 };
 

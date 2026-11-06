@@ -1,4 +1,6 @@
 import type { Route } from './+types/wheels';
+import { cssBackground } from '~/lib/images';
+import { seoMeta, seoStrings } from '~/lib/seo';
 import type { CSSProperties } from 'react';
 import { useEffect } from 'react';
 import { products } from '~/data/products';
@@ -6,11 +8,9 @@ import { trackEvent } from '~/lib/analytics/trackEvent';
 import { ProductCard } from '~/components/ProductCard';
 import { useT } from '~/i18n/useT';
 
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: 'The Wheels | SAMORAI' },
-    { name: 'description', content: 'Llantas de aleación SAMORAI Victoria: 18″, PCD 5×120, buje 72,6 mm. Tres acabados (Antracita Grey, Black Metallic, Silver Metallic). Elige medida y ET para tu vehículo.' },
-  ];
+export function meta(args: Route.MetaArgs) {
+  const s = seoStrings(args).wheels;
+  return seoMeta(args, { title: s.title, description: s.description });
 }
 
 export function loader() {
@@ -33,7 +33,7 @@ export default function Wheels({ loaderData }: Route.ComponentProps) {
           En móvil se oculta: se va directo a las llantas. */}
       <section
         className="page-hero page-hero--ph page-hero--compact page-hero--desktop-only"
-        style={{ '--hero-bg': "url('/images/wheels-hero.jpg')" } as CSSProperties}
+        style={{ '--hero-bg': cssBackground('/images/wheels-hero.jpg') } as CSSProperties}
       >
         <div className="container">
           <span className="eyebrow" style={{ color: '#ededed' }}>{w.heroEyebrow}</span>

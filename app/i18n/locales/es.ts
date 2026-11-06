@@ -48,6 +48,8 @@ export const es: TranslationKeys = {
     s3Body:
       'El modelo se caracteriza por 10 radios divididos que aportan altas prestaciones de rigidez, diseño y geometría a nivel competición. Proceso de fabricación flow forming, PCD 5×120, ajuste milimétrico a especificación OEM. El acabado en polvo negro metálico se aplica en varias capas, bajo condiciones controladas, resistente al polvo de freno y al paso del tiempo. Presencia técnica, carácter propio.',
     s3Cta: 'Ver Victoria en detalle →',
+    altDetail: 'Llantas SAMORAI Victoria en tres acabados, revisadas a mano en el estudio',
+    altVictoria: 'Llanta de aleación SAMORAI Victoria de 18″ en Black Metallic',
     quotePre: '“El ',
     quoteAccent: 'equilibrio',
     quotePost: ' no es un destino. Es el punto de partida.”',
@@ -82,6 +84,10 @@ export const es: TranslationKeys = {
     value3Title: 'Lealtad que se construye',
     value3Text:
       'Una Dynasty se construye entre iguales. Respeto y compromiso definen cada relación: con cada distribuidor, cada cliente, cada kilómetro compartido.',
+    altHistory: 'Una persona del equipo SAMORAI frente a una llanta Victoria Antracita Grey',
+    altValue1: 'Perfil del barril de la llanta SAMORAI Victoria',
+    altValue2: 'Limpieza a mano de una llanta SAMORAI Victoria Antracita Grey',
+    altValue3: 'Tapa central con el emblema SAMORAI',
     quoteMain:
       'Cuando la mente se abre, recibe. Las ideas no desaparecen, viajan. Si no las escuchas, encuentran otra mente dispuesta a actuar.',
     quoteAccent: 'Nosotros elegimos escuchar.',
@@ -95,5 +101,45 @@ export const es: TranslationKeys = {
   product: {
     description:
       'La Victoria es la primera llanta comercial de SAMORAI, nuestra declaración de lo que significa la ingeniería de precisión guiada por la pasión por el automóvil. Diseñada en torno a un PCD 5×120 con buje central de 72,6 mm, ofrece tolerancias OEM exactas y una estética que eleva cualquier proyecto. Está disponible en tres acabados: Antracita Grey, Black Metallic y Silver Metallic. Es compatible con una amplia gama de vehículos 5×120 con buje central de 72,6 mm. Verifica siempre el fitment de tu vehículo antes de comprar.',
+  },
+  seo: {
+    ogLocale: 'es_ES',
+    home: {
+      title: 'SAMORAI | Llantas de aleación premium 18″ 5×120',
+      description:
+        'SAMORAI Victoria: llantas de aleación FlowForming de 18″, PCD 5×120 y buje 72,6 mm. Tres acabados de autor y envío gratuito. Construimos identidad, rueda a rueda.',
+    },
+    dynasty: {
+      title: 'The Dynasty | SAMORAI',
+      description:
+        'Devolver el arte de la personalización a la automoción. La visión, la historia y los valores detrás de las llantas SAMORAI.',
+    },
+    wheels: {
+      title: 'Las llantas | Llantas 18″ 5×120 | SAMORAI',
+      description:
+        'Llantas de aleación SAMORAI Victoria: 18″, PCD 5×120, buje 72,6 mm. Antracita Grey, Black Metallic y Silver Metallic. Elige medida y ET para tu coche.',
+    },
+    product: {
+      title: 'Llanta {name} 18″ 5×120 | SAMORAI',
+      description:
+        'Llanta {name} de SAMORAI: aleación de aluminio A356.2 FlowForming, 18″, PCD 5×120, buje 72,6 mm. Tres acabados. Desde {price} por llanta, IVA incluido.',
+    },
+    dealers: {
+      title: 'The Dealers | SAMORAI',
+      description: 'Encuentra un distribuidor oficial de SAMORAI o solicita información para serlo.',
+    },
+    contact: {
+      title: 'Contacto | SAMORAI',
+      description:
+        'Contacta con SAMORAI: asistencia de fitment, consultas de pedido, preguntas técnicas y formulario de contacto.',
+    },
+    legal: {
+      title: 'Aviso legal | SAMORAI',
+      description: 'Aviso legal de SAMORAI Wheels: datos del titular, condiciones de uso y propiedad intelectual.',
+    },
+    privacy: { title: 'Política de privacidad | SAMORAI', description: 'Política de privacidad de SAMORAI Wheels.' },
+    cookies: { title: 'Política de cookies | SAMORAI', description: 'Política de cookies de SAMORAI Wheels.' },
+    cart: { title: 'Carrito | SAMORAI', description: 'Tu selección de llantas SAMORAI.' },
+    breadcrumbHome: 'Inicio',
   },
 };

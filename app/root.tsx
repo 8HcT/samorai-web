@@ -3,14 +3,17 @@ import {
   Links,
   Meta,
   Outlet,
+  redirect,
   Scripts,
   ScrollRestoration,
-  useRouteLoaderData,
 } from 'react-router';
 
 import type { Route } from './+types/root';
 import '~/styles/global.css';
-import { resolveLocale } from '~/i18n/config';
+import { preferredLocale, resolveLocale } from '~/i18n/config';
+import { localeFromPath, localizePath } from '~/i18n/paths';
+import { useLocale } from '~/i18n/useT';
+import { canonicalOrigin } from '~/lib/env.server';
 import {
   GA_MEASUREMENT_ID,
   GTM_CONTAINER_ID,
@@ -21,18 +24,33 @@ import {
 const ANALYTICS_ENABLED = import.meta.env.PROD;
 
 export function loader({ request }: Route.LoaderArgs) {
-  // Idioma: cookie explícita del usuario > detección por Accept-Language.
-  const locale = resolveLocale(
-    request.headers.get('Cookie'),
-    request.headers.get('Accept-Language')
-  );
-  return { locale };
+  const url = new URL(request.url);
+  const cookie = request.headers.get('Cookie');
+  const acceptLanguage = request.headers.get('Accept-Language');
+
+  // Las páginas públicas llevan el idioma en la URL (ES raíz, EN /en). Si un
+  // visitante que prefiere inglés aterriza en la versión española, se le
+  // lleva a la inglesa (solo en la carga inicial; nunca a buscadores).
+  const fromPath = localeFromPath(url.pathname);
+  if (
+    fromPath === 'es' &&
+    preferredLocale(cookie, acceptLanguage, request.headers.get('User-Agent')) === 'en'
+  ) {
+    throw redirect(`${localizePath(url.pathname, 'en')}${url.search}`, {
+      status: 302,
+      headers: { Vary: 'Accept-Language, Cookie' },
+    });
+  }
+
+  // Resto de páginas (carrito, cuenta…): cookie > Accept-Language.
+  const locale = fromPath ?? resolveLocale(cookie, acceptLanguage);
+  return { locale, origin: canonicalOrigin(request) };
 }
 
 export const links: Route.LinksFunction = () => [
-  // Icono de la web: SVG (moderno) con fallback al .ico para navegadores viejos.
   { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
-  { rel: 'alternate icon', href: '/favicon.ico' },
+  { rel: 'icon', href: '/favicon-48.png', type: 'image/png', sizes: '48x48' },
+  { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
   {
     rel: 'preconnect',
@@ -40,18 +58,18 @@ export const links: Route.LinksFunction = () => [
     crossOrigin: 'anonymous',
   },
   {
-    // Montserrat es la fuente real del cuerpo. Saira y Pinyon Script son
-    // los fallbacks de Bank Gothic / Sloop Script hasta subir los .woff2
-    // a public/fonts/ (handoff §6).
+    // Montserrat es la fuente real del cuerpo. Pinyon Script es el fallback
+    // de Sloop Script hasta subir su archivo a public/fonts/ (handoff §6).
+    // Bank Gothic ya se sirve desde public/fonts/ (sin Saira).
     rel: 'stylesheet',
-    href: 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Saira:wght@400;500;600;700&family=Pinyon+Script&display=swap',
+    href: 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Pinyon+Script&display=swap',
   },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const data = useRouteLoaderData('root') as { locale?: string } | undefined;
+  const locale = useLocale();
   return (
-    <html lang={data?.locale ?? 'en'} suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />

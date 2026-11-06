@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import { useLocalePath } from '~/i18n/useT';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost';
 type ButtonSize = 'small' | 'medium' | 'large';
@@ -32,6 +33,7 @@ export function Button({
   children,
   'aria-label': ariaLabel,
 }: ButtonProps) {
+  const lp = useLocalePath();
   const classes = [
     'btn',
     VARIANT_CLASS[variant],
@@ -45,7 +47,7 @@ export function Button({
 
   if (href && !disabled) {
     return (
-      <Link to={href} className={classes} aria-label={ariaLabel}>
+      <Link to={lp(href)} className={classes} aria-label={ariaLabel}>
         {children}
       </Link>
     );

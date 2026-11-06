@@ -1,4 +1,5 @@
 import type { Route } from './+types/dealers';
+import { seoMeta, seoStrings } from '~/lib/seo';
 import { useEffect } from 'react';
 import { redirect } from 'react-router';
 import { trackEvent } from '~/lib/analytics/trackEvent';
@@ -12,11 +13,9 @@ export function loader() {
   return redirect('/', 307);
 }
 
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: 'The Dealers | SAMORAI' },
-    { name: 'description', content: 'Find an authorized SAMORAI dealer or enquire about becoming a distribution partner.' },
-  ];
+export function meta(args: Route.MetaArgs) {
+  const s = seoStrings(args).dealers;
+  return seoMeta(args, { title: s.title, description: s.description, noindex: true });
 }
 
 export default function Dealers() {

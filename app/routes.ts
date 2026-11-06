@@ -1,15 +1,38 @@
 import { type RouteConfig, index, layout, route } from '@react-router/dev/routes';
 
-export default [
-  layout('routes/_layout.tsx', [
-    index('routes/home.tsx'),
+/**
+ * Páginas públicas con versión por idioma (SEO): castellano en la raíz e
+ * inglés bajo `/en`. Mismo módulo, id distinto. La lista de rutas debe
+ * coincidir con `app/i18n/paths.ts`.
+ */
+function localizedPages(prefix: '' | 'en') {
+  const at = (path: string) => (prefix ? `${prefix}/${path}` : path);
+  const id = (name: string) => (prefix ? { id: `${prefix}/${name}` } : {});
+  return [
+    prefix ? route(prefix, 'routes/home.tsx', id('home')) : index('routes/home.tsx'),
 
     /* — Brand IA (Sección 2 del Master Brief) — */
-    route('the-dynasty', 'routes/the-dynasty.tsx'),
-    route('the-wheels', 'routes/wheels.tsx'),
-    route('the-wheels/:slug', 'routes/wheels.$slug.tsx'),
-    route('the-dealers', 'routes/dealers.tsx'),
-    route('contacto', 'routes/support.tsx'),
+    route(at('the-dynasty'), 'routes/the-dynasty.tsx', id('the-dynasty')),
+    route(at('the-wheels'), 'routes/wheels.tsx', id('wheels')),
+    route(at('the-wheels/:slug'), 'routes/wheels.$slug.tsx', id('wheels.$slug')),
+    route(at('the-dealers'), 'routes/dealers.tsx', id('dealers')),
+    route(at('contacto'), 'routes/support.tsx', id('support')),
+
+    /* — Legales (texto pendiente de redacción legal) — */
+    route(at('legal'), 'routes/legal.tsx', id('legal')),
+    route(at('privacidad'), 'routes/privacidad.tsx', id('privacidad')),
+    route(at('cookies'), 'routes/cookies.tsx', id('cookies')),
+  ];
+}
+
+export default [
+  /* — SEO: generados en servidor (dominio y entorno de cada despliegue) — */
+  route('robots.txt', 'routes/robots.txt.tsx'),
+  route('sitemap.xml', 'routes/sitemap.xml.tsx'),
+
+  layout('routes/_layout.tsx', [
+    ...localizedPages(''),
+    ...localizedPages('en'),
 
     /* — Commerce (carrito Stripe) — */
     route('cart', 'routes/cart.tsx'),
@@ -31,11 +54,6 @@ export default [
     route('cuenta/contrasena', 'routes/cuenta.contrasena.tsx'),
     route('cuenta/salir', 'routes/cuenta.salir.tsx'),
     route('auth/confirm', 'routes/auth.confirm.tsx'),
-
-    /* — Legales (texto pendiente de redacción legal) — */
-    route('legal', 'routes/legal.tsx'),
-    route('privacidad', 'routes/privacidad.tsx'),
-    route('cookies', 'routes/cookies.tsx'),
 
     /* — Redirects de URLs antiguas — */
     route('wheels', 'routes/shop.tsx'),              // → /the-wheels

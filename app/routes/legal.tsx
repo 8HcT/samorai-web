@@ -1,12 +1,10 @@
 import type { Route } from './+types/legal';
+import { seoMeta, seoStrings } from '~/lib/seo';
 import { LegalPage } from '~/components/LegalPage';
 
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: 'Aviso legal | SAMORAI' },
-    { name: 'description', content: 'Aviso legal de SAMORAI Wheels: datos del titular, condiciones de uso y propiedad intelectual.' },
-    { name: 'robots', content: 'noindex' },
-  ];
+export function meta(args: Route.MetaArgs) {
+  const s = seoStrings(args).legal;
+  return seoMeta(args, { title: s.title, description: s.description, noindex: true });
 }
 
 export default function Legal() {

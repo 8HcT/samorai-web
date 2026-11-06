@@ -1,4 +1,5 @@
 import type { Route } from './+types/success';
+
 import { useEffect } from 'react';
 import { Button } from '~/components/Button';
 import { useCart } from '~/lib/cart/CartContext';
@@ -6,7 +7,7 @@ import { formatPrice } from '~/lib/money';
 import { getStripe, isStripeConfigured } from '~/lib/stripe/stripe.server';
 
 export function meta({}: Route.MetaArgs) {
-  return [{ title: 'Pedido confirmado | SAMORAI' }];
+  return [{ title: 'Pedido confirmado | SAMORAI' }, { name: 'robots', content: 'noindex, nofollow' }];
 }
 
 export async function loader({ request }: Route.LoaderArgs) {

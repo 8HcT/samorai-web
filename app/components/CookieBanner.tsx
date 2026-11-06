@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
-import { useT } from '~/i18n/useT';
+import { useLocalePath, useT } from '~/i18n/useT';
 import { CONSENT_STORAGE_KEY as STORAGE_KEY, updateAnalyticsConsent } from '~/lib/analytics/google';
 
 /**
@@ -11,6 +11,7 @@ import { CONSENT_STORAGE_KEY as STORAGE_KEY, updateAnalyticsConsent } from '~/li
 export function CookieBanner() {
   const [visible, setVisible] = useState(false);
   const t = useT();
+  const lp = useLocalePath();
 
   useEffect(() => {
     try {
@@ -37,7 +38,7 @@ export function CookieBanner() {
     >
       <p>
         {t.cookie.message}{' '}
-        <Link to="/cookies">{t.cookie.policyLink}</Link>.
+        <Link to={lp('/cookies')}>{t.cookie.policyLink}</Link>.
       </p>
       <div className="acts">
         <button className="btn btn-ghost btn-sm" onClick={() => decide('rejected')}>
