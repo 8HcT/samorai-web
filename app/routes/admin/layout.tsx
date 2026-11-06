@@ -43,6 +43,7 @@ const NAV = [
   { to: '/admin', label: 'Panel', end: true, presale: false },
   { to: '/admin/tiradas', label: 'Tiradas', end: false, presale: true },
   { to: '/admin/reservas', label: 'Reservas', end: false, presale: true },
+  { to: '/admin/precios', label: 'Precios', end: false, presale: false },
   { to: '/admin/pedidos', label: 'Pedidos', end: false, presale: false },
   { to: '/admin/correos', label: 'Correos', end: false, presale: true },
 ];

@@ -5,6 +5,8 @@ import { getWidthsForFinish } from '~/data/products';
 import { formatSize } from '~/lib/format';
 import { useLocalePath } from '~/i18n/useT';
 import { ProductMedia, FINISH_SWATCH_CLASS as PLACEHOLDER_CLASS } from './ProductMedia';
+import { PriceTag, PromoBadge } from './PriceTag';
+import type { VariantPrice } from '~/lib/pricing';
 
 interface ProductCardProps {
   product: Product;
@@ -14,9 +16,11 @@ interface ProductCardProps {
    * enlaza a la ficha con ese acabado preseleccionado (`?finish=<id>`).
    */
   finish?: ProductFinish;
+  /** Precio más bajo vigente (con promoción si la hay). Sin él, `priceLabel`. */
+  price?: VariantPrice | null;
 }
 
-export function ProductCard({ product, activeColor, finish }: ProductCardProps) {
+export function ProductCard({ product, activeColor, finish, price }: ProductCardProps) {
   // Hover largo (~3 s) → cambia a la imagen secundaria del acabado.
   const [showSecondary, setShowSecondary] = useState(false);
   const timer = useRef<number | null>(null);
@@ -55,9 +59,10 @@ export function ProductCard({ product, activeColor, finish }: ProductCardProps) 
       >
         <div className="ph">
           <ProductMedia color={finish.color} src={src} alt={`${product.model} — ${finish.name}`} />
-          {product.featured && (
+          {(product.featured || price?.promotion) && (
             <div className="badges">
-              <span className="badge badge-new">New</span>
+              {product.featured && <span className="badge badge-new">New</span>}
+              {price?.promotion && <PromoBadge promotion={price.promotion} />}
             </div>
           )}
           <div className="ov">
@@ -69,7 +74,11 @@ export function ProductCard({ product, activeColor, finish }: ProductCardProps) 
           <p className="coll">Wheels · {product.model}</p>
           <h3 className="nm">{finish.name}</h3>
           <div className="row">
-            <span className="price">{product.priceLabel}</span>
+            {price ? (
+              <PriceTag price={price} prefix="Desde" className="price" />
+            ) : (
+              <span className="price">{product.priceLabel}</span>
+            )}
             <span className="caption">{sizes.join(' · ')}</span>
           </div>
         </div>

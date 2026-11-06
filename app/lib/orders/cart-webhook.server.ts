@@ -10,13 +10,25 @@ import { sendOrderEmails } from '~/lib/email/email.server';
 import { recordOrder, type OrderAddress, type OrderLineRecord, type OrderRecord } from './orders.server';
 
 /** Reconstruye las líneas desde `metadata.cart` ("variantId:qty,..."). */
-function parseCartMeta(raw: string | null | undefined): { variantId: string; quantity: number }[] {
+/**
+ * `variantId:cantidad[:precioUnitarioCobrado]`. El precio (céntimos) lo
+ * escribe el servidor al crear la sesión: es el realmente cobrado, con la
+ * promoción aplicada. Las sesiones antiguas no lo llevan.
+ */
+export function parseCartMeta(
+  raw: string | null | undefined
+): { variantId: string; quantity: number; unitPriceCents: number | null }[] {
   if (!raw) return [];
   return raw
     .split(',')
     .map((pair) => {
-      const [variantId, qty] = pair.split(':');
-      return { variantId, quantity: Math.max(1, Math.floor(Number(qty) || 1)) };
+      const [variantId, qty, unit] = pair.split(':');
+      const cents = Number(unit);
+      return {
+        variantId,
+        quantity: Math.max(1, Math.floor(Number(qty) || 1)),
+        unitPriceCents: unit != null && Number.isInteger(cents) && cents > 0 ? cents : null,
+      };
     })
     .filter((l) => l.variantId);
 }
@@ -65,10 +77,13 @@ export async function processCartSession(session: Stripe.Checkout.Session): Prom
       variantId: l.variantId,
       productName: found ? found.product.name : 'Desconocido',
       quantity: l.quantity,
-      // El precio se recalcula desde la regla de ancho por si la
-      // referencia se quedara sin `priceCents` en los datos.
+      // Precio cobrado (con promoción). Sesiones antiguas sin él: precio por
+      // defecto de la referencia.
       unitPriceCents:
-        found?.variant.priceCents ?? (found ? unitPriceCentsForWidth(found.variant.width) : null) ?? 0,
+        l.unitPriceCents ??
+        found?.variant.priceCents ??
+        (found ? unitPriceCentsForWidth(found.variant.width) : null) ??
+        0,
     };
   });
 

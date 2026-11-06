@@ -7,14 +7,17 @@ import { products } from '~/data/products';
 import { trackEvent } from '~/lib/analytics/trackEvent';
 import { ProductCard } from '~/components/ProductCard';
 import { useT } from '~/i18n/useT';
+import { buildPriceBook, lowestPrice } from '~/lib/pricing';
+import { loadPricing } from '~/lib/pricing.server';
 
 export function meta(args: Route.MetaArgs) {
   const s = seoStrings(args).wheels;
   return seoMeta(args, { title: s.title, description: s.description });
 }
 
-export function loader() {
-  return { products };
+export async function loader() {
+  const priceBook = buildPriceBook(await loadPricing(), products);
+  return { products, priceBook };
 }
 
 export default function Wheels({ loaderData }: Route.ComponentProps) {
@@ -52,7 +55,14 @@ export default function Wheels({ loaderData }: Route.ComponentProps) {
         {product ? (
           <div className="product-grid product-grid--models">
             {product.finishes.map((finish) => (
-              <ProductCard key={finish.id} product={product} finish={finish} />
+              <ProductCard
+                key={finish.id}
+                product={product}
+                finish={finish}
+                price={lowestPrice(
+                  product.variants.filter((v) => v.finishId === finish.id).map((v) => loaderData.priceBook[v.id])
+                )}
+              />
             ))}
           </div>
         ) : (

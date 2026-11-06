@@ -152,6 +152,22 @@ Guía técnica completa: **`PRESALE.md`**. En resumen:
 | P8 | **Validación expresa** para activar `PRESALE_LIVE_PAYMENTS_ENABLED` (cobros reales) y `PRESALE_BULK_EMAILS_ENABLED` (correos automáticos) | Cliente |
 
 Mientras no se haga P1 la web sigue exactamente como ahora (carrito sin tiradas).
+Además, la preventa queda **apagada** hasta poner `PRESALE_ENABLED=true` en Vercel (función futura).
+
+---
+
+## R · Precios y promociones desde `/admin/precios` (para Black Friday)
+
+| # | Qué | Quién |
+|---|---|---|
+| R1 | Aplicar en Supabase las migraciones (P1), incluida `20261106100000_pricing_promotions.sql` (precios + promociones) | Tú |
+| R2 | P3 (`SUPABASE_ANON_KEY`), P4 (URL `/auth/confirm`) y P5 (primer administrador): el admin necesita iniciar sesión | Tú |
+| R3 | Crear la promoción en `/admin/precios`: nombre, etiqueta, % y fechas (hora de Madrid), a qué modelos/acabados aplica | Cliente / tú |
+
+- El precio se calcula en el servidor y Stripe cobra el importe con descuento. En el checkout y en el recibo aparece la línea con «Black Friday −20%» y el precio anterior.
+- Ya **no** se usan `STRIPE_PRICE_ID_LOW/HIGH`: los precios salen de la base de datos (o de los valores por defecto si no la hay).
+- Si la base de datos no responde: las páginas muestran el precio por defecto sin promoción, y el checkout **no cobra** (aviso de error en el carrito).
+- La preventa (desactivada) sigue usando sus propios precios; no le afectan estas promociones.
 
 ---
 

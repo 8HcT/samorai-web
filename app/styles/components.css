@@ -2722,3 +2722,17 @@
   .config-qty { align-self: center; }
   .config-specs__grid { grid-template-columns: 1fr; }
 }
+
+/* Precios con promoción (Black Friday, etc.): anterior tachado + nuevo */
+.badge-promo {
+  background: var(--s-black);
+  border: 1px solid var(--s-gold);
+  color: var(--s-gold);
+}
+.price-tag { display: inline-flex; align-items: baseline; gap: 0.4em; flex-wrap: wrap; }
+.price-was {
+  color: var(--color-text-muted);
+  text-decoration-thickness: 1px;
+  font-size: 0.8em;
+}
+.price-now { color: var(--s-gold); }

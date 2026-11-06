@@ -10,6 +10,15 @@ import { formatSize, formatEt } from '~/lib/format';
 import { trackEvent } from '~/lib/analytics/trackEvent';
 import { Button } from '~/components/Button';
 import { SectionHeader } from '~/components/SectionHeader';
+import { PriceTag, PromoBadge } from '~/components/PriceTag';
+import { products } from '~/data/products';
+import { buildPriceBook } from '~/lib/pricing';
+import { loadPricing } from '~/lib/pricing.server';
+
+/** Precios vigentes (y promociones) de todo el catálogo para pintar el carrito. */
+export async function loader() {
+  return { priceBook: buildPriceBook(await loadPricing(), products) };
+}
 
 export function meta(args: Route.MetaArgs) {
   const s = seoStrings(args).cart;
@@ -31,13 +40,18 @@ const CHECKOUT_ERRORS: Record<string, string> = {
     'Las llantas Victoria se venden ahora por juegos de 4 desde su ficha (preventa o compra directa con stock limitado). Quita el artículo del carrito y resérvalo o cómpralo desde la ficha del producto.',
 };
 
-export default function Cart() {
+export default function Cart({ loaderData }: Route.ComponentProps) {
   const { lines, setQuantity, remove, ready, count } = useCart();
   const [searchParams] = useSearchParams();
   const errorKey = searchParams.get('error');
 
-  const resolved = resolveCart(lines);
+  const resolved = resolveCart(lines, loaderData.priceBook);
   const totalCents = cartTotalCents(resolved);
+  // Ahorro por promociones (ya descontado del total).
+  const savedCents = resolved.reduce(
+    (sum, l) => sum + (l.price ? (l.price.baseCents - l.price.finalCents) * l.quantity : 0),
+    0
+  );
 
   useEffect(() => {
     if (ready) trackEvent('cart_viewed', { itemCount: count });
@@ -104,8 +118,13 @@ export default function Cart() {
                     <p className="cart-item__spec">{finishName}</p>
                     <p className="cart-item__spec">{spec}</p>
                     <p className="cart-item__spec">
-                      Precio unitario: {formatPrice(line.unitPriceCents)} · IVA incluido
+                      Precio unitario: <PriceTag price={line.price} /> · IVA incluido
                     </p>
+                    {line.price?.promotion && (
+                      <p className="cart-item__spec">
+                        <PromoBadge promotion={line.price.promotion} />
+                      </p>
+                    )}
                     <div className="cart-item__qty" aria-label="Cantidad">
                       <button
                         className="cart-item__qty-btn"
@@ -134,7 +153,9 @@ export default function Cart() {
                     </div>
                   </div>
 
-                  <div className="cart-item__price">{formatPrice(line.lineTotalCents)}</div>
+                  <div className="cart-item__price">
+                    <PriceTag price={line.price} quantity={line.quantity} />
+                  </div>
                 </div>
               );
             })}
@@ -147,6 +168,12 @@ export default function Cart() {
               <span>Subtotal (IVA incluido)</span>
               <span>{formatPrice(totalCents)}</span>
             </div>
+            {savedCents > 0 && (
+              <div className="cart-summary__row">
+                <span>Ahorras (promoción)</span>
+                <span className="price-now">−{formatPrice(savedCents)}</span>
+              </div>
+            )}
             <div className="cart-summary__row">
               <span>Envío</span>
               <span>Calculado en el checkout</span>

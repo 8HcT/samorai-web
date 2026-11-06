@@ -4,9 +4,11 @@ import type Stripe from 'stripe';
 import { getStripe } from '~/lib/stripe/stripe.server';
 import { getVariantById, getFinish } from '~/data/products';
 import { CURRENCY } from '~/lib/money';
-import { unitPriceCentsForWidth, priceTierKeyForWidth } from '~/lib/pricing';
+import { priceVariant, type PricingSnapshot } from '~/lib/pricing';
+import { loadPricing } from '~/lib/pricing.server';
+import { formatPrice } from '~/lib/money';
 import { formatSize, formatEt } from '~/lib/format';
-import { fallbackPriceCents, siteUrl, stripePriceId } from '~/lib/env.server';
+import { fallbackPriceCents, siteUrl } from '~/lib/env.server';
 import { shippingCheckoutParams } from '~/lib/stripe/checkout-options.server';
 import { isManagedByBatches } from '~/lib/presale/offers.server';
 
@@ -37,7 +39,18 @@ export async function action({ request }: Route.ActionArgs) {
 
   if (lines.length === 0) return redirect('/cart?error=empty');
 
+  // Precios y promociones vigentes. Si la base de datos falla, NO se cobra:
+  // podría aplicarse un precio que ya no es el correcto.
+  let pricing: PricingSnapshot;
+  try {
+    pricing = await loadPricing({ strict: true });
+  } catch {
+    return redirect('/cart?error=price');
+  }
+
   const fallback = fallbackPriceCents();
+  const now = new Date();
+  const charged: string[] = [];
   const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
   const summaryParts: string[] = [];
   let missingPrice = false;
@@ -61,48 +74,52 @@ export async function action({ request }: Route.ActionArgs) {
       return redirect('/cart?error=managed');
     }
 
-    // El precio lo decide SIEMPRE el servidor a partir del ancho de la
-    // referencia (IVA incluido). El importe del frontend nunca es autoridad.
-    const expected = unitPriceCentsForWidth(variant.width);
-    const unitAmount = variant.priceCents ?? expected ?? fallback;
-
-    // Coherencia: el precio guardado debe coincidir con la regla de ancho.
-    if (unitAmount == null || (variant.priceCents != null && variant.priceCents !== expected)) {
+    // El precio lo decide SIEMPRE el servidor: precio vigente del modelo y
+    // ancho (editable en /admin) menos la promoción activa, si la hay. El
+    // importe del frontend nunca es autoridad.
+    const price =
+      priceVariant(pricing, product.slug, variant, now) ??
+      (fallback != null ? { baseCents: fallback, finalCents: fallback, promotion: null } : null);
+    if (!price) {
       missingPrice = true;
       continue;
     }
 
     const finishName = getFinish(product, variant.finishId)?.name ?? variant.color;
     const size = formatSize(variant.diameter, variant.width);
-    summaryParts.push(`${product.model} ${finishName} ${size} ${formatEt(variant.et)} ×${quantity}`);
+    const promo = price.promotion;
+    summaryParts.push(
+      `${product.model} ${finishName} ${size} ${formatEt(variant.et)} ×${quantity}${promo ? ` (${promo.badge} -${promo.percentOff}%)` : ''}`
+    );
+    charged.push(`${variant.id}:${quantity}:${price.finalCents}`);
 
-    // Si hay un Price real de Stripe para este nivel, se usa su ID (fuente de
-    // verdad en Stripe). Si no, se cae a price_data con el importe del servidor.
-    const priceId = stripePriceId(priceTierKeyForWidth(variant.width));
-    if (priceId) {
-      lineItems.push({ price: priceId, quantity });
-    } else {
-      lineItems.push({
-        quantity,
-        price_data: {
-          currency: CURRENCY,
-          // Importe FINAL con IVA incluido; sin impuesto añadido encima.
-          unit_amount: expected,
-          product_data: {
-            name: `${product.name} · ${finishName} · ${size} ${formatEt(variant.et)}`,
-            metadata: {
-              model: product.model,
-              finish: finishName,
-              finishId: variant.finishId,
-              size,
-              et: formatEt(variant.et),
-              variantId: variant.id,
-              taxIncluded: 'true',
-            },
+    // Siempre price_data: el importe puede cambiar desde /admin o por una
+    // promoción, así que no se usan Prices fijos de Stripe.
+    lineItems.push({
+      quantity,
+      price_data: {
+        currency: CURRENCY,
+        // Importe FINAL con IVA incluido; sin impuesto añadido encima.
+        unit_amount: price.finalCents,
+        product_data: {
+          name: `${product.name} · ${finishName} · ${size} ${formatEt(variant.et)}${promo ? ` · ${promo.badge} −${promo.percentOff}%` : ''}`,
+          ...(promo
+            ? { description: `Precio anterior ${formatPrice(price.baseCents)} por llanta. ${promo.badge}: −${promo.percentOff}%.` }
+            : {}),
+          metadata: {
+            model: product.model,
+            finish: finishName,
+            finishId: variant.finishId,
+            size,
+            et: formatEt(variant.et),
+            variantId: variant.id,
+            taxIncluded: 'true',
+            basePriceCents: String(price.baseCents),
+            ...(promo ? { promotionId: promo.id, promotion: `${promo.badge} -${promo.percentOff}%` } : {}),
           },
         },
-      });
-    }
+      },
+    });
   }
 
   if (missingPrice || lineItems.length === 0) {
@@ -124,13 +141,14 @@ export async function action({ request }: Route.ActionArgs) {
       payment_intent_data: {
         description: summaryParts.join('; ').slice(0, 300),
         metadata: {
-          cart: lines.map((l) => `${l.variantId}:${l.quantity}`).join(',').slice(0, 490),
+          cart: charged.join(',').slice(0, 490),
         },
       },
       metadata: {
         // `cart` es la fuente autoritativa (el webhook resuelve todo desde el
         // variantId); `summary` es legible e incluye modelo/acabado/medida/ET.
-        cart: lines.map((l) => `${l.variantId}:${l.quantity}`).join(','),
+        // variantId:cantidad:precioUnitarioCobrado (céntimos, con promoción).
+        cart: charged.join(',').slice(0, 490),
         summary: summaryParts.join('; ').slice(0, 490),
         itemCount: String(lines.reduce((s, l) => s + (Number(l.quantity) || 0), 0)),
       },

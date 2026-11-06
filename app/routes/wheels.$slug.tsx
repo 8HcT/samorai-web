@@ -10,7 +10,9 @@ import {
 import { trackEvent } from '~/lib/analytics/trackEvent';
 import { useCart } from '~/lib/cart/CartContext';
 import { formatPrice } from '~/lib/money';
-import { unitPriceCentsForWidth } from '~/lib/pricing';
+import { buildPriceBook, lowestPrice } from '~/lib/pricing';
+import { loadPricing } from '~/lib/pricing.server';
+import { PriceTag, PromoBadge } from '~/components/PriceTag';
 import { formatSize, formatEt } from '~/lib/format';
 import { Button } from '~/components/Button';
 import { SpecList } from '~/components/SpecList';
@@ -42,11 +44,12 @@ const AVAILABILITY: Record<ProductOffer['mode'], string> = {
 export function meta(args: Route.MetaArgs) {
   const { data } = args;
   if (!data?.product) return [{ title: 'SAMORAI' }, { name: 'robots', content: 'noindex' }];
-  const { product, galleryImages, offer } = data;
+  const { product, galleryImages, offer, priceBook } = data;
   const { origin, locale } = rootSeoData(args);
   const s = seoStrings(args);
 
-  const prices = product.variants.map((v) => v.priceCents).filter((c): c is number => c != null);
+  // Precios a pagar (con la promoción vigente, si la hay).
+  const prices = product.variants.map((v) => priceBook[v.id]?.finalCents).filter((c): c is number => c != null);
   const low = Math.min(...prices) / 100;
   const high = Math.max(...prices) / 100;
   const price = locale === 'es' ? `${low} €` : `€${low}`;
@@ -110,9 +113,14 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   }
   // Tirada de fabricación y stock REAL (PostgreSQL, en cada petición). Sin
   // tirada → la ficha funciona con el carrito como siempre.
-  const [offer, session] = await Promise.all([getProductOffer(product), getSessionUser(request)]);
+  const [offer, session, pricing] = await Promise.all([
+    getProductOffer(product),
+    getSessionUser(request),
+    loadPricing(),
+  ]);
+  const priceBook = buildPriceBook(pricing, [product]);
   return data(
-    { product, galleryImages, offer, userEmail: session.user?.email ?? null },
+    { product, galleryImages, offer, priceBook, userEmail: session.user?.email ?? null },
     { headers: session.auth?.headers }
   );
 }
@@ -123,7 +131,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 }
 
 export default function WheelDetail({ loaderData }: Route.ComponentProps) {
-  const { product, galleryImages, offer, userEmail } = loaderData;
+  const { product, galleryImages, offer, priceBook, userEmail } = loaderData;
   const t = useT();
   const lp = useLocalePath();
   const { add } = useCart();
@@ -216,19 +224,28 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
     [product, finishId, width, et]
   );
 
-  // "Desde X €" = precio mínimo entre las referencias.
-  const fromCents = useMemo(
+  // "Desde X €" = precio mínimo (a pagar) entre las referencias del acabado
+  // elegido, o de todo el modelo si aún no hay acabado.
+  const fromPrice = useMemo(
     () =>
-      Math.min(
-        ...product.variants
-          .map((v) => v.priceCents)
-          .filter((c): c is number => c != null)
+      lowestPrice(
+        product.variants
+          .filter((v) => finishId == null || v.finishId === finishId)
+          .map((v) => priceBook[v.id])
       ),
-    [product.variants]
+    [product.variants, priceBook, finishId]
   );
 
-  // Precio unitario según la medida (aparece al elegir tamaño).
-  const unitCents = width != null ? unitPriceCentsForWidth(width) : null;
+  // Precio unitario según la medida (aparece al elegir tamaño). Depende del
+  // ancho y, si hay promoción por acabado, del acabado.
+  const unitPrice =
+    width != null
+      ? lowestPrice(
+          product.variants
+            .filter((v) => v.width === width && (finishId == null || v.finishId === finishId))
+            .map((v) => priceBook[v.id])
+        )
+      : null;
 
   function handleFinishSelect(id: string) {
     setFinishId(id);
@@ -349,11 +366,16 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
 
             {/* Titular de precio (el precio dinámico va abajo, junto al botón) */}
             <p className="product-detail__price">
-              Desde {formatPrice(fromCents)}
+              <PriceTag price={fromPrice} prefix="Desde" />
               <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginLeft: 'var(--space-2)' }}>
                 por llanta
               </span>
             </p>
+            {fromPrice?.promotion && (
+              <p style={{ marginTop: 'calc(-1 * var(--space-2))', marginBottom: 'var(--space-4)' }}>
+                <PromoBadge promotion={fromPrice.promotion} />
+              </p>
+            )}
             <p className="caption" style={{ marginTop: 'calc(-1 * var(--space-3))', marginBottom: 'var(--space-6)' }}>
               IVA incluido. Precio final según la medida seleccionada.
             </p>
@@ -448,11 +470,13 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
                 ET); si falta el ET, se añade el aviso "elige ET". */}
             {offer.mode === 'legacy' && finishId && (
               <div className="product-detail__summary" aria-live="polite">
-                {width != null && unitCents != null ? (
+                {width != null && unitPrice != null ? (
                   <>
-                    <span className="product-detail__summary-total">{formatPrice(unitCents * quantity)}</span>
+                    <PriceTag price={unitPrice} quantity={quantity} className="product-detail__summary-total" />
                     <span className="product-detail__summary-detail">
-                      {quantity} × {formatPrice(unitCents)} · IVA incluido{variant ? '' : ' — elige ET'}
+                      {quantity} × {formatPrice(unitPrice.finalCents)} · IVA incluido
+                      {unitPrice.promotion ? ` · ${unitPrice.promotion.badge} −${unitPrice.promotion.percentOff}%` : ''}
+                      {variant ? '' : ' — elige ET'}
                     </span>
                   </>
                 ) : (

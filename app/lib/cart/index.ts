@@ -1,5 +1,6 @@
 import { getVariantById } from '~/data/products';
 import type { Product, WheelVariant } from '~/types/product';
+import type { PriceBook, VariantPrice } from '~/lib/pricing';
 
 /**
  * Carrito persistido en localStorage. Guardamos lo mínimo
@@ -16,8 +17,10 @@ export interface CartLine {
 export interface ResolvedCartLine extends CartLine {
   product: Product;
   variant: WheelVariant;
-  /** Precio unitario en céntimos, o null si la variante no tiene precio. */
+  /** Precio unitario a pagar en céntimos, o null si la variante no tiene precio. */
   unitPriceCents: number | null;
+  /** Precio completo (base, final y promoción) si se conoce. */
+  price: VariantPrice | null;
   /** Subtotal de la línea en céntimos, o null si falta precio. */
   lineTotalCents: number | null;
 }
@@ -51,18 +54,28 @@ export function writeCart(lines: CartLine[]): void {
   }
 }
 
-/** Resuelve líneas a producto/variante/precio; descarta las inválidas. */
-export function resolveCart(lines: CartLine[]): ResolvedCartLine[] {
+/**
+ * Resuelve líneas a producto/variante/precio; descarta las inválidas.
+ * `priceBook` (del loader) trae los precios vigentes y las promociones; sin
+ * él se usan los precios por defecto de los datos de producto.
+ */
+export function resolveCart(lines: CartLine[], priceBook?: PriceBook): ResolvedCartLine[] {
   const resolved: ResolvedCartLine[] = [];
   for (const line of lines) {
     const found = getVariantById(line.variantId);
     if (!found) continue;
-    const unit = found.variant.priceCents ?? null;
+    const price: VariantPrice | null =
+      priceBook?.[found.variant.id] ??
+      (found.variant.priceCents != null
+        ? { baseCents: found.variant.priceCents, finalCents: found.variant.priceCents, promotion: null }
+        : null);
+    const unit = price?.finalCents ?? null;
     resolved.push({
       ...line,
       product: found.product,
       variant: found.variant,
       unitPriceCents: unit,
+      price,
       lineTotalCents: unit == null ? null : unit * line.quantity,
     });
   }
