@@ -7,6 +7,7 @@ import {
   isStripeLiveKey,
   presaleBulkEmailsEnabled,
   presalePaymentsAllowed,
+  presaleEnabled,
 } from '~/lib/presale/config.server';
 import { PRIVATE_PAGE_HEADERS } from '~/lib/security.server';
 import { StatusChip } from '~/components/admin/AdminViz';
@@ -25,6 +26,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   return data(
     {
       email: user.email ?? '',
+      presale: presaleEnabled(),
       flags: {
         stripeLive: isStripeLiveKey(),
         payments: presalePaymentsAllowed(),
@@ -38,21 +40,21 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 const NAV = [
-  { to: '/admin', label: 'Panel', end: true },
-  { to: '/admin/tiradas', label: 'Tiradas', end: false },
-  { to: '/admin/reservas', label: 'Reservas', end: false },
-  { to: '/admin/pedidos', label: 'Pedidos', end: false },
-  { to: '/admin/correos', label: 'Correos', end: false },
+  { to: '/admin', label: 'Panel', end: true, presale: false },
+  { to: '/admin/tiradas', label: 'Tiradas', end: false, presale: true },
+  { to: '/admin/reservas', label: 'Reservas', end: false, presale: true },
+  { to: '/admin/pedidos', label: 'Pedidos', end: false, presale: false },
+  { to: '/admin/correos', label: 'Correos', end: false, presale: true },
 ];
 
 export default function AdminLayout({ loaderData }: Route.ComponentProps) {
-  const { email, flags } = loaderData;
+  const { email, flags, presale } = loaderData;
   return (
     <div className="admin-shell">
       <header className="admin-header">
         <span className="admin-header__brand">SAMORAI · Admin</span>
         <nav aria-label="Administración" className="admin-nav">
-          {NAV.map((n) => (
+          {NAV.filter((n) => presale || !n.presale).map((n) => (
             <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => (isActive ? 'active' : undefined)}>
               {n.label}
             </NavLink>
@@ -64,14 +66,20 @@ export default function AdminLayout({ loaderData }: Route.ComponentProps) {
       <main className="admin-main">
         <div className="admin-flags" aria-label="Estado de la configuración">
           <StatusChip tone={flags.stripeLive ? 'warning' : 'neutral'}>Stripe {flags.stripeLive ? 'LIVE' : 'modo test'}</StatusChip>
-          <StatusChip tone={flags.payments ? 'good' : 'warning'}>
-            Cobros de preventa {flags.payments ? 'activos' : 'desactivados (PRESALE_LIVE_PAYMENTS_ENABLED)'}
-          </StatusChip>
-          <StatusChip tone={flags.bulkEmails ? 'good' : 'warning'}>
-            Envíos automáticos {flags.bulkEmails ? 'activos' : 'retenidos (PRESALE_BULK_EMAILS_ENABLED)'}
-          </StatusChip>
-          {!flags.accessLinks && <StatusChip tone="critical">Falta ACCESS_LINK_SECRET</StatusChip>}
-          {!flags.cron && <StatusChip tone="critical">Falta CRON_SECRET</StatusChip>}
+          {presale ? (
+            <>
+              <StatusChip tone={flags.payments ? 'good' : 'warning'}>
+                Cobros de preventa {flags.payments ? 'activos' : 'desactivados (PRESALE_LIVE_PAYMENTS_ENABLED)'}
+              </StatusChip>
+              <StatusChip tone={flags.bulkEmails ? 'good' : 'warning'}>
+                Envíos automáticos {flags.bulkEmails ? 'activos' : 'retenidos (PRESALE_BULK_EMAILS_ENABLED)'}
+              </StatusChip>
+              {!flags.accessLinks && <StatusChip tone="critical">Falta ACCESS_LINK_SECRET</StatusChip>}
+              {!flags.cron && <StatusChip tone="critical">Falta CRON_SECRET</StatusChip>}
+            </>
+          ) : (
+            <StatusChip tone="neutral">Preventa desactivada (PRESALE_ENABLED)</StatusChip>
+          )}
         </div>
         <Outlet />
       </main>

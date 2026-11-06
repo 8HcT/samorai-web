@@ -11,6 +11,21 @@ import { env } from '~/lib/env.server';
  * Duración de la sesión de Stripe Checkout. Stripe exige un mínimo de 30
  * minutos; se usa 31 para que el reloj no la deje por debajo del mínimo.
  */
+/**
+ * Interruptor general de la preventa (función futura). Sin
+ * `PRESALE_ENABLED=true` la tienda funciona solo con el carrito: las fichas
+ * ignoran las tiradas, y las páginas de reserva/cuenta y las secciones de
+ * preventa del admin devuelven 404. El login (también del admin) sigue activo.
+ */
+export function presaleEnabled(): boolean {
+  return env('PRESALE_ENABLED') === 'true';
+}
+
+/** Para loaders/actions exclusivos de la preventa. */
+export function assertPresaleEnabled(): void {
+  if (!presaleEnabled()) throw new Response('Not Found', { status: 404 });
+}
+
 export const CHECKOUT_SESSION_MINUTES = 31;
 
 /**

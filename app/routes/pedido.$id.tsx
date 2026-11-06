@@ -1,4 +1,5 @@
 import type { Route } from './+types/pedido.$id';
+import { assertPresaleEnabled } from '~/lib/presale/config.server';
 import { Link } from 'react-router';
 import { formatEt, formatSize } from '~/lib/format';
 import { formatPrice } from '~/lib/money';
@@ -19,6 +20,7 @@ export function headers() {
 }
 
 export async function loader({ request, params }: Route.LoaderArgs) {
+  assertPresaleEnabled();
   const view = await loadOrderView(request, params.id, new URL(request.url).searchParams.get('t'));
   if (!view) throw new Response('Pedido no encontrado', { status: 404 });
   return { view };

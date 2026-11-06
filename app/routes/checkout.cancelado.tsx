@@ -1,4 +1,5 @@
 import type { Route } from './+types/checkout.cancelado';
+import { assertPresaleEnabled } from '~/lib/presale/config.server';
 import { Form, Link, data } from 'react-router';
 import { verifyAccessToken } from '~/lib/presale/access.server';
 import { cancelPendingCheckout, findPendingCheckout, resumeUrl } from '~/lib/presale/checkout.server';
@@ -33,6 +34,7 @@ async function authorizedPending(kind: Kind, id: string | null, token: string | 
  * Stripe antes de liberar, para que no pueda pagarse después).
  */
 export async function loader({ request }: Route.LoaderArgs) {
+  assertPresaleEnabled();
   const { kind, id, token } = readParams(new URL(request.url));
   const pending = await authorizedPending(kind, id, token);
   if (!pending) return { state: 'invalid' as const, kind, id, token, holdExpiresAt: null, resume: null };
@@ -44,6 +46,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
+  assertPresaleEnabled();
   assertSameOrigin(request);
   const { kind, id, token } = readParams(await request.formData());
   const pending = await authorizedPending(kind, id, token);

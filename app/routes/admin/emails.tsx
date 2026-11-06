@@ -3,19 +3,21 @@ import { Form, Link, data, useNavigation } from 'react-router';
 import { requireAdmin } from '~/lib/auth/session.server';
 import { listNotifications, releaseHeldNotifications, requeueNotification } from '~/lib/presale/admin.server';
 import { adminReason } from '~/lib/presale/admin-forms.server';
-import { presaleBulkEmailsEnabled } from '~/lib/presale/config.server';
+import { presaleBulkEmailsEnabled, assertPresaleEnabled } from '~/lib/presale/config.server';
 import { dispatchNotifications } from '~/lib/email/outbox.server';
 import { isUuid } from '~/lib/presale/views.server';
 import { assertSameOrigin } from '~/lib/security.server';
 import { LocalDateTime } from '~/components/presale/LocalDateTime';
 
 export async function loader({ request }: Route.LoaderArgs) {
+  assertPresaleEnabled();
   await requireAdmin(request);
   const status = new URL(request.url).searchParams.get('status') || null;
   return { notifications: await listNotifications(status), status, bulkEnabled: presaleBulkEmailsEnabled() };
 }
 
 export async function action({ request }: Route.ActionArgs) {
+  assertPresaleEnabled();
   assertSameOrigin(request);
   const { user } = await requireAdmin(request);
   const form = await request.formData();

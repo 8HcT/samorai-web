@@ -1,4 +1,5 @@
 import type { Route } from './+types/reserva.$id';
+import { assertPresaleEnabled } from '~/lib/presale/config.server';
 import { Form, Link, data, redirect, useActionData, useNavigation } from 'react-router';
 import { formatEt, formatSize } from '~/lib/format';
 import { formatPrice } from '~/lib/money';
@@ -23,6 +24,7 @@ export function headers() {
 }
 
 export async function loader({ request, params }: Route.LoaderArgs) {
+  assertPresaleEnabled();
   const url = new URL(request.url);
   const view = await loadReservationView(request, params.id, url.searchParams.get('t'));
   if (!view) throw new Response('Reserva no encontrada', { status: 404 });
@@ -31,6 +33,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
 /** Pagar el importe restante: se crea la sesión de Stripe en el momento. */
 export async function action({ request, params }: Route.ActionArgs) {
+  assertPresaleEnabled();
   assertSameOrigin(request);
   const form = await request.formData();
   const token = String(form.get('t') ?? '') || null;

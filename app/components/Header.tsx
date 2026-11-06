@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { NavLink, useLocation } from 'react-router';
+import { NavLink, useLocation, useRouteLoaderData } from 'react-router';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { ThemeToggle } from './ThemeToggle';
 import { useCart } from '~/lib/cart/CartContext';
@@ -22,6 +22,8 @@ export function Header() {
   const lp = useLocalePath();
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  // La cuenta de cliente solo existe con la preventa activa (PRESALE_ENABLED).
+  const presale = (useRouteLoaderData('root') as { presale?: boolean } | undefined)?.presale === true;
 
   const cartLabel = `${t.nav.cart}${ready && count > 0 ? ` (${count})` : ''}`;
 
@@ -53,12 +55,14 @@ export function Header() {
       </nav>
 
       <div className="nv-cta nv-desktop">
-        <NavLink
-          to="/cuenta"
-          className={({ isActive }) => `nv-cart nv-account${isActive ? ' active' : ''}`}
-        >
-          {t.nav.account}
-        </NavLink>
+        {presale && (
+          <NavLink
+            to="/cuenta"
+            className={({ isActive }) => `nv-cart nv-account${isActive ? ' active' : ''}`}
+          >
+            {t.nav.account}
+          </NavLink>
+        )}
         <NavLink
           to="/cart"
           className={({ isActive }) => `nv-cart${isActive ? ' active' : ''}`}
@@ -99,11 +103,13 @@ export function Header() {
                   </NavLink>
                 </li>
               ))}
-              <li>
-                <NavLink to="/cuenta" onClick={() => setOpen(false)}>
-                  {t.nav.account}
-                </NavLink>
-              </li>
+              {presale && (
+                <li>
+                  <NavLink to="/cuenta" onClick={() => setOpen(false)}>
+                    {t.nav.account}
+                  </NavLink>
+                </li>
+              )}
               <li>
                 <NavLink to="/cart" onClick={() => setOpen(false)} className="nv-mobile__cart">
                   {cartLabel}

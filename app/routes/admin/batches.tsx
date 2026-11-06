@@ -1,4 +1,5 @@
 import type { Route } from './+types/batches';
+import { assertPresaleEnabled } from '~/lib/presale/config.server';
 import { Link, data, redirect, useNavigation } from 'react-router';
 import { requireAdmin } from '~/lib/auth/session.server';
 import { catalogProducts, createBatch, listBatches, setBatchProducts } from '~/lib/presale/admin.server';
@@ -9,11 +10,13 @@ import { BatchForm } from '~/components/admin/BatchForm';
 import { StockBar } from '~/components/admin/AdminViz';
 
 export async function loader({ request }: Route.LoaderArgs) {
+  assertPresaleEnabled();
   await requireAdmin(request);
   return { batches: await listBatches(), products: catalogProducts() };
 }
 
 export async function action({ request }: Route.ActionArgs) {
+  assertPresaleEnabled();
   assertSameOrigin(request);
   const { user } = await requireAdmin(request);
   const form = await request.formData();

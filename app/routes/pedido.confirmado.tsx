@@ -1,4 +1,5 @@
 import type { Route } from './+types/pedido.confirmado';
+import { assertPresaleEnabled } from '~/lib/presale/config.server';
 import { redirect } from 'react-router';
 import { accessToken } from '~/lib/presale/access.server';
 import { findOrderBySession } from '~/lib/presale/views.server';
@@ -18,6 +19,7 @@ export function headers() {
  * el webhook; mientras no llega, se espera aquí y se reintenta sola.
  */
 export async function loader({ request }: Route.LoaderArgs) {
+  assertPresaleEnabled();
   const sessionId = new URL(request.url).searchParams.get('session_id') ?? '';
   if (!/^cs_(test|live)_[A-Za-z0-9]+$/.test(sessionId)) return { state: 'invalid' as const };
 

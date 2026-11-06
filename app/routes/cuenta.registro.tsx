@@ -1,4 +1,5 @@
 import type { Route } from './+types/cuenta.registro';
+import { assertPresaleEnabled } from '~/lib/presale/config.server';
 import { Form, Link, data, redirect, useNavigation } from 'react-router';
 import { siteUrl } from '~/lib/env.server';
 import { createAuthClient, getSessionUser, isAuthConfigured } from '~/lib/auth/session.server';
@@ -11,12 +12,14 @@ export function meta({}: Route.MetaArgs) {
 const MIN_PASSWORD_LENGTH = 10;
 
 export async function loader({ request }: Route.LoaderArgs) {
+  assertPresaleEnabled();
   const { user } = await getSessionUser(request);
   if (user) throw redirect('/cuenta');
   return { configured: isAuthConfigured() };
 }
 
 export async function action({ request }: Route.ActionArgs) {
+  assertPresaleEnabled();
   assertSameOrigin(request);
   if (!isAuthConfigured()) return data({ ok: false, message: 'El registro aún no está disponible.' }, { status: 503 });
   const form = await request.formData();

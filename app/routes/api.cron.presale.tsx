@@ -1,7 +1,7 @@
 import type { Route } from './+types/api.cron.presale';
 import { timingSafeEqual } from 'node:crypto';
 import { dispatchNotifications } from '~/lib/email/outbox.server';
-import { cronSecret } from '~/lib/presale/config.server';
+import { cronSecret, presaleEnabled } from '~/lib/presale/config.server';
 import { adminRpc, isPresaleDbConfigured } from '~/lib/presale/rpc.server';
 
 /**
@@ -25,6 +25,9 @@ function authorized(request: Request): boolean {
 async function run(request: Request) {
   if (!authorized(request)) {
     return new Response('Unauthorized', { status: 401 });
+  }
+  if (!presaleEnabled()) {
+    return Response.json({ ok: true, skipped: 'presale_disabled' });
   }
   if (!isPresaleDbConfigured()) {
     return Response.json({ ok: false, error: 'supabase_not_configured' }, { status: 503 });

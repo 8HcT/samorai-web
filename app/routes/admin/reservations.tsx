@@ -1,4 +1,5 @@
 import type { Route } from './+types/reservations';
+import { assertPresaleEnabled } from '~/lib/presale/config.server';
 import { Form, Link } from 'react-router';
 import { requireAdmin } from '~/lib/auth/session.server';
 import { catalogProducts, listBatches, listReservations, reservationFiltersFromUrl } from '~/lib/presale/admin.server';
@@ -8,6 +9,7 @@ import { formatPrice } from '~/lib/money';
 import { LocalDateTime } from '~/components/presale/LocalDateTime';
 
 export async function loader({ request }: Route.LoaderArgs) {
+  assertPresaleEnabled();
   await requireAdmin(request);
   const url = new URL(request.url);
   const filters = reservationFiltersFromUrl(url);

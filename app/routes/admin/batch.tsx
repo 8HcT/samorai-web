@@ -14,7 +14,7 @@ import {
   upsertQuota,
 } from '~/lib/presale/admin.server';
 import { adminReason, parseBatchForm } from '~/lib/presale/admin-forms.server';
-import { presaleBulkEmailsEnabled } from '~/lib/presale/config.server';
+import { presaleBulkEmailsEnabled, assertPresaleEnabled } from '~/lib/presale/config.server';
 import { BATCH_STATUS_LABEL, label } from '~/lib/presale/labels';
 import { isUuid } from '~/lib/presale/views.server';
 import { assertSameOrigin } from '~/lib/security.server';
@@ -25,6 +25,7 @@ import { DemandPanels, KpiPanel } from '~/components/admin/DemandPanels';
 import { LocalDateTime } from '~/components/presale/LocalDateTime';
 
 export async function loader({ request, params }: Route.LoaderArgs) {
+  assertPresaleEnabled();
   await requireAdmin(request);
   if (!isUuid(params.id)) throw new Response('Tirada no encontrada', { status: 404 });
   const detail = await loadBatch(params.id);
@@ -40,6 +41,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 type ActionResult = { ok: boolean; message: string };
 
 export async function action({ request, params }: Route.ActionArgs) {
+  assertPresaleEnabled();
   assertSameOrigin(request);
   const { user } = await requireAdmin(request);
   if (!isUuid(params.id)) throw new Response('Tirada no encontrada', { status: 404 });

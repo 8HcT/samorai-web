@@ -2,16 +2,28 @@ import type { Route } from './+types/dashboard';
 import { Link } from 'react-router';
 import { requireAdmin } from '~/lib/auth/session.server';
 import { loadDashboard } from '~/lib/presale/admin.server';
+import { presaleEnabled } from '~/lib/presale/config.server';
 import { BATCH_STATUS_LABEL, label } from '~/lib/presale/labels';
 import { StatusChip, StockBar } from '~/components/admin/AdminViz';
 import { DemandPanels, KpiPanel } from '~/components/admin/DemandPanels';
 
 export async function loader({ request }: Route.LoaderArgs) {
   await requireAdmin(request);
-  return loadDashboard();
+  if (!presaleEnabled()) return { presale: false as const };
+  return { presale: true as const, ...(await loadDashboard()) };
 }
 
 export default function AdminDashboard({ loaderData }: Route.ComponentProps) {
+  if (!loaderData.presale) {
+    return (
+      <>
+        <h1 className="admin-title">Panel</h1>
+        <p className="admin-sub">
+          La preventa está desactivada. Los pedidos de la tienda están en <Link to="/admin/pedidos">Pedidos</Link>.
+        </p>
+      </>
+    );
+  }
   const { stats, batches, alerts } = loaderData;
   return (
     <>

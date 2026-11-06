@@ -1,4 +1,5 @@
 import type { Route } from './+types/cuenta';
+import { assertPresaleEnabled } from '~/lib/presale/config.server';
 import { Form, Link, data, useNavigation } from 'react-router';
 import { formatEt, formatSize } from '~/lib/format';
 import { formatPrice } from '~/lib/money';
@@ -17,12 +18,14 @@ export function headers() {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
+  assertPresaleEnabled();
   const { user, auth } = await requireUser(request);
   const account = await loadAccount(user, auth);
   return data({ email: user.email ?? '', account, now: new Date().toISOString() }, { headers: auth.headers });
 }
 
 export async function action({ request }: Route.ActionArgs) {
+  assertPresaleEnabled();
   assertSameOrigin(request);
   const { user, auth } = await requireUser(request);
   const form = await request.formData();

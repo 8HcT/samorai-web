@@ -5,6 +5,7 @@
 import type { Product } from '~/types/product';
 import { adminRpc, isPresaleDbConfigured, isSchemaMissingError, type Rpc } from './rpc.server';
 import type { BatchStatus, ProductOffer, PublicBatch } from './types';
+import { presaleEnabled } from './config.server';
 
 interface OfferRow {
   id: string;
@@ -103,7 +104,8 @@ export function pickOffer(batches: PublicBatch[], now = new Date()): ProductOffe
 }
 
 export async function getProductOffer(product: Product, rpc: Rpc = adminRpc): Promise<ProductOffer> {
-  if (rpc === adminRpc && !isPresaleDbConfigured()) return { mode: 'legacy' };
+  // Preventa apagada o sin base de datos: la ficha funciona con el carrito.
+  if (rpc === adminRpc && (!presaleEnabled() || !isPresaleDbConfigured())) return { mode: 'legacy' };
   try {
     const rows = await rpc<OfferRow[]>('presale_public_offers', {
       p_product_slug: product.slug,

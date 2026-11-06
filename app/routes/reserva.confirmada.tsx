@@ -1,4 +1,5 @@
 import type { Route } from './+types/reserva.confirmada';
+import { assertPresaleEnabled } from '~/lib/presale/config.server';
 import { redirect } from 'react-router';
 import { Button } from '~/components/Button';
 import { accessToken } from '~/lib/presale/access.server';
@@ -18,6 +19,7 @@ export function headers() {
  * estado y se actualiza sola hasta que el pago queda confirmado.
  */
 export async function loader({ request }: Route.LoaderArgs) {
+  assertPresaleEnabled();
   const sessionId = new URL(request.url).searchParams.get('session_id') ?? '';
   if (!/^cs_(test|live)_[A-Za-z0-9]+$/.test(sessionId)) return { found: false };
   const reservation = await findReservationByDepositSession(sessionId);

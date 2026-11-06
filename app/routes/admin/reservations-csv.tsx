@@ -1,9 +1,11 @@
 import type { Route } from './+types/reservations-csv';
+import { assertPresaleEnabled } from '~/lib/presale/config.server';
 import { requireAdmin } from '~/lib/auth/session.server';
 import { listReservations, reservationFiltersFromUrl } from '~/lib/presale/admin.server';
 
 /** Exportación CSV de reservas (con los mismos filtros) para planificar la fabricación. */
 export async function loader({ request }: Route.LoaderArgs) {
+  assertPresaleEnabled();
   await requireAdmin(request);
   const rows = await listReservations(reservationFiltersFromUrl(new URL(request.url)), 5000);
   const header = [

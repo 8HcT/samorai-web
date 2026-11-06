@@ -8,6 +8,7 @@ import { data, redirect } from 'react-router';
 import { getProductBySlug } from '~/data/products';
 import { getSessionUser } from '~/lib/auth/session.server';
 import { assertSameOrigin, cleanText, clientFingerprint, normalizeEmail } from '~/lib/security.server';
+import { assertPresaleEnabled } from './config.server';
 import { startDirectCheckout, startReservationCheckout, type CheckoutResult } from './checkout.server';
 
 export interface PurchaseActionData {
@@ -23,6 +24,7 @@ function parseSets(value: FormDataEntryValue | null): number {
 }
 
 export async function handleProductPurchase(request: Request, slug: string) {
+  assertPresaleEnabled();
   assertSameOrigin(request);
   const product = getProductBySlug(slug);
   if (!product) throw new Response('Producto no encontrado', { status: 404 });

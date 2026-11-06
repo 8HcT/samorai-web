@@ -1,4 +1,5 @@
 import type { Route } from './+types/reservation';
+import { assertPresaleEnabled } from '~/lib/presale/config.server';
 import { Form, Link, data, useNavigation } from 'react-router';
 import { requireAdmin } from '~/lib/auth/session.server';
 import {
@@ -20,6 +21,7 @@ import { PriceBreakdown } from '~/components/presale/PriceBreakdown';
 import { LocalDateTime } from '~/components/presale/LocalDateTime';
 
 export async function loader({ request, params }: Route.LoaderArgs) {
+  assertPresaleEnabled();
   await requireAdmin(request);
   if (!isUuid(params.id)) throw new Response('Reserva no encontrada', { status: 404 });
   const detail = await loadReservation(params.id);
@@ -37,6 +39,7 @@ const RESENDABLE: Record<string, string> = {
 };
 
 export async function action({ request, params }: Route.ActionArgs) {
+  assertPresaleEnabled();
   assertSameOrigin(request);
   const { user } = await requireAdmin(request);
   if (!isUuid(params.id)) throw new Response('Reserva no encontrada', { status: 404 });

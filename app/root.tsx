@@ -14,6 +14,7 @@ import { preferredLocale, resolveLocale } from '~/i18n/config';
 import { localeFromPath, localizePath } from '~/i18n/paths';
 import { useLocale } from '~/i18n/useT';
 import { canonicalOrigin } from '~/lib/env.server';
+import { presaleEnabled } from '~/lib/presale/config.server';
 import {
   GA_MEASUREMENT_ID,
   GTM_CONTAINER_ID,
@@ -44,7 +45,7 @@ export function loader({ request }: Route.LoaderArgs) {
 
   // Resto de páginas (carrito, cuenta…): cookie > Accept-Language.
   const locale = fromPath ?? resolveLocale(cookie, acceptLanguage);
-  return { locale, origin: canonicalOrigin(request) };
+  return { locale, origin: canonicalOrigin(request), presale: presaleEnabled() };
 }
 
 export const links: Route.LinksFunction = () => [
