@@ -434,7 +434,7 @@ describe('integridad', () => {
   it('no se puede quitar de la tirada un modelo con plazas comprometidas', async () => {
     const batchId = await createBatch(db.rpc);
     await reserve(db.rpc, batchId);
-    const res = await db.rpc<any>('presale_admin_set_batch_products', { p_batch_id: batchId, p_product_slugs: [] });
+    const res = await db.rpc<any>('presale_admin_set_batch_products', { p_batch_id: batchId, p_product_slugs: [], p_now: minutesAfter(T0, 5) });
     expect(res).toMatchObject({ ok: false, reason: 'product_in_use' });
   });
 });

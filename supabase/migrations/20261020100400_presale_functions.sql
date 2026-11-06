@@ -1900,7 +1900,8 @@ $$;
 create or replace function public.presale_admin_set_batch_products(
   p_batch_id      uuid,
   p_product_slugs jsonb,
-  p_actor         uuid default null
+  p_actor         uuid default null,
+  p_now           timestamptz default now()
 ) returns jsonb
 language plpgsql
 set search_path = public, pg_temp
@@ -1925,7 +1926,7 @@ begin
   if exists (
     select 1 from public.inventory_allocations a
     where a.batch_id = b.id
-      and (a.status in ('reserved', 'sold') or (a.status = 'held' and a.hold_expires_at > now()))
+      and (a.status in ('reserved', 'sold') or (a.status = 'held' and a.hold_expires_at > p_now))
       and a.product_slug not in (select jsonb_array_elements_text(p_product_slugs))
   ) then
     return jsonb_build_object('ok', false, 'reason', 'product_in_use');
