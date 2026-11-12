@@ -8,6 +8,11 @@ todo lo de **modo Live** (claves distintas) más los textos legales.
 
 Detalle técnico paso a paso de cada punto: **`PRODUCTION.md`**.
 
+> **Revisado 2026-11-12.** Comprobado desde fuera: analítica (GA4 + GTM) en
+> producción, webhook respondiendo en `www`, correo del dominio con MX/SPF/DMARC
+> y registros de Resend en DNS. Sigue pendiente: DKIM de Google, textos legales
+> y desplegar SEO + panel de precios (sección **R**).
+>
 > **Actualizado 2026-10-20 · sistema de preventa.** Ya está programado el
 > sistema de tiradas, reservas de 50 €, stock real, cuentas de cliente y panel
 > `/admin`. Lo que hay que aportar para activarlo está en la sección **P** de
@@ -77,6 +82,11 @@ Cuando tengas los textos me los pasas y los maqueto en las tres páginas.
 
 ## C0 · ⚠️ El correo de `@samoraiwheels.com` está ROTO
 
+> **12 nov 2026: casi resuelto.** Ya hay MX (`smtp.google.com`), SPF y DMARC
+> (`p=none`). **Falta solo el DKIM de Google** (`google._domainkey`): Admin de
+> Workspace → Gmail → Autenticar correo → generar → TXT en Vercel DNS → «Iniciar
+> autenticación».
+
 **Detectado el 10 ago 2026.** El dominio **no tiene registros MX, ni SPF, ni
 DKIM**. Google Workspace conserva los buzones (`sales@`, `isainzmorales@`),
 pero ningún servidor sabe dónde entregar el correo: **todo lo que te escriban
@@ -114,7 +124,7 @@ tu propia dirección**: en producción ningún cliente recibiría su confirmaci�
 
 | # | Qué | Resultado |
 |---|---|---|
-| C1 | Verificar `samoraiwheels.com` en Resend (registros DNS: SPF, DKIM, DMARC) | El dominio en **Verified** |
+| C1 | Verificar `samoraiwheels.com` en Resend (registros DNS: SPF, DKIM, DMARC). *12 nov: los registros ya están en DNS; confirmar que Resend lo marca Verified* | El dominio en **Verified** |
 | C2 | Crear API key de Resend con permiso *Sending access* | `RESEND_API_KEY` |
 | C3 | Que **exista y se lea** el buzón `pedidos@samoraiwheels.com` | `EMAIL_FROM` |
 | C4 | Decidir quién recibe los avisos de venta (admite varias, separadas por comas) | `SHOP_ORDER_EMAIL` |
@@ -158,15 +168,23 @@ Además, la preventa queda **apagada** hasta poner `PRESALE_ENABLED=true` en Ver
 
 ## R · Precios y promociones desde `/admin/precios` (para Black Friday)
 
-| # | Qué | Quién |
+Con la preventa **apagada** basta con esto (no hace falta P2, `ACCESS_LINK_SECRET`
+ni `CRON_SECRET`):
+
+| # | Qué | Dónde |
 |---|---|---|
-| R1 | Aplicar en Supabase las migraciones (P1), incluida `20261106100000_pricing_promotions.sql` (precios + promociones) | Tú |
-| R2 | P3 (`SUPABASE_ANON_KEY`), P4 (URL `/auth/confirm`) y P5 (primer administrador): el admin necesita iniciar sesión | Tú |
-| R3 | Crear la promoción en `/admin/precios`: nombre, etiqueta, % y fechas (hora de Madrid), a qué modelos/acabados aplica | Cliente / tú |
+| R1 | Comprobar que **no** existen aún las tablas `profiles` / `production_batches` (si existen, avisar antes de seguir) | Supabase → Table Editor |
+| R2 | Ejecutar en orden: `20260725000000_orders_baseline` → `…100000_profiles` → `…100100` → `…100200` → `…100300` → `…100400` → `…100500` → `20261106100000_pricing_promotions`. **Saltar** `…100600_presale_cron` (solo preventa) | Supabase → SQL Editor |
+| R3 | Site URL `https://www.samoraiwheels.com` y Redirect URL `https://www.samoraiwheels.com/auth/confirm` | Supabase → Authentication → URL Configuration |
+| R4 | Crear el usuario admin con **contraseña** y *Auto Confirm User*; después `update public.profiles set role = 'admin' where email = '…';` | Supabase → Authentication → Users + SQL Editor |
+| R5 | `SUPABASE_ANON_KEY` (clave *anon* / *publishable*) en Vercel → Production | Supabase → Project Settings → API Keys |
+| R6 | Desplegar (push a `1.0`) y entrar en `/cuenta/acceso` con la contraseña → lleva a `/admin` | — |
+| R7 | Crear la promoción con las fechas reales (queda «Programada» y se activa sola) | `/admin/precios` |
 
 - El precio se calcula en el servidor y Stripe cobra el importe con descuento. En el checkout y en el recibo aparece la línea con «Black Friday −20%» y el precio anterior.
-- Ya **no** se usan `STRIPE_PRICE_ID_LOW/HIGH`: los precios salen de la base de datos (o de los valores por defecto si no la hay).
+- Ya **no** se usan `STRIPE_PRICE_ID_LOW/HIGH`. **No los borres de Vercel** hasta que la versión nueva lleve unos días estable: si hubiera que volver a la anterior (*Instant Rollback*), la necesita.
 - Si la base de datos no responde: las páginas muestran el precio por defecto sin promoción, y el checkout **no cobra** (aviso de error en el carrito).
+- **Precio anterior tachado:** en España debe ser el precio más bajo aplicado en los 30 días anteriores. No subas precios antes de la promoción.
 - La preventa (desactivada) sigue usando sus propios precios; no le afectan estas promociones.
 
 ---
@@ -210,10 +228,11 @@ EMAIL_FROM=SAMORAI <pedidos@samoraiwheels.com>
 SHOP_ORDER_EMAIL=pedidos@samoraiwheels.com
 CONTACT_EMAIL=isainzmorales@samoraiwheels.com
 SUPABASE_ANON_KEY=.......................................
-ACCESS_LINK_SECRET=......................................
-CRON_SECRET=.............................................
-PRESALE_BULK_EMAILS_ENABLED=
-PRESALE_LIVE_PAYMENTS_ENABLED=
+# Solo cuando se active la preventa (PRESALE_ENABLED=true):
+# ACCESS_LINK_SECRET=....................................
+# CRON_SECRET=...........................................
+# PRESALE_BULK_EMAILS_ENABLED=
+# PRESALE_LIVE_PAYMENTS_ENABLED=
 ```
 
 De dónde sale cada una:
