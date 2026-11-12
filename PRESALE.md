@@ -5,7 +5,15 @@ descuento de preventa configurable, lanzamiento oficial con pago restante,
 caducidad automática a los 30 días, venta directa, cuentas opcionales y panel
 de administración (`/admin`).
 
-## 1 · Migraciones (Supabase → SQL Editor, en orden)
+## 1 · Migraciones
+
+**Con la CLI (recomendado, desde 2026-11-12):** una vez por equipo,
+`npx supabase login` y `npx supabase link --project-ref yllcvbttbkceofvkicix`.
+Después, para aplicar las migraciones pendientes:
+`npx supabase db push --dry-run` (revisar) y `npx supabase db push`. La CLI
+lleva el registro de lo aplicado en `supabase_migrations.schema_migrations`.
+
+**A mano (Supabase → SQL Editor, en orden):**
 
 ```
 supabase/migrations/20260725000000_orders_baseline.sql        (idempotente: ya aplicado)
