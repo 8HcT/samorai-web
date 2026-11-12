@@ -58,19 +58,19 @@ export function isProduction(): boolean {
 const REQUIRED_IN_PRODUCTION = [
   'STRIPE_SECRET_KEY',
   'STRIPE_WEBHOOK_SECRET',
-  'STRIPE_PRICE_ID_LOW',
-  'STRIPE_PRICE_ID_HIGH',
+  // STRIPE_PRICE_ID_LOW/HIGH ya no se usan: los precios salen de /admin/precios.
   'SITE_URL',
   'SUPABASE_URL',
   'SUPABASE_SERVICE_ROLE_KEY',
   'RESEND_API_KEY',
   'EMAIL_FROM',
   'SHOP_ORDER_EMAIL',
-  // Preventa, cuentas y tareas programadas
+  // Inicio de sesión (panel /admin y, con preventa, «Mi cuenta»)
   'SUPABASE_ANON_KEY',
-  'ACCESS_LINK_SECRET',
-  'CRON_SECRET',
 ] as const;
+
+/** Solo hacen falta con la preventa encendida (PRESALE_ENABLED=true). */
+const REQUIRED_WITH_PRESALE = ['ACCESS_LINK_SECRET', 'CRON_SECRET'] as const;
 
 /**
  * Revisa la configuración y devuelve los problemas encontrados, sin exponer
@@ -82,6 +82,11 @@ export function configProblems(): string[] {
   for (const name of REQUIRED_IN_PRODUCTION) {
     if (name === 'SUPABASE_ANON_KEY' && env('SUPABASE_PUBLISHABLE_KEY')) continue;
     if (!env(name)) problems.push(`falta ${name}`);
+  }
+  if (env('PRESALE_ENABLED') === 'true') {
+    for (const name of REQUIRED_WITH_PRESALE) {
+      if (!env(name)) problems.push(`falta ${name} (preventa activada)`);
+    }
   }
 
   const key = env('STRIPE_SECRET_KEY');
@@ -104,7 +109,8 @@ export function configProblems(): string[] {
     problems.push('ACCESS_LINK_SECRET es demasiado corto (mínimo 32 caracteres aleatorios)');
   }
 
-  if (key && /^(sk|rk)_live_/.test(key) && env('PRESALE_LIVE_PAYMENTS_ENABLED') !== 'true') {
+  // Solo importa con la preventa encendida (PRESALE_ENABLED); el carrito cobra igual.
+  if (key && /^(sk|rk)_live_/.test(key) && env('PRESALE_ENABLED') === 'true' && env('PRESALE_LIVE_PAYMENTS_ENABLED') !== 'true') {
     problems.push('Stripe en LIVE pero PRESALE_LIVE_PAYMENTS_ENABLED no es "true": la preventa y la venta directa no cobrarán');
   }
 

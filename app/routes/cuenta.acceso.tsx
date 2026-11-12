@@ -3,16 +3,18 @@ import { Form, Link, data, redirect, useNavigation } from 'react-router';
 import { siteUrl } from '~/lib/env.server';
 import { createAuthClient, getSessionUser, isAuthConfigured } from '~/lib/auth/session.server';
 import { assertSameOrigin, normalizeEmail, safeNextPath } from '~/lib/security.server';
+import { accountHomePath, presaleEnabled } from '~/lib/presale/config.server';
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: 'Acceder | SAMORAI' }, { name: 'robots', content: 'noindex' }];
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const next = safeNextPath(new URL(request.url).searchParams.get('next'));
+  const next = safeNextPath(new URL(request.url).searchParams.get('next'), accountHomePath());
   const { user } = await getSessionUser(request);
   if (user) throw redirect(next);
-  return { next, configured: isAuthConfigured() };
+  // Registro de clientes solo con la preventa activa.
+  return { next, configured: isAuthConfigured(), signup: presaleEnabled() };
 }
 
 type ActionResult = { mode: 'magic' | 'password'; ok: boolean; message: string };
@@ -23,7 +25,7 @@ export async function action({ request }: Route.ActionArgs) {
     return data<ActionResult>({ mode: 'magic', ok: false, message: 'El acceso de clientes aún no está disponible.' }, { status: 503 });
   }
   const form = await request.formData();
-  const next = safeNextPath(String(form.get('next') ?? ''));
+  const next = safeNextPath(String(form.get('next') ?? ''), accountHomePath());
   const mode = form.get('intent') === 'password' ? 'password' : 'magic';
   const email = normalizeEmail(form.get('email'));
   if (!email) return data<ActionResult>({ mode, ok: false, message: 'Introduce un email válido.' }, { status: 400 });
@@ -68,7 +70,7 @@ export async function action({ request }: Route.ActionArgs) {
 export default function Login({ loaderData, actionData }: Route.ComponentProps) {
   const navigation = useNavigation();
   const busy = navigation.state !== 'idle';
-  const { next, configured } = loaderData;
+  const { next, configured, signup } = loaderData;
 
   return (
     <div className="section">
@@ -119,7 +121,13 @@ export default function Login({ loaderData, actionData }: Route.ComponentProps) 
               <button type="submit" className="btn btn-outline w-full" disabled={busy || !configured}>Entrar</button>
             </Form>
             <p className="caption auth-links">
-              <Link to="/cuenta/recuperar">¿Has olvidado la contraseña?</Link> · <Link to="/cuenta/registro">Crear cuenta con contraseña</Link>
+              <Link to="/cuenta/recuperar">¿Has olvidado la contraseña?</Link>
+              {signup && (
+                <>
+                  {' · '}
+                  <Link to="/cuenta/registro">Crear cuenta con contraseña</Link>
+                </>
+              )}
             </p>
           </section>
         </div>

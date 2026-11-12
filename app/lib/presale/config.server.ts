@@ -21,6 +21,14 @@ export function presaleEnabled(): boolean {
   return env('PRESALE_ENABLED') === 'true';
 }
 
+/**
+ * Adónde va el usuario tras iniciar sesión si no pide otra página. Con la
+ * preventa apagada no hay «Mi cuenta» (404): solo entra el administrador.
+ */
+export function accountHomePath(): string {
+  return presaleEnabled() ? '/cuenta' : '/admin';
+}
+
 /** Para loaders/actions exclusivos de la preventa. */
 export function assertPresaleEnabled(): void {
   if (!presaleEnabled()) throw new Response('Not Found', { status: 404 });

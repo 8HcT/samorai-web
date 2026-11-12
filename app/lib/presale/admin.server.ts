@@ -13,6 +13,7 @@ import { getSupabaseAdmin } from '~/lib/supabase/server';
 import { dispatchNotifications } from '~/lib/email/outbox.server';
 import { orderLink, reservationLink } from './access.server';
 import { adminRpc } from './rpc.server';
+import { isAccessLinkSecretConfigured, presaleEnabled } from './config.server';
 import type { AuditRow, BatchRow, NotificationRow, OrderItemRow, OrderRow, PaymentRow, ReservationRow } from './rows';
 
 const db = () => getSupabaseAdmin();
@@ -340,7 +341,9 @@ export async function loadOrder(id: string) {
     notifications: check(notifications) as NotificationRow[],
     audit: check(audit) as AuditRow[],
     reservation: check(reservation) as { id: string; code: string } | null,
-    guestLink: orderLink(order.id, order.access_version),
+    // La página /pedido/:id solo existe con la preventa activa, y firmar el
+    // enlace exige ACCESS_LINK_SECRET (sin él, lanzaría y tumbaría la ficha).
+    guestLink: presaleEnabled() && isAccessLinkSecretConfigured() ? orderLink(order.id, order.access_version) : null,
   };
 }
 

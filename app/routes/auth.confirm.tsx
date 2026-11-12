@@ -4,6 +4,7 @@ import { Link, redirect } from 'react-router';
 import { createAuthClient, isAuthConfigured } from '~/lib/auth/session.server';
 import { claimGuestRecords, markEmailVerified } from '~/lib/presale/account.server';
 import { safeNextPath } from '~/lib/security.server';
+import { accountHomePath } from '~/lib/presale/config.server';
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: 'Acceso | SAMORAI' }, { name: 'robots', content: 'noindex' }];
@@ -25,7 +26,7 @@ const OTP_TYPES: EmailOtpType[] = ['email', 'magiclink', 'signup', 'recovery', '
 export async function loader({ request }: Route.LoaderArgs) {
   if (!isAuthConfigured()) return { error: 'not_configured' };
   const url = new URL(request.url);
-  const next = safeNextPath(url.searchParams.get('next'));
+  const next = safeNextPath(url.searchParams.get('next'), accountHomePath());
   const tokenHash = url.searchParams.get('token_hash');
   const type = url.searchParams.get('type') as EmailOtpType | null;
   const code = url.searchParams.get('code');

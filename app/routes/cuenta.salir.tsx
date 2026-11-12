@@ -2,6 +2,7 @@ import type { Route } from './+types/cuenta.salir';
 import { redirect } from 'react-router';
 import { createAuthClient, isAuthConfigured } from '~/lib/auth/session.server';
 import { assertSameOrigin } from '~/lib/security.server';
+import { presaleEnabled } from '~/lib/presale/config.server';
 
 /** Cierre de sesión (solo POST: un enlace no puede cerrar la sesión a nadie). */
 export async function action({ request }: Route.ActionArgs) {
@@ -13,5 +14,5 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export function loader() {
-  throw redirect('/cuenta');
+  throw redirect(presaleEnabled() ? '/cuenta' : '/');
 }

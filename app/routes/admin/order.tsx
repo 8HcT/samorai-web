@@ -129,8 +129,12 @@ export default function AdminOrder({ loaderData, actionData }: Route.ComponentPr
             <dt>Seguimiento</dt><dd>{o.tracking_number ?? '—'}</dd>
             <dt>Fecha</dt><dd><LocalDateTime iso={o.created_at} /></dd>
           </dl>
-          <p className="admin-muted" style={{ marginTop: 'var(--space-3)' }}>Enlace del cliente: <span className="admin-copy">{guestLink}</span></p>
-          <Form method="post"><input type="hidden" name="intent" value="rotate" /><button type="submit" className="btn btn-ghost btn-sm" disabled={busy}>Invalidar enlaces anteriores</button></Form>
+          {guestLink && (
+            <>
+              <p className="admin-muted" style={{ marginTop: 'var(--space-3)' }}>Enlace del cliente: <span className="admin-copy">{guestLink}</span></p>
+              <Form method="post"><input type="hidden" name="intent" value="rotate" /><button type="submit" className="btn btn-ghost btn-sm" disabled={busy}>Invalidar enlaces anteriores</button></Form>
+            </>
+          )}
         </section>
       </div>
 
