@@ -36,9 +36,6 @@ export interface WheelVariant {
    * verdad del servidor; el frontend nunca decide cuánto se cobra.
    */
   priceCents?: number;
-  /** IDs reales de Stripe — se rellenan cuando el cliente los facilite. */
-  stripeProductId?: string;
-  stripePriceId?: string;
 }
 
 /** Acabado disponible de un producto. El nombre visible puede cambiar. */

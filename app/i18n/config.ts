@@ -9,11 +9,6 @@ export const defaultLocale: Locale = 'en';
 
 export const supportedLocales: Locale[] = ['en', 'es'];
 
-export const localeLabels: Record<Locale, string> = {
-  en: 'English',
-  es: 'Español',
-};
-
 /** Nombre de la cookie donde se persiste el idioma elegido. */
 export const LOCALE_COOKIE = 'samorai_lang';
 
@@ -74,5 +69,3 @@ export function preferredLocale(
   if (userAgent && BOT_UA.test(userAgent)) return null;
   return getLocaleFromCookie(cookieHeader) ?? (acceptLanguage ? detectLocale(acceptLanguage) : null);
 }
-
-export const strings = en;

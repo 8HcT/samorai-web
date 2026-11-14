@@ -33,18 +33,6 @@ export function fallbackPriceCents(): number | null {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
-/**
- * ID real del `price` de Stripe para un nivel de precio.
- * Los `price_...` NO son secretos, pero viven en entorno para poder cambiar
- * entre Test y Live sin tocar el código. Si no está definido, el checkout
- * cae a `price_data` con el importe calculado en el servidor.
- *   · 'low'  → 275 € (ancho 8.5)
- *   · 'high' → 300 € (anchos 9 y 9.5)
- */
-export function stripePriceId(tier: 'low' | 'high'): string | undefined {
-  return env(tier === 'low' ? 'STRIPE_PRICE_ID_LOW' : 'STRIPE_PRICE_ID_HIGH');
-}
-
 /** `true` cuando corremos en el despliegue de producción (no preview ni local). */
 export function isProduction(): boolean {
   return env('VERCEL_ENV') === 'production' || process.env.NODE_ENV === 'production';
@@ -58,7 +46,6 @@ export function isProduction(): boolean {
 const REQUIRED_IN_PRODUCTION = [
   'STRIPE_SECRET_KEY',
   'STRIPE_WEBHOOK_SECRET',
-  // STRIPE_PRICE_ID_LOW/HIGH ya no se usan: los precios salen de /admin/precios.
   'SITE_URL',
   'SUPABASE_URL',
   'SUPABASE_SERVICE_ROLE_KEY',

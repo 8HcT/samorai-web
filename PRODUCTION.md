@@ -37,7 +37,9 @@ Creados el **4 de agosto de 2026** en la cuenta **Samorai**
 Ambos: pago único, EUR, `tax_behavior: inclusive` (IVA incluido), producto
 marcado como `shippable`.
 
-Van a `STRIPE_PRICE_ID_LOW` (275) y `STRIPE_PRICE_ID_HIGH` (300) en Vercel.
+> **Ya no se usan** (noviembre de 2026): el checkout cobra con `price_data`
+> y el importe sale de `/admin/precios`. No hace falta poner
+> `STRIPE_PRICE_ID_LOW/HIGH` en Vercel.
 
 > Los precios de Test (`price_1Tx1jS…` / `price_1Tx1jT…`) viven en el sandbox
 > `acct_1TvO71HLDocwzNmf` y **no funcionan** en Live. Se quedan en tu `.env`
@@ -207,8 +209,6 @@ leen al arrancar).
 |---|---|
 | `STRIPE_SECRET_KEY` | `rk_live_…` (paso 2) |
 | `STRIPE_WEBHOOK_SECRET` | `whsec_…` del endpoint (paso 3) |
-| `STRIPE_PRICE_ID_LOW` | `price_…` de 275 € (paso 1) |
-| `STRIPE_PRICE_ID_HIGH` | `price_…` de 300 € (paso 1) |
 | `SITE_URL` | `https://www.samoraiwheels.com` (**con `www`**, sin barra final) |
 | `SUPABASE_URL` | URL del proyecto |
 | `SUPABASE_SERVICE_ROLE_KEY` | service_role (secreta) |
@@ -235,8 +235,6 @@ en un bloc de notas y pégalo — y **bórralo después**, contiene secretos:
 ```
 STRIPE_SECRET_KEY=rk_live_
 STRIPE_WEBHOOK_SECRET=whsec_
-STRIPE_PRICE_ID_LOW=price_
-STRIPE_PRICE_ID_HIGH=price_
 SITE_URL=https://www.samoraiwheels.com
 SUPABASE_URL=https://yllcvbttbkceofvkicix.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=

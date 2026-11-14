@@ -1,5 +1,5 @@
-﻿/* â”€â”€â”€ Site Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-/* Nav has 8 items â€” tighten gap at all sizes */
+/* ─── Site Header ────────────────────────────────────────────────── */
+/* Nav has 8 items — tighten gap at all sizes */
 .site-header {
   position: fixed;
   top: 0;
@@ -77,7 +77,7 @@
   color: var(--color-text-primary);
 }
 
-/* Mobile nav â€” scroll horizontally when items overflow */
+/* Mobile nav — scroll horizontally when items overflow */
 @media (max-width: 900px) {
   .site-nav {
     overflow-x: auto;
@@ -95,7 +95,7 @@
   }
 }
 
-/* â”€â”€â”€ Site Footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Site Footer ─────────────────────────────────────────────────── */
 .site-footer {
   background-color: var(--color-bg-elevated);
   border-top: 1px solid var(--color-border);
@@ -169,7 +169,7 @@
   .site-footer__bottom { flex-direction: column; gap: var(--space-3); text-align: center; }
 }
 
-/* â”€â”€â”€ Button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Button ──────────────────────────────────────────────────────── */
 .button {
   display: inline-flex;
   align-items: center;
@@ -243,7 +243,7 @@
   outline-offset: 2px;
 }
 
-/* â”€â”€â”€ Hero â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Hero ────────────────────────────────────────────────────────── */
 .hero {
   position: relative;
   min-height: 88vh;
@@ -443,7 +443,7 @@
   .hero__specs-inner { padding-inline: var(--container-padding); }
 }
 
-/* â”€â”€â”€ Section Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Section Header ──────────────────────────────────────────────── */
 .section-header {
   margin-bottom: var(--space-12);
 }
@@ -460,12 +460,20 @@
   margin-bottom: var(--space-4);
 }
 
+/* Cuando el encabezado de sección es el h1 de la página (p. ej. /contacto),
+   se ve igual que un h2: el h1 es para los buscadores, no un cambio visual. */
+.section-header h1 {
+  font-size: 1.5em;
+  line-height: 1.05;
+  margin-bottom: var(--space-4);
+}
+
 .section-header p {
   font-size: var(--text-lg);
   color: var(--color-text-secondary);
 }
 
-/* â”€â”€â”€ Product Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Product Card ────────────────────────────────────────────────── */
 .product-card {
   background-color: var(--color-bg-card);
   border: 1px solid var(--color-border);
@@ -624,7 +632,7 @@
   text-transform: uppercase;
 }
 
-/* â”€â”€â”€ Product Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Product Grid ────────────────────────────────────────────────── */
 .product-grid {
   display: grid;
   /* `min(300px, 100%)`: en pantallas más estrechas que 300px la columna se
@@ -654,7 +662,7 @@
   .product-grid--models { grid-template-columns: 1fr; }
 }
 
-/* â”€â”€â”€ Spec List â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Spec List ───────────────────────────────────────────────────── */
 .spec-list {
   display: grid;
   gap: var(--space-3);
@@ -689,67 +697,7 @@
   text-align: right;
 }
 
-/* â”€â”€â”€ Variant Table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-.variant-table-wrapper {
-  overflow-x: auto;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border);
-}
-
-.variant-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--text-sm);
-}
-
-.variant-table th {
-  font-size: var(--text-xs);
-  font-weight: var(--font-weight-bold);
-  letter-spacing: var(--tracking-widest);
-  text-transform: uppercase;
-  color: var(--color-text-muted);
-  text-align: left;
-  padding: var(--space-3) var(--space-5);
-  background-color: var(--color-bg-elevated);
-  border-bottom: 1px solid var(--color-border);
-  white-space: nowrap;
-}
-
-.variant-table td {
-  padding: var(--space-3) var(--space-5);
-  border-bottom: 1px solid var(--color-border);
-  font-family: var(--font-mono);
-  color: var(--color-text-primary);
-  white-space: nowrap;
-}
-
-.variant-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.variant-table tbody tr {
-  transition: background-color var(--transition-fast);
-}
-
-.variant-table tbody tr:hover {
-  background-color: var(--color-bg-elevated);
-}
-
-.variant-table__status {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  margin-right: var(--space-2);
-  vertical-align: middle;
-}
-
-.variant-table__status--in_stock    { background-color: var(--color-success); }
-.variant-table__status--low_stock   { background-color: var(--color-warning); }
-.variant-table__status--out_of_stock { background-color: var(--color-text-muted); }
-.variant-table__status--pre_order   { background-color: var(--color-accent); }
-
-/* â”€â”€â”€ Fitment Callout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Fitment Callout ─────────────────────────────────────────────── */
 .fitment-callout {
   background-color: var(--color-bg-elevated);
   border: 1px solid var(--color-border);
@@ -784,7 +732,7 @@
   max-width: 55ch;
 }
 
-/* â”€â”€â”€ Language Placeholder â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Language Placeholder ────────────────────────────────────────── */
 .lang-switcher {
   display: flex;
   align-items: center;
@@ -808,7 +756,7 @@
   background-color: var(--color-accent);
 }
 
-/* â”€â”€â”€ Brand Values â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Brand Values ────────────────────────────────────────────────── */
 .brand-values {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -849,7 +797,7 @@
   .brand-values { grid-template-columns: 1fr; }
 }
 
-/* â”€â”€â”€ Hub Rings Feature â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Hub Rings Feature ───────────────────────────────────────────── */
 .hub-rings-section {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -913,7 +861,7 @@
   .hub-rings-visual { max-width: 320px; margin-inline: auto; }
 }
 
-/* â”€â”€â”€ Filter Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Filter Bar ──────────────────────────────────────────────────── */
 .filter-bar {
   display: flex;
   gap: var(--space-3);
@@ -954,7 +902,7 @@
   background-color: var(--color-accent-muted);
 }
 
-/* â”€â”€â”€ Product Detail â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Product Detail ──────────────────────────────────────────────── */
 .product-detail {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1083,7 +1031,7 @@
   .product-detail__gallery { position: static; }
 }
 
-/* â”€â”€â”€ Cart â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Cart ────────────────────────────────────────────────────────── */
 .cart-layout {
   display: grid;
   grid-template-columns: 1fr 360px;
@@ -1222,7 +1170,7 @@
   .cart-item__price { grid-column: 1 / -1; }
 }
 
-/* â”€â”€â”€ Fitment Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Fitment Page ────────────────────────────────────────────────── */
 .fitment-concepts {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1264,7 +1212,7 @@
   .fitment-concepts { grid-template-columns: 1fr; }
 }
 
-/* â”€â”€â”€ Empty / Info States â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Empty / Info States ─────────────────────────────────────────── */
 .empty-state {
   text-align: center;
   padding: var(--space-24) var(--space-8);
@@ -1289,7 +1237,7 @@
   margin-bottom: var(--space-8);
 }
 
-/* â”€â”€â”€ Placeholder page (success / cancel) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Placeholder page (success / cancel) ────────────────────────── */
 .placeholder-page {
   min-height: calc(100vh - var(--header-height));
   display: flex;
@@ -1318,7 +1266,7 @@
   margin-bottom: var(--space-8);
 }
 
-/* â”€â”€â”€ Page Hero (generic reusable) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Page Hero (generic reusable) ───────────────────────────────── */
 .page-hero {
   /* Imagen de fondo por página: style={{ '--hero-bg': "url('/img/x.jpg')" }}.
      Sin imagen cae a un degradado editorial oscuro. */
@@ -1411,7 +1359,7 @@
   .sr-only--mobile-heading { display: none; }
 }
 
-/* â”€â”€â”€ Gallery â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Gallery ─────────────────────────────────────────────────────── */
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1514,7 +1462,7 @@
   .gallery-card--landscape { grid-column: span 1; }
 }
 
-/* â”€â”€â”€ Technology Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Technology Page ─────────────────────────────────────────────── */
 .tech-specs-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -1617,7 +1565,7 @@
   .tech-construction__visual { max-width: 320px; margin-inline: auto; }
 }
 
-/* â”€â”€â”€ Fitment Checklist â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Fitment Checklist ───────────────────────────────────────────── */
 .fitment-checklist {
   display: grid;
   gap: var(--space-4);
@@ -1664,7 +1612,7 @@
   line-height: var(--leading-relaxed);
 }
 
-/* â”€â”€â”€ Dealers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Dealers ─────────────────────────────────────────────────────── */
 .dealer-map-placeholder {
   width: 100%;
   aspect-ratio: 16 / 6;
@@ -1776,7 +1724,7 @@
   .dealer-map-placeholder { aspect-ratio: 4 / 3; }
 }
 
-/* â”€â”€â”€ Support / FAQ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Support / FAQ ───────────────────────────────────────────────── */
 .support-layout {
   display: grid;
   grid-template-columns: 1fr 380px;

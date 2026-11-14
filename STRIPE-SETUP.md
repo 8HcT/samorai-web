@@ -26,12 +26,12 @@ Los dos niveles de precio ya existen en Stripe (modo Test, IVA incluido /
 
 Producto: `prod_UwvaYZqE7GvQD7` (SAMORAI Victoria).
 
-El checkout usa el **Price ID real** cuando está en `.env`
-(`STRIPE_PRICE_ID_LOW/HIGH`); si faltara, cae a `price_data` con el importe
-calculado en el servidor. En ambos casos el navegador **nunca** envía importes.
-
-Para **producción** hay que crear los precios en modo **Live** y poner sus IDs
-en el entorno de producción (Vercel), ya que Test y Live tienen IDs distintos.
+> **Obsoleto desde noviembre de 2026:** el checkout ya **no** usa estos Price
+> IDs. Cobra siempre con `price_data`, con el importe que calcula el servidor a
+> partir de `/admin/precios` (y de la promoción vigente, si la hay). Los
+> `price_…` de esta tabla se conservan solo como referencia histórica; no hace
+> falta definir `STRIPE_PRICE_ID_LOW/HIGH` en ningún entorno. El navegador
+> **nunca** envía importes.
 
 ## 3. Webhook (confirmación de pago + pedidos)
 

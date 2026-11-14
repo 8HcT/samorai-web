@@ -134,7 +134,7 @@ describe('compra directa y pago final', () => {
       expect(params.metadata).toMatchObject({ flow: 'direct_sale', sets: '1' });
       expect(params.shipping_address_collection?.allowed_countries).toContain('ES');
       const item = params.line_items![0];
-      // Sin STRIPE_PRICE_ID_* en tests → importe del servidor.
+      // Siempre price_data con el importe calculado por el servidor.
       expect(item).toMatchObject({ quantity: 4, price_data: { unit_amount: 30000 } });
       const [p] = await db2.query(`select purpose, amount_cents from payments`);
       expect(p).toEqual({ purpose: 'direct', amount_cents: 120000 });

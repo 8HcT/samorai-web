@@ -9,11 +9,9 @@
  */
 import type Stripe from 'stripe';
 import type { Product } from '~/types/product';
-import { CURRENCY } from '~/lib/money';
+import { CURRENCY, formatPrice } from '~/lib/money';
 import { formatEt, formatSize } from '~/lib/format';
-import { formatPrice } from '~/lib/money';
-import { priceTierKeyForWidth } from '~/lib/pricing';
-import { siteUrl, stripePriceId } from '~/lib/env.server';
+import { siteUrl } from '~/lib/env.server';
 import { getStripe } from '~/lib/stripe/stripe.server';
 import { shippingCheckoutParams } from '~/lib/stripe/checkout-options.server';
 import { getSupabaseAdmin } from '~/lib/supabase/server';
@@ -253,10 +251,8 @@ export async function startDirectCheckout(
   const size = formatSize(cfg.variant.diameter, cfg.variant.width);
   const et = formatEt(cfg.variant.et);
   const expiresAt = new Date(deps.now().getTime() + CHECKOUT_SESSION_MINUTES * 60_000);
-  // Price real de Stripe si existe para el nivel de precio; si no, importe
-  // del servidor. El webhook comprueba el total cobrado contra la instantánea.
-  const priceId = stripePriceId(priceTierKeyForWidth(cfg.variant.width));
-
+  // Importe calculado por el servidor; el webhook comprueba el total cobrado
+  // contra la instantánea.
   let session: Stripe.Checkout.Session;
   try {
     session = await deps.stripe().checkout.sessions.create(
@@ -266,19 +262,17 @@ export async function startDirectCheckout(
         ...(input.email ? { customer_email: input.email } : {}),
         client_reference_id: hold.allocation_id,
         line_items: [
-          priceId
-            ? { price: priceId, quantity: quote.units }
-            : {
-                quantity: quote.units,
-                price_data: {
-                  currency: CURRENCY,
-                  unit_amount: quote.unitPriceCents,
-                  product_data: {
-                    name: `${cfg.product.name} · ${cfg.finishName} · ${size} ${et}`,
-                    metadata: { variantId: cfg.variant.id, taxIncluded: 'true' },
-                  },
-                },
+          {
+            quantity: quote.units,
+            price_data: {
+              currency: CURRENCY,
+              unit_amount: quote.unitPriceCents,
+              product_data: {
+                name: `${cfg.product.name} · ${cfg.finishName} · ${size} ${et}`,
+                metadata: { variantId: cfg.variant.id, taxIncluded: 'true' },
               },
+            },
+          },
         ],
         ...shippingCheckoutParams(),
         expires_at: epochSeconds(expiresAt),

@@ -140,10 +140,6 @@ export function getProductBySlug(slug: string): Product | undefined {
   return products.find((p) => p.slug === slug);
 }
 
-export function getFeaturedProducts(): Product[] {
-  return products.filter((p) => p.featured && p.status === 'active');
-}
-
 /** Localiza una variante (y su producto) por id de variante. */
 export function getVariantById(
   variantId: string
