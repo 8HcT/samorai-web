@@ -6,16 +6,23 @@ import { adminReason } from '~/lib/presale/admin-forms.server';
 import { ORDER_STATUS_LABEL, label } from '~/lib/presale/labels';
 import { isUuid } from '~/lib/presale/views.server';
 import { assertSameOrigin } from '~/lib/security.server';
-import { formatEt, formatSize } from '~/lib/format';
 import { formatPrice } from '~/lib/money';
+import { describeOrderItem } from '~/lib/admin/store-stats';
+import { cartOrderRef, isStripeTestSession, isTestOrder } from '~/lib/orders/test-purchase';
+import { stripeErrorMessage } from '~/lib/stripe/errors';
+import { stripeDashboardPaymentUrl } from '~/lib/stripe/stripe.server';
 import { LocalDateTime } from '~/components/presale/LocalDateTime';
+import { StatusChip } from '~/components/admin/AdminViz';
 
 export async function loader({ request, params }: Route.LoaderArgs) {
   await requireAdmin(request);
   if (!isUuid(params.id)) throw new Response('Pedido no encontrado', { status: 404 });
   const detail = await loadOrder(params.id);
   if (!detail) throw new Response('Pedido no encontrado', { status: 404 });
-  return detail;
+  return {
+    ...detail,
+    stripeUrl: detail.order.stripe_payment_intent_id ? stripeDashboardPaymentUrl(detail.order.stripe_payment_intent_id) : null,
+  };
 }
 
 export async function action({ request, params }: Route.ActionArgs) {
@@ -47,7 +54,9 @@ export async function action({ request, params }: Route.ActionArgs) {
       case 'refund': {
         if (form.get('confirm') !== 'on') return done(false, 'Marca la casilla de confirmación.');
         const res = await refundOrder(id);
-        return res.ok ? done(true, 'Devolución creada en Stripe para todos los pagos del pedido.') : done(false, 'Alguna devolución falló: revisa los pagos.');
+        return res.ok
+          ? done(true, `Devolución de ${formatPrice(res.refundedCents ?? 0)} creada en Stripe. El cliente la verá en su banco en unos días.`)
+          : done(false, REFUND_REASON[res.reason ?? ''] ?? 'La devolución no se pudo completar: revisa el pago en Stripe.');
       }
       case 'resend': {
         const res = await resendEmail('order_status_update', { orderId: id }, user.id);
@@ -62,9 +71,25 @@ export async function action({ request, params }: Route.ActionArgs) {
     }
   } catch (err) {
     console.error('[admin][order]', intent, err);
-    return done(false, err instanceof Error ? err.message : 'Error inesperado.');
+    return done(false, stripeErrorMessage(err) ?? (err instanceof Error ? err.message : 'Error inesperado.'));
   }
 }
+
+const REFUND_REASON: Record<string, string> = {
+  nothing_to_refund: 'No queda nada por devolver en este pedido.',
+  no_payment: 'El pedido no tiene un pago de Stripe asociado.',
+  not_found: 'Pedido no encontrado.',
+  refund_failed: 'Stripe rechazó la devolución.',
+  refund_canceled: 'La devolución se canceló en Stripe.',
+};
+
+const KIND_LABEL: Record<string, string> = { cart: 'Tienda (carrito)', direct: 'Venta directa', presale: 'Preventa' };
+const EMAIL_OUTCOME: Record<string, string> = { sent: 'enviado ✓', failed: 'ERROR', skipped: 'no enviado' };
+const PAYMENT_PURPOSE: Record<string, string> = { deposit: 'Reserva', balance: 'Pago final', direct: 'Compra directa' };
+const PAYMENT_STATUS: Record<string, string> = {
+  open: 'Abierto', processing: 'En proceso', succeeded: 'Cobrado', failed: 'Fallido', expired: 'Caducado',
+  refunded: 'Devuelto', partially_refunded: 'Devuelto en parte',
+};
 
 const NEXT: Record<string, string[]> = {
   paid: ['in_production', 'ready_to_ship', 'shipped'],
@@ -74,21 +99,33 @@ const NEXT: Record<string, string[]> = {
 };
 
 export default function AdminOrder({ loaderData, actionData }: Route.ComponentProps) {
-  const { order: o, items, payments, notifications, audit, reservation, guestLink } = loaderData;
+  const { order: o, items, payments, notifications, audit, reservation, guestLink, stripeUrl } = loaderData;
   const busy = useNavigation().state !== 'idle';
   const next = NEXT[o.status] ?? [];
   const closed = o.status === 'cancelled' || o.status === 'refunded';
   const address = o.shipping_address;
+  const isTest = isTestOrder(o);
+  const stripeTestMode = isStripeTestSession(o.stripe_session_id);
 
   return (
     <>
       <p className="admin-muted"><Link to="/admin/pedidos">← Pedidos</Link></p>
-      <h1 className="admin-title">Pedido {o.code ?? o.stripe_session_id.slice(-8).toUpperCase()}</h1>
+      <h1 className="admin-title">Pedido {o.code ?? cartOrderRef(o.stripe_session_id)}</h1>
       <p className="admin-sub">
-        {label(ORDER_STATUS_LABEL, o.status)} · {o.kind}
+        {label(ORDER_STATUS_LABEL, o.status)} · {KIND_LABEL[o.kind] ?? o.kind}
         {reservation && <> · Reserva <Link to={`/admin/reservas/${reservation.id}`}>{reservation.code}</Link></>}
         {o.review_reason && <> · ⚠ {o.review_reason}</>}
+        {stripeUrl && <> · <a href={stripeUrl} target="_blank" rel="noreferrer">Ver el pago en Stripe ↗</a></>}
       </p>
+      {isTest && (
+        <div className="admin-notice" role="note">
+          <StatusChip tone="warning">{stripeTestMode ? 'Modo test de Stripe' : 'Compra de prueba'}</StatusChip>{' '}
+          {stripeTestMode
+            ? 'Pagado con las claves de test: no se cobró dinero real. No se envía nada y no cuenta en las cifras de ventas. Puedes cancelarlo abajo.'
+            : 'No se envía nada y no cuenta en las cifras de ventas.'}
+          {!closed && !stripeTestMode && ' Devuélvela abajo cuando hayas comprobado que todo ha llegado.'}
+        </div>
+      )}
       {actionData && <div className={`admin-notice ${actionData.ok ? 'admin-notice--ok' : 'admin-notice--error'}`} role="status">{actionData.message}</div>}
 
       <div className="admin-grid-2">
@@ -99,10 +136,8 @@ export default function AdminOrder({ loaderData, actionData }: Route.ComponentPr
               {items.map((i) => (
                 <tr key={i.id}>
                   <td>
-                    {i.product_name}{i.finish_name ? ` · ${i.finish_name}` : ''}
-                    <div className="admin-muted">
-                      {i.diameter != null && i.width != null ? formatSize(Number(i.diameter), Number(i.width)) : ''} {i.et != null ? formatEt(i.et) : ''} · {i.variant_id}
-                    </div>
+                    {describeOrderItem(i).title}
+                    <div className="admin-muted">{describeOrderItem(i).detail}</div>
                   </td>
                   <td className="num">{i.quantity} uds.</td>
                   <td className="num">{formatPrice(i.unit_price_cents * i.quantity)}</td>
@@ -186,12 +221,22 @@ export default function AdminOrder({ loaderData, actionData }: Route.ComponentPr
           <tbody>
             {payments.map((p) => (
               <tr key={p.id}>
-                <td>{p.purpose}</td><td>{p.status}</td>
+                <td>{PAYMENT_PURPOSE[p.purpose] ?? p.purpose}</td><td>{PAYMENT_STATUS[p.status] ?? p.status}</td>
                 <td className="num">{formatPrice(p.amount_cents)}</td>
                 <td className="num">{p.refunded_cents ? formatPrice(p.refunded_cents) : '—'}</td>
                 <td>{p.paid_at ? <LocalDateTime iso={p.paid_at} /> : '—'}</td>
               </tr>
             ))}
+            {/* Pedidos del carrito: un único pago, guardado en el propio pedido. */}
+            {payments.length === 0 && o.stripe_payment_intent_id && (
+              <tr>
+                <td>Pago del pedido</td>
+                <td>{o.refunded_cents >= (o.amount_paid_cents ?? o.amount_total_cents ?? 0) && o.refunded_cents > 0 ? 'Devuelto' : o.refunded_cents > 0 ? 'Devuelto en parte' : 'Cobrado'}</td>
+                <td className="num">{formatPrice(o.amount_paid_cents ?? o.amount_total_cents)}</td>
+                <td className="num">{o.refunded_cents ? formatPrice(o.refunded_cents) : '—'}</td>
+                <td><LocalDateTime iso={o.created_at} /></td>
+              </tr>
+            )}
           </tbody>
         </table>
       </section>
@@ -207,9 +252,23 @@ export default function AdminOrder({ loaderData, actionData }: Route.ComponentPr
             {notifications.map((n) => (
               <tr key={n.id}><td>{n.template}</td><td>{n.status}</td><td className="admin-muted">{n.last_error ?? ''}</td><td><LocalDateTime iso={n.created_at} /></td></tr>
             ))}
-            {audit.map((e) => (
-              <tr key={`a${e.id}`}><td>{e.action}</td><td>{e.actor_type}</td><td><pre className="admin-pre">{JSON.stringify(e.data)}</pre></td><td><LocalDateTime iso={e.created_at} /></td></tr>
-            ))}
+            {audit.map((e) =>
+              e.action === 'order_emails' ? (
+                <tr key={`a${e.id}`}>
+                  <td>Correos de compra</td>
+                  <td>{e.actor_type}</td>
+                  <td>
+                    Cliente: {EMAIL_OUTCOME[String(e.data?.customer)] ?? '—'} · Tienda: {EMAIL_OUTCOME[String(e.data?.shop)] ?? '—'}
+                    {Array.isArray(e.data?.errors) && (e.data.errors as unknown[]).length > 0 && (
+                      <div className="admin-muted">{(e.data.errors as unknown[]).map(String).join(' · ')}</div>
+                    )}
+                  </td>
+                  <td><LocalDateTime iso={e.created_at} /></td>
+                </tr>
+              ) : (
+                <tr key={`a${e.id}`}><td>{e.action}</td><td>{e.actor_type}</td><td><pre className="admin-pre">{JSON.stringify(e.data)}</pre></td><td><LocalDateTime iso={e.created_at} /></td></tr>
+              )
+            )}
           </tbody>
         </table>
       </section>

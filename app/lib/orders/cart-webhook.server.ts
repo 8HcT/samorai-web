@@ -4,13 +4,15 @@
  * para que el webhook pueda enrutar varios flujos.
  */
 import type Stripe from 'stripe';
-import { getVariantById } from '~/data/products';
+import { getFinish, getVariantById } from '~/data/products';
 import { unitPriceCentsForWidth } from '~/lib/pricing';
 import { sendOrderEmails } from '~/lib/email/email.server';
+import { adminRpc, isPresaleDbConfigured } from '~/lib/presale/rpc.server';
 import { recordOrder, type OrderAddress, type OrderLineRecord, type OrderRecord } from './orders.server';
+import { TEST_PRICE_CENTS, TEST_PRODUCT_NAME, isTestVariantId } from './test-purchase';
 
-/** Reconstruye las líneas desde `metadata.cart` ("variantId:qty,..."). */
 /**
+ * Reconstruye las líneas desde `metadata.cart`:
  * `variantId:cantidad[:precioUnitarioCobrado]`. El precio (céntimos) lo
  * escribe el servidor al crear la sesión: es el realmente cobrado, con la
  * promoción aplicada. Las sesiones antiguas no lo llevan.
@@ -71,7 +73,19 @@ export async function processCartSession(session: Stripe.Checkout.Session): Prom
     return;
   }
 
-  const lines: OrderLineRecord[] = parseCartMeta(session.metadata?.cart).map((l) => {
+  const parsed = parseCartMeta(session.metadata?.cart);
+  // La sesión la crea siempre nuestro servidor: el metadato no lo puede poner el cliente.
+  const isTest = session.metadata?.test === '1' || parsed.some((l) => isTestVariantId(l.variantId));
+
+  const lines: OrderLineRecord[] = parsed.map((l) => {
+    if (isTestVariantId(l.variantId)) {
+      return {
+        variantId: l.variantId,
+        productName: TEST_PRODUCT_NAME,
+        quantity: l.quantity,
+        unitPriceCents: l.unitPriceCents ?? TEST_PRICE_CENTS,
+      };
+    }
     const found = getVariantById(l.variantId);
     return {
       variantId: l.variantId,
@@ -84,6 +98,11 @@ export async function processCartSession(session: Stripe.Checkout.Session): Prom
         found?.variant.priceCents ??
         (found ? unitPriceCentsForWidth(found.variant.width) : null) ??
         0,
+      finishId: found?.variant.finishId ?? null,
+      finishName: found ? getFinish(found.product, found.variant.finishId)?.name ?? found.variant.color : null,
+      diameter: found?.variant.diameter ?? null,
+      width: found?.variant.width ?? null,
+      et: found?.variant.et ?? null,
     };
   });
 
@@ -106,12 +125,26 @@ export async function processCartSession(session: Stripe.Checkout.Session): Prom
     paymentStatus: session.payment_status ?? 'unknown',
     lines,
     createdAt: new Date().toISOString(),
+    isTest,
   };
 
-  const { isNew } = await recordOrder(order);
+  const { isNew, orderId } = await recordOrder(order);
 
   // Correos de compra (best-effort: no debe tumbar el 200 a Stripe).
   // Solo en el primer procesado: Stripe reintenta el evento si algo falla
   // y el cliente no debe recibir la confirmación dos veces.
-  if (isNew) await sendOrderEmails(order);
+  if (!isNew) return;
+  const emails = await sendOrderEmails(order);
+
+  // Constancia en el historial del pedido (panel /admin y /admin/estado).
+  if (orderId && isPresaleDbConfigured()) {
+    await adminRpc('presale_audit', {
+      p_entity_type: 'order',
+      p_entity_id: orderId,
+      p_action: 'order_emails',
+      p_actor_type: 'system',
+      p_actor_id: null,
+      p_data: { customer: emails.customer, shop: emails.shop, errors: emails.errors, test: isTest },
+    }).catch((err) => console.error('[stripe][webhook] no se pudo registrar el envío de correos', err));
+  }
 }

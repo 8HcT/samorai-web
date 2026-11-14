@@ -19,3 +19,9 @@ export function getStripe(): Stripe {
 export function isStripeConfigured(): boolean {
   return Boolean(process.env.STRIPE_SECRET_KEY);
 }
+
+/** Enlace al pago en el dashboard de Stripe (modo live o test según la clave). */
+export function stripeDashboardPaymentUrl(paymentIntentId: string): string {
+  const live = /^(sk|rk)_live_/.test(process.env.STRIPE_SECRET_KEY ?? '');
+  return `https://dashboard.stripe.com/${live ? '' : 'test/'}payments/${encodeURIComponent(paymentIntentId)}`;
+}

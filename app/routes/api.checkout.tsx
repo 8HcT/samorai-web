@@ -3,10 +3,11 @@ import { redirect } from 'react-router';
 import type Stripe from 'stripe';
 import { getStripe } from '~/lib/stripe/stripe.server';
 import { getVariantById, getFinish } from '~/data/products';
-import { CURRENCY } from '~/lib/money';
+import { CURRENCY, formatPrice } from '~/lib/money';
 import { priceVariant, type PricingSnapshot } from '~/lib/pricing';
 import { loadPricing } from '~/lib/pricing.server';
-import { formatPrice } from '~/lib/money';
+import { isTestVariantId } from '~/lib/orders/test-purchase';
+import { startTestCheckout } from '~/lib/orders/test-checkout.server';
 import { formatSize, formatEt } from '~/lib/format';
 import { fallbackPriceCents, siteUrl } from '~/lib/env.server';
 import { shippingCheckoutParams } from '~/lib/stripe/checkout-options.server';
@@ -38,6 +39,11 @@ export async function action({ request }: Route.ActionArgs) {
   }
 
   if (lines.length === 0) return redirect('/cart?error=empty');
+
+  // Compra de prueba de 1 € (solo administradores, ver /admin/estado).
+  if (lines.some((l) => isTestVariantId(String(l?.variantId)))) {
+    return startTestCheckout(request, lines);
+  }
 
   // Precios y promociones vigentes. Si la base de datos falla, NO se cobra:
   // podría aplicarse un precio que ya no es el correcto.

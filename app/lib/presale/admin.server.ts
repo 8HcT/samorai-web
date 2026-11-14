@@ -13,6 +13,7 @@ import { getSupabaseAdmin } from '~/lib/supabase/server';
 import { dispatchNotifications } from '~/lib/email/outbox.server';
 import { orderLink, reservationLink } from './access.server';
 import { adminRpc } from './rpc.server';
+import { TEST_ORDER_FILTER } from '~/lib/orders/test-purchase';
 import { isAccessLinkSecretConfigured, presaleEnabled } from './config.server';
 import type { AuditRow, BatchRow, NotificationRow, OrderItemRow, OrderRow, PaymentRow, ReservationRow } from './rows';
 
@@ -309,19 +310,44 @@ export async function cancelReservation(id: string, reason: string, refund: bool
 // Pedidos
 // ------------------------------------------------------------------
 
-export async function listOrders(filters: { status?: string | null; kind?: string | null; q?: string | null }, limit = 200) {
+export interface OrderFilters {
+  status?: string | null;
+  /** cart | direct | presale | test (compras de prueba). */
+  kind?: string | null;
+  q?: string | null;
+}
+
+export function orderFiltersFromUrl(url: URL): OrderFilters {
+  return {
+    status: url.searchParams.get('status') || null,
+    kind: url.searchParams.get('kind') || null,
+    q: url.searchParams.get('q') || null,
+  };
+}
+
+export type OrderListRow = Pick<
+  OrderRow,
+  | 'id' | 'code' | 'kind' | 'status' | 'customer_email' | 'customer_name' | 'customer_phone' | 'shipping_address'
+  | 'amount_total_cents' | 'amount_paid_cents' | 'refunded_cents' | 'created_at' | 'review_reason' | 'batch_id'
+  | 'stripe_session_id' | 'carrier' | 'tracking_number' | 'shipped_at' | 'delivered_at'
+>;
+
+export async function listOrders(filters: OrderFilters, limit = 200): Promise<OrderListRow[]> {
   let query = db()
     .from('orders')
-    .select('id, code, kind, status, customer_email, customer_name, amount_total_cents, refunded_cents, created_at, review_reason, batch_id, stripe_session_id')
+    .select(
+      'id, code, kind, status, customer_email, customer_name, customer_phone, shipping_address, amount_total_cents, amount_paid_cents, refunded_cents, created_at, review_reason, batch_id, stripe_session_id, carrier, tracking_number, shipped_at, delivered_at'
+    )
     .order('created_at', { ascending: false })
     .limit(limit);
   if (filters.status) query = query.eq('status', filters.status);
-  if (filters.kind) query = query.eq('kind', filters.kind);
+  if (filters.kind === 'test') query = query.or(TEST_ORDER_FILTER);
+  else if (filters.kind) query = query.eq('kind', filters.kind);
   if (filters.q) {
     const q = filters.q.replace(/[%,()]/g, ' ').trim();
     if (q) query = query.or(`code.ilike.%${q}%,customer_email.ilike.%${q}%,customer_name.ilike.%${q}%`);
   }
-  return (check(await query) as any[]) ?? [];
+  return ((check(await query) as unknown as OrderListRow[]) ?? []);
 }
 
 export async function loadOrder(id: string) {
@@ -358,16 +384,56 @@ export async function updateOrderStatus(id: string, status: string, carrier: str
 export const cancelOrder = (id: string, reason: string, releaseStock: boolean, actor: string) =>
   adminRpc<RpcResult>('presale_admin_cancel_order', { p_order_id: id, p_reason: reason, p_release_stock: releaseStock, p_actor: actor });
 
-/** Devuelve todos los pagos cobrados de un pedido (reserva + pago final o compra directa). */
-export async function refundOrder(id: string) {
+/**
+ * Devuelve todo lo cobrado en un pedido: los pagos de preventa o compra
+ * directa (tabla `payments`) o, en los pedidos del carrito, que no tienen
+ * filas en `payments`, el pago de Stripe del propio pedido.
+ */
+export async function refundOrder(id: string, stripe: Stripe = getStripe()): Promise<{ ok: boolean; reason?: string; refundedCents?: number }> {
+  const order = check(
+    await db()
+      .from('orders')
+      .select('id, stripe_payment_intent_id, amount_total_cents, amount_paid_cents, refunded_cents')
+      .eq('id', id)
+      .maybeSingle()
+  ) as Pick<OrderRow, 'id' | 'stripe_payment_intent_id' | 'amount_total_cents' | 'amount_paid_cents' | 'refunded_cents'> | null;
+  if (!order) return { ok: false, reason: 'not_found' };
+
   const payments = check(
     await db().from('payments').select('*').eq('order_id', id).in('status', ['succeeded', 'partially_refunded'])
   ) as PaymentRow[];
-  const results = [];
-  for (const p of payments) {
-    if (p.stripe_payment_intent_id) results.push(await refundPayment(p.stripe_payment_intent_id, null));
+
+  if (payments.length > 0) {
+    let refunded = 0;
+    for (const p of payments) {
+      if (!p.stripe_payment_intent_id) continue;
+      const r = await refundPayment(p.stripe_payment_intent_id, null, stripe);
+      if (!r.ok) return { ok: false, reason: r.reason };
+      refunded += r.amount ?? 0;
+    }
+    return refunded > 0 ? { ok: true, refundedCents: refunded } : { ok: false, reason: 'nothing_to_refund' };
   }
-  return { ok: results.every((r) => r.ok), results };
+
+  // Pedido del carrito: un único pago, guardado en el propio pedido.
+  const pi = order.stripe_payment_intent_id;
+  if (!pi) return { ok: false, reason: 'no_payment' };
+  const paid = order.amount_paid_cents ?? order.amount_total_cents ?? 0;
+  const remaining = paid - order.refunded_cents;
+  if (remaining <= 0) return { ok: false, reason: 'nothing_to_refund' };
+
+  const refund = await stripe.refunds.create(
+    { payment_intent: pi, amount: remaining, reason: 'requested_by_customer', metadata: { source: 'samorai-admin', order_id: id } },
+    { idempotencyKey: `samorai-refund-order-${id}-${order.refunded_cents}-${remaining}` }
+  );
+  if (refund.status === 'failed' || refund.status === 'canceled') {
+    return { ok: false, reason: `refund_${refund.status}` };
+  }
+  // El webhook charge.refunded lo registraría igual; así el panel lo ve ya.
+  await adminRpc('presale_record_refund', {
+    p_payment_intent_id: pi,
+    p_refunded_total_cents: order.refunded_cents + refund.amount,
+  });
+  return { ok: true, refundedCents: refund.amount };
 }
 
 // ------------------------------------------------------------------

@@ -18,6 +18,7 @@ import type { OrderAddress, OrderRecord } from '~/lib/orders/orders.server';
 import { getVariantById, getFinish } from '~/data/products';
 import { formatPrice } from '~/lib/money';
 import { formatSize, formatEt } from '~/lib/format';
+import { TEST_PRODUCT_NAME, cartOrderCode, isTestVariantId } from '~/lib/orders/test-purchase';
 
 let _resend: Resend | null = null;
 
@@ -45,6 +46,9 @@ export function recipients(name: string): string[] {
 
 /** Datos de una línea desglosados (modelo, acabado, medida, ET, referencia). */
 function lineDetails(variantId: string) {
+  if (isTestVariantId(variantId)) {
+    return { title: TEST_PRODUCT_NAME, finish: null, size: null, et: null, ref: variantId };
+  }
   const found = getVariantById(variantId);
   if (!found) {
     return { title: variantId, finish: null, size: null, et: null, ref: variantId };
@@ -59,9 +63,18 @@ function lineDetails(variantId: string) {
   };
 }
 
-/** Referencia corta y legible del pedido, a partir del id de sesión. */
+/** Referencia del pedido: la misma que el código que muestra el panel. */
 function orderRef(order: OrderRecord): string {
-  return order.stripeSessionId.slice(-8).toUpperCase();
+  return cartOrderCode(order.stripeSessionId, Boolean(order.isTest));
+}
+
+/** Aviso destacado en los correos de una compra de prueba. */
+function testBanner(order: OrderRecord): string {
+  if (!order.isTest) return '';
+  return `<p style="margin:0 0 20px;padding:12px 14px;border:2px solid #c00;color:#c00;font-size:13px;line-height:1.6;">
+    <strong>COMPRA DE PRUEBA.</strong> Sirve para comprobar que pagos, pedidos y correos funcionan.
+    No hay que preparar ningún envío: el euro se devuelve desde el panel de administración.
+  </p>`;
 }
 
 /** Nº total de llantas del pedido. */
@@ -254,7 +267,7 @@ function customerEmailHtml(order: OrderRecord): string {
   const ref = orderRef(order);
   return shell(
     '¡Gracias por tu pedido!',
-    `<p style="color:#444;font-size:14px;line-height:1.6;margin:0 0 16px;">
+    `${testBanner(order)}<p style="color:#444;font-size:14px;line-height:1.6;margin:0 0 16px;">
        Hemos recibido tu pago correctamente. Aquí tienes el resumen de tu compra:
      </p>
      ${summaryHtml(order)}${orderTable(order)}
@@ -322,8 +335,8 @@ function fulfilmentHtml(order: OrderRecord): string {
 /** HTML del aviso interno de venta que recibe la tienda. */
 function shopEmailHtml(order: OrderRecord): string {
   return shell(
-    'Nueva venta',
-    `${fulfilmentHtml(order)}
+    order.isTest ? 'Compra de prueba' : 'Nueva venta',
+    `${testBanner(order)}${fulfilmentHtml(order)}
      ${summaryHtml(order)}${orderTable(order)}
      ${detailsHtml(order, { showBilling: true })}
      <p style="color:#999;font-size:11px;line-height:1.8;margin:24px 0 0;padding-top:14px;border-top:1px solid #eee;">
@@ -351,6 +364,7 @@ function shopEmailText(order: OrderRecord): string {
   });
 
   return [
+    ...(order.isTest ? ['*** COMPRA DE PRUEBA: NO ENVIAR NADA (se devuelve desde el panel) ***', ''] : []),
     `PEDIDO #${orderRef(order)}`,
     formatDate(order.createdAt),
     '',
@@ -378,12 +392,27 @@ export function renderOrderEmailPreview(
   return variant === 'shop' ? shopEmailHtml(order) : customerEmailHtml(order);
 }
 
-export async function sendOrderEmails(order: OrderRecord): Promise<void> {
+/** Qué pasó con cada correo de una compra (se guarda en el historial del pedido). */
+export type EmailOutcome = 'sent' | 'failed' | 'skipped';
+export interface OrderEmailResult {
+  customer: EmailOutcome;
+  shop: EmailOutcome;
+  /** Motivo de los fallos u omisiones (sin datos personales). */
+  errors: string[];
+}
+
+export async function sendOrderEmails(order: OrderRecord): Promise<OrderEmailResult> {
+  const result: OrderEmailResult = { customer: 'skipped', shop: 'skipped', errors: [] };
   const resend = getResend();
   const from = env('EMAIL_FROM');
-  if (!resend || !from) return; // sin configurar → no-op silencioso
+  if (!resend || !from) {
+    // Sin configurar: no se envía nada, pero queda constancia en el pedido.
+    result.errors.push('Resend sin configurar (RESEND_API_KEY / EMAIL_FROM)');
+    return result;
+  }
 
   const ref = orderRef(order);
+  const tag = order.isTest ? '[PRUEBA] ' : '';
 
   // 1 · Confirmación al cliente
   if (order.customerEmail) {
@@ -391,14 +420,24 @@ export async function sendOrderEmails(order: OrderRecord): Promise<void> {
       const { error } = await resend.emails.send({
         from,
         to: order.customerEmail,
-        subject: `Tu pedido SAMORAI #${ref} · confirmado`,
+        subject: `${tag}Tu pedido SAMORAI #${ref} · confirmado`,
         html: customerEmailHtml(order),
       });
       // El SDK devuelve el error en lugar de lanzarlo.
-      if (error) console.error('[email] Resend rechazó la confirmación al cliente', error);
+      if (error) {
+        console.error('[email] Resend rechazó la confirmación al cliente', error);
+        result.customer = 'failed';
+        result.errors.push(`cliente: ${error.message}`);
+      } else {
+        result.customer = 'sent';
+      }
     } catch (err) {
       console.error('[email] fallo enviando confirmación al cliente', err);
+      result.customer = 'failed';
+      result.errors.push(`cliente: ${err instanceof Error ? err.message : String(err)}`);
     }
+  } else {
+    result.errors.push('cliente: el pago no trae email');
   }
 
   // 2 · Aviso interno a la tienda (admite varios destinatarios)
@@ -410,17 +449,28 @@ export async function sendOrderEmails(order: OrderRecord): Promise<void> {
         to: shopTo,
         // Responder al aviso escribe directamente al cliente.
         ...(order.customerEmail ? { replyTo: order.customerEmail } : {}),
-        subject: `Nueva venta #${ref} · ${totalUnits(order)} llantas · ${formatPrice(order.amountTotalCents)}`,
+        subject: `${tag}${order.isTest ? 'Compra de prueba' : 'Nueva venta'} #${ref} · ${totalUnits(order)} ${order.isTest ? 'ud.' : 'llantas'} · ${formatPrice(order.amountTotalCents)}`,
         html: shopEmailHtml(order),
         // Texto plano: se lee bien en móvil, en clientes que bloquean HTML
         // y al reenviarlo a una agencia de transporte.
         text: shopEmailText(order),
       });
-      if (error) console.error('[email] Resend rechazó el aviso a la tienda', error);
+      if (error) {
+        console.error('[email] Resend rechazó el aviso a la tienda', error);
+        result.shop = 'failed';
+        result.errors.push(`tienda: ${error.message}`);
+      } else {
+        result.shop = 'sent';
+      }
     } catch (err) {
       console.error('[email] fallo enviando aviso a la tienda', err);
+      result.shop = 'failed';
+      result.errors.push(`tienda: ${err instanceof Error ? err.message : String(err)}`);
     }
+  } else {
+    result.errors.push('tienda: SHOP_ORDER_EMAIL sin configurar');
   }
+  return result;
 }
 
 /** Escapa el input del usuario para incrustarlo con seguridad en el HTML. */

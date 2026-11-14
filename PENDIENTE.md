@@ -168,6 +168,9 @@ Además, la preventa queda **apagada** hasta poner `PRESALE_ENABLED=true` en Ver
 
 ## R · Precios y promociones desde `/admin/precios` (para Black Friday)
 
+> **14-11-2026: R1–R6 hechos** (migraciones aplicadas y verificadas, Auth
+> configurado, admin creado, variables en Vercel, desplegado). Queda **R7**.
+
 Con la preventa **apagada** basta con esto (no hace falta P2, `ACCESS_LINK_SECRET`
 ni `CRON_SECRET`):
 
@@ -182,10 +185,40 @@ ni `CRON_SECRET`):
 | R7 | Crear la promoción con las fechas reales (queda «Programada» y se activa sola) | `/admin/precios` |
 
 - El precio se calcula en el servidor y Stripe cobra el importe con descuento. En el checkout y en el recibo aparece la línea con «Black Friday −20%» y el precio anterior.
-- Ya **no** se usan `STRIPE_PRICE_ID_LOW/HIGH`. **No los borres de Vercel** hasta que la versión nueva lleve unos días estable: si hubiera que volver a la anterior (*Instant Rollback*), la necesita.
+- Ya **no** se usan `STRIPE_PRICE_ID_LOW/HIGH` y se quitaron de Vercel el 14-11. Tampoco hacen falta para un *Instant Rollback*: la versión anterior, sin ellos, cobra con el importe del servidor.
 - Si la base de datos no responde: las páginas muestran el precio por defecto sin promoción, y el checkout **no cobra** (aviso de error en el carrito).
 - **Precio anterior tachado:** en España debe ser el precio más bajo aplicado en los 30 días anteriores. No subas precios antes de la promoción.
 - La preventa (desactivada) sigue usando sus propios precios; no le afectan estas promociones.
+
+---
+
+## T · Panel `/admin` y compra de prueba (14 nov 2026)
+
+Qué hay en el panel (todo con la preventa apagada):
+
+- **Panel**: pedidos de hoy / 7 / 30 días, ingresos netos (cobrado − devuelto),
+  llantas vendidas, ticket medio, pendientes de enviar, últimos pedidos, ventas
+  por referencia y por acabado, precio vigente de cada una de las 10 referencias
+  y un resumen del estado del sistema.
+- **Pedidos**: qué llantas lleva cada uno, filtros (estado, tipo, compras de
+  prueba), búsqueda y **descarga CSV**. En la ficha: pasar a fabricación /
+  enviado (con nº de seguimiento y aviso al cliente), cancelar, **devolver** y
+  enlace al pago en Stripe. El historial dice si salieron los dos correos.
+- **Precios**: además de editar, la tabla de lo que paga el cliente ahora por
+  referencia (con la promoción aplicada).
+- **Estado** (`/admin/estado`): comprobaciones en vivo de variables, dominio,
+  base de datos, precios, clave de Stripe, permiso de devoluciones, webhook,
+  correos, pedidos atascados, indexación y la última compra de prueba.
+- **Compra de prueba de 1 €** (referencia oculta, solo para administradores):
+  pasa por el mismo camino que un cliente y marca cada paso al volver de Stripe.
+  No cuenta en las cifras. Los pedidos pagados en **modo test de Stripe**
+  (como el de julio, `cs_test_…`) también se tratan como prueba.
+
+| # | Qué | Quién |
+|---|---|---|
+| T1 | Dar a la clave restringida de Stripe el permiso **Refunds: Write** (además de Checkout Sessions, Products, Prices y Shipping Rates: Write). Sin él, «Devolver» del panel avisa y hay que devolver desde Stripe | Tú |
+| T2 | Tras el deploy: `/admin/estado` → **Hacer compra de prueba de 1 €** → comprobar los 5 pasos → **Devolver** | Tú |
+| T3 | Repetir la prueba antes del Black Friday y tras cada cambio importante | Tú |
 
 ---
 
@@ -197,6 +230,13 @@ Open Graph/Twitter, datos estructurados (Organization, WebSite, Product con
 precio y disponibilidad, Breadcrumb), `noindex` en carrito, cuenta y pedidos,
 iconos e imágenes WebP (`npm run images`, se ejecuta solo en `dev`/`build`).
 
+**14-11-2026:** la ficha publica un `ProductGroup` con las 10 variantes (SKU,
+acabado, medida, precio vigente con promoción, envío gratuito a los 11 países
+del checkout), y cada variante tiene su URL (`?finish=…&width=…&et=…` abre la
+ficha ya configurada). `/contacto`, la ficha y el carrito ya salen traducidos
+en inglés (antes `/en/contacto` y parte de la ficha estaban en castellano) y
+`/contacto` tiene su `h1`.
+
 | # | Qué | Quién |
 |---|---|---|
 | S1 | `SITE_URL=https://www.samoraiwheels.com` en Vercel (lo usan canonical y sitemap; sin él se usa el host de la petición) | Tú |
@@ -206,6 +246,7 @@ iconos e imágenes WebP (`npm run images`, se ejecuta solo en `dev`/`build`).
 | S5 | URLs de redes sociales (Instagram, etc.) → las añado como `sameAs` en los datos de la marca | Cliente |
 | S6 | Al tener los textos legales definitivos: quitar el `noindex` de `/legal`, `/privacidad` y `/cookies`. Al activar The Dealers: quitar su `noindex` y añadirlo al sitemap | Yo |
 | S7 | Opcional: imagen para compartir con marca (logo + claim) en lugar del recorte del hero (`public/images/og/samorai-og.jpg`, 1200×630) | Diseño |
+| S8 | Con la política de devoluciones (D): añadir `hasMerchantReturnPolicy` a los datos de producto (Google lo pide para Shopping) y el plazo de entrega a `shippingDetails` | Yo |
 
 ---
 
@@ -218,8 +259,6 @@ después** (contiene secretos):
 ```
 STRIPE_SECRET_KEY=rk_live_...............................
 STRIPE_WEBHOOK_SECRET=whsec_.............................
-STRIPE_PRICE_ID_LOW=price_1U0nV8HZTdzugfFsRSwqa62i
-STRIPE_PRICE_ID_HIGH=price_1U0nVDHZTdzugfFsfL5iZkQH
 SITE_URL=https://www.samoraiwheels.com
 SUPABASE_URL=https://yllcvbttbkceofvkicix.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=sb_secret_.....................
@@ -241,8 +280,6 @@ De dónde sale cada una:
 |---|---|---|
 | `STRIPE_SECRET_KEY` | Stripe Live → API keys → Create restricted key | Debe empezar por **`rk_live_`**. Si pone `test`, **no cobras dinero real** |
 | `STRIPE_WEBHOOK_SECRET` | Stripe Live → Webhooks → tu endpoint → Signing secret | **No** es el de `stripe listen` ni el de Test |
-| `STRIPE_PRICE_ID_LOW` | **Ya creado** (275 €) | Copiar tal cual del bloque de arriba |
-| `STRIPE_PRICE_ID_HIGH` | **Ya creado** (300 €) | Idem |
 | `SITE_URL` | Tu dominio | **Con `www`**, `https://` y sin barra final |
 | `SUPABASE_URL` | Ya lo tienes (mismo en test y producción) | — |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Project Settings → API | Secreta: salta RLS. Solo servidor |
@@ -267,11 +304,11 @@ Si falta alguna, el arranque lo avisa en los logs de Vercel:
 
 ## F · Prueba final antes de abrir
 
-1. Compra real con tu tarjeta por 275 €.
-2. Comprueba: pago en Stripe · webhook en **200** · fila en Supabase ·
-   correo al cliente · aviso de venta · página `/success`.
-3. **Reembolsa** desde Stripe.
-4. Prueba el formulario de `/contacto`.
+1. **Compra de prueba de 1 €** desde `/admin/estado` (ver **T**): comprueba
+   cobro, webhook, pedido, correo al cliente y aviso a la tienda, y la devuelve.
+2. Opcional, para probar además el carrito y las promociones: una compra real
+   de una llanta (275 €) y devolverla desde su pedido en `/admin/pedidos`.
+3. Prueba el formulario de `/contacto` (en castellano y en `/en/contacto`).
 
 ---
 

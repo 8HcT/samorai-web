@@ -9,12 +9,19 @@
  * `stripe_session_id` (unique) para tolerar reintentos del webhook.
  */
 import { getSupabaseAdmin, isSupabaseConfigured } from '~/lib/supabase/server';
+import { cartOrderCode } from './test-purchase';
 
 export interface OrderLineRecord {
   variantId: string;
   productName: string;
   quantity: number;
   unitPriceCents: number;
+  /** Detalle de la referencia (para el panel y la preparación del envío). */
+  finishId?: string | null;
+  finishName?: string | null;
+  diameter?: number | null;
+  width?: number | null;
+  et?: number | null;
 }
 
 /** Dirección postal normalizada (envío o facturación). */
@@ -47,6 +54,8 @@ export interface OrderRecord {
   paymentStatus: string;
   lines: OrderLineRecord[];
   createdAt: string;
+  /** Compra de prueba de 1 € (ver ~/lib/orders/test-purchase). */
+  isTest?: boolean;
 }
 
 /**
@@ -57,11 +66,11 @@ export interface OrderRecord {
  * Sin Supabase configurado no hay forma de deduplicar: devuelve `isNew: true`
  * siempre (situación de desarrollo; en producción Supabase es obligatorio).
  */
-export async function recordOrder(order: OrderRecord): Promise<{ isNew: boolean }> {
+export async function recordOrder(order: OrderRecord): Promise<{ isNew: boolean; orderId: string | null }> {
   // Sin Supabase (desarrollo) el log es el único registro del pedido.
   if (!isSupabaseConfigured()) {
     console.log('[stripe][order]', JSON.stringify(order));
-    return { isNew: true };
+    return { isNew: true, orderId: null };
   }
 
   // Con base de datos, el log no lleva datos personales (RGPD: minimización).
@@ -74,6 +83,7 @@ export async function recordOrder(order: OrderRecord): Promise<{ isNew: boolean 
       amountTotalCents: order.amountTotalCents,
       paymentStatus: order.paymentStatus,
       lines: order.lines.map((l) => `${l.variantId}×${l.quantity}`),
+      ...(order.isTest ? { test: true } : {}),
     })
   );
 
@@ -103,6 +113,8 @@ export async function recordOrder(order: OrderRecord): Promise<{ isNew: boolean 
     // aún no está aplicada, se guarda el pedido con el formato anterior.
     const extended = {
       ...base,
+      // Misma referencia que ve el cliente en el correo (#XXXXXXXX).
+      code: cartOrderCode(order.stripeSessionId, Boolean(order.isTest)),
       customer_name: order.customerName,
       customer_phone: order.customerPhone,
       shipping_address: order.shippingAddress,
@@ -129,18 +141,29 @@ export async function recordOrder(order: OrderRecord): Promise<{ isNew: boolean 
     if (countError) throw countError;
 
     if (!count) {
-      const { error: itemsError } = await supabase.from('order_items').insert(
-        order.lines.map((l) => ({
-          order_id: orderId,
-          variant_id: l.variantId,
-          product_name: l.productName,
-          quantity: l.quantity,
-          unit_price_cents: l.unitPriceCents,
-        }))
-      );
+      const base = order.lines.map((l) => ({
+        order_id: orderId,
+        variant_id: l.variantId,
+        product_name: l.productName,
+        quantity: l.quantity,
+        unit_price_cents: l.unitPriceCents,
+      }));
+      // Detalle de la referencia (columnas de la migración de preventa).
+      const extended = order.lines.map((l, i) => ({
+        ...base[i],
+        finish_id: l.finishId ?? null,
+        finish_name: l.finishName ?? null,
+        diameter: l.diameter ?? null,
+        width: l.width ?? null,
+        et: l.et ?? null,
+      }));
+      let { error: itemsError } = await supabase.from('order_items').insert(extended);
+      if (itemsError && (itemsError.code === 'PGRST204' || itemsError.code === '42703')) {
+        ({ error: itemsError } = await supabase.from('order_items').insert(base));
+      }
       if (itemsError) throw itemsError;
     }
   }
 
-  return { isNew };
+  return { isNew, orderId: orderId ?? null };
 }

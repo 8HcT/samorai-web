@@ -8,6 +8,10 @@ import { applyPercentOff } from '~/lib/pricing';
 import { utcIsoToMadridLocal } from '~/lib/presale/datetime';
 import { LocalDateTime } from '~/components/presale/LocalDateTime';
 import { StatusChip } from '~/components/admin/AdminViz';
+import { PriceTable } from '~/components/admin/PriceTable';
+import { referencePrices } from '~/lib/admin/store-stats';
+import { loadPricing } from '~/lib/pricing.server';
+import { adminRpc } from '~/lib/presale/rpc.server';
 import {
   PRICING_REASON,
   deletePromotion,
@@ -21,11 +25,13 @@ import {
 
 export async function loader({ request }: Route.LoaderArgs) {
   await requireAdmin(request);
+  const now = new Date();
   try {
-    return { ...(await loadPricingAdmin()), setupMissing: false, now: new Date().toISOString() };
+    const [admin, snapshot] = await Promise.all([loadPricingAdmin(), loadPricing({ strict: true, rpc: adminRpc, now })]);
+    return { ...admin, references: referencePrices(snapshot, now), setupMissing: false, now: now.toISOString() };
   } catch (err) {
     console.error('[admin][precios] no se pudo leer', err);
-    return { prices: [], promotions: [], scope: [], setupMissing: true, now: new Date().toISOString() };
+    return { prices: [], promotions: [], scope: [], references: [], setupMissing: true, now: now.toISOString() };
   }
 }
 
@@ -78,7 +84,7 @@ function promotionState(p: PromotionRow, now: string): { label: string; tone: 'g
 }
 
 export default function AdminPrices({ loaderData, actionData }: Route.ComponentProps) {
-  const { prices, promotions, scope, setupMissing, now } = loaderData;
+  const { prices, promotions, scope, references, setupMissing, now } = loaderData;
   const busy = useNavigation().state !== 'idle';
   const [params] = useSearchParams();
   const editing = promotions.find((p) => p.id === params.get('editar')) ?? null;
@@ -152,6 +158,16 @@ export default function AdminPrices({ loaderData, actionData }: Route.ComponentP
           </table>
         </div>
       </section>
+
+      {references.length > 0 && (
+        <section className="admin-section">
+          <h2>Lo que paga ahora el cliente, por referencia</h2>
+          <p className="admin-muted" style={{ marginBottom: 'var(--space-3)' }}>
+            Resultado de los precios de arriba y de la promoción activa en este momento. Es exactamente lo que cobra el checkout.
+          </p>
+          <PriceTable prices={references} />
+        </section>
+      )}
 
       <section className="admin-section">
         <h2>Promociones</h2>

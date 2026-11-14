@@ -74,7 +74,9 @@ export default [
     route('reservas/:id', 'routes/admin/reservation.tsx'),
     route('precios', 'routes/admin/prices.tsx'),
     route('pedidos', 'routes/admin/orders.tsx'),
+    route('pedidos.csv', 'routes/admin/orders-csv.tsx'),
     route('pedidos/:id', 'routes/admin/order.tsx'),
+    route('estado', 'routes/admin/status.tsx'),
     route('correos', 'routes/admin/emails.tsx'),
   ]),
 

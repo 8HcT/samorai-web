@@ -1,28 +1,20 @@
 import type { Route } from './+types/sitemap.xml';
-import { products } from '~/data/products';
 import { supportedLocales } from '~/i18n/config';
 import { localizePath } from '~/i18n/paths';
 import { canonicalOrigin } from '~/lib/env.server';
+import { sitemapPaths } from '~/lib/sitemap';
 
 /**
  * sitemap.xml con las páginas indexables en los dos idiomas y sus
- * alternativas hreflang. Las páginas con noindex (legales en borrador,
- * dealers, carrito, cuenta…) no se incluyen.
+ * alternativas hreflang (lista de páginas en ~/lib/sitemap).
  */
-const PAGES = ['/', '/the-dynasty', '/the-wheels', '/contacto'];
-
 function escapeXml(value: string): string {
   return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 export function loader({ request }: Route.LoaderArgs) {
   const origin = canonicalOrigin(request);
-  const paths = [
-    ...PAGES,
-    ...products.filter((p) => p.status === 'active').map((p) => `/the-wheels/${p.slug}`),
-  ];
-
-  const urls = paths.flatMap((path) => {
+  const urls = sitemapPaths().flatMap((path) => {
     const alternates = [
       ...supportedLocales.map(
         (l) => `    <xhtml:link rel="alternate" hreflang="${l}" href="${escapeXml(origin + localizePath(path, l))}"/>`
