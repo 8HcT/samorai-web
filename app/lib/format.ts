@@ -12,14 +12,12 @@ export function formatDecimalEs(n: number): string {
   return decimalEs.format(n);
 }
 
-/** Medida comercial: (18, 8.5) → "18x8,5". */
-export function formatSize(diameter: number, width: number): string {
-  return `${diameter}x${formatDecimalEs(width)}`;
-}
-
-/** Buje central: 72.6 → "72,6 mm". */
-export function formatCenterBore(cb: number): string {
-  return `${formatDecimalEs(cb)} mm`;
+/**
+ * Medida comercial: (18, 8.5) → "18x8,5". En inglés, con punto decimal:
+ * (18, 8.5, 'en') → "18x8.5".
+ */
+export function formatSize(diameter: number, width: number, locale: 'es' | 'en' = 'es'): string {
+  return `${diameter}x${locale === 'en' ? String(width) : formatDecimalEs(width)}`;
 }
 
 /** Offset: 35 → "ET35". */

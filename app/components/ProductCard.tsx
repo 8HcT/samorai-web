@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Product, ProductFinish, WheelColor } from '~/types/product';
 import { getWidthsForFinish } from '~/data/products';
 import { formatSize } from '~/lib/format';
-import { useLocalePath } from '~/i18n/useT';
+import { useLocale, useLocalePath, useT } from '~/i18n/useT';
 import { ProductMedia, FINISH_SWATCH_CLASS as PLACEHOLDER_CLASS } from './ProductMedia';
 import { PriceTag, PromoBadge } from './PriceTag';
 import type { VariantPrice } from '~/lib/pricing';
@@ -25,6 +25,9 @@ export function ProductCard({ product, activeColor, finish, price }: ProductCard
   const [showSecondary, setShowSecondary] = useState(false);
   const timer = useRef<number | null>(null);
   const lp = useLocalePath();
+  const t = useT();
+  const locale = useLocale();
+  const finishName = (f: ProductFinish) => t.finishNames[f.id] ?? f.name;
 
   function clearTimer() {
     if (timer.current) window.clearTimeout(timer.current);
@@ -45,7 +48,7 @@ export function ProductCard({ product, activeColor, finish, price }: ProductCard
   // ── Tarjeta de acabado (uno de los "tres modelos") ──
   if (finish) {
     const sizes = getWidthsForFinish(product, finish.id).map((w) =>
-      formatSize(18, w)
+      formatSize(18, w, locale)
     );
     const src =
       showSecondary && finish.images[1] ? finish.images[1] : finish.images[0];
@@ -53,12 +56,12 @@ export function ProductCard({ product, activeColor, finish, price }: ProductCard
       <Link
         className="pcard"
         to={lp(`/the-wheels/${product.slug}?finish=${finish.id}`)}
-        aria-label={`${product.model} — ${finish.name}`}
+        aria-label={`${product.model} — ${finishName(finish)}`}
         onMouseEnter={() => onEnter(finish.images)}
         onMouseLeave={onLeave}
       >
         <div className="ph">
-          <ProductMedia color={finish.color} src={src} alt={`${product.model} — ${finish.name}`} />
+          <ProductMedia color={finish.color} src={src} alt={`${product.model} — ${finishName(finish)}`} />
           {(product.featured || price?.promotion) && (
             <div className="badges">
               {product.featured && <span className="badge badge-new">New</span>}
@@ -66,16 +69,16 @@ export function ProductCard({ product, activeColor, finish, price }: ProductCard
             </div>
           )}
           <div className="ov">
-            <span className="overlay-cta">Configurar →</span>
+            <span className="overlay-cta">{t.wheels.configure}</span>
           </div>
         </div>
 
         <div className="body">
           <p className="coll">Wheels · {product.model}</p>
-          <h3 className="nm">{finish.name}</h3>
+          <h3 className="nm">{finishName(finish)}</h3>
           <div className="row">
             {price ? (
-              <PriceTag price={price} prefix="Desde" className="price" />
+              <PriceTag price={price} prefix={t.product.from} wasLabel={t.product.was} className="price" />
             ) : (
               <span className="price">{product.priceLabel}</span>
             )}
@@ -109,7 +112,7 @@ export function ProductCard({ product, activeColor, finish, price }: ProductCard
         )}
 
         <div className="ov">
-          <span className="overlay-cta">Ver ficha →</span>
+          <span className="overlay-cta">{t.wheels.viewProduct}</span>
         </div>
       </div>
 

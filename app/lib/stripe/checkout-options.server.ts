@@ -4,11 +4,9 @@
  */
 import type Stripe from 'stripe';
 import { CURRENCY } from '~/lib/money';
+import { SHIPPING_COST_CENTS, SHIPPING_COUNTRIES } from '~/lib/shipping';
 
-/** Países a los que se permite envío (España + UE principal). Ajustable. */
-export const SHIPPING_COUNTRIES = [
-  'ES', 'PT', 'FR', 'DE', 'IT', 'NL', 'BE', 'AT', 'IE', 'LU', 'FI',
-] as const;
+export { SHIPPING_COUNTRIES };
 
 /**
  * Envío gratuito: se declara explícitamente para que el cliente vea en el
@@ -17,7 +15,7 @@ export const SHIPPING_COUNTRIES = [
 export const FREE_SHIPPING_OPTION: Stripe.Checkout.SessionCreateParams.ShippingOption = {
   shipping_rate_data: {
     type: 'fixed_amount',
-    fixed_amount: { amount: 0, currency: CURRENCY },
+    fixed_amount: { amount: SHIPPING_COST_CENTS, currency: CURRENCY },
     display_name: 'Envío gratuito',
   },
 };

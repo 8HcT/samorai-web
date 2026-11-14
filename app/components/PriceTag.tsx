@@ -18,12 +18,15 @@ export function PriceTag({
   price,
   quantity = 1,
   prefix,
+  wasLabel = 'Antes {price}',
   className = '',
 }: {
   price: VariantPrice | null | undefined;
   quantity?: number;
   /** Texto delante del importe (p. ej. «Desde»). */
   prefix?: string;
+  /** Texto accesible del precio tachado; `{price}` = importe anterior. */
+  wasLabel?: string;
   className?: string;
 }) {
   if (!price) return <span className={className}>{formatPrice(null)}</span>;
@@ -35,7 +38,7 @@ export function PriceTag({
   return (
     <span className={`price-tag ${className}`.trim()}>
       {prefix ? `${prefix} ` : ''}
-      <s className="price-was" aria-label={`Antes ${formatPrice(was)}`}>{formatPrice(was)}</s>{' '}
+      <s className="price-was" aria-label={wasLabel.replace('{price}', formatPrice(was))}>{formatPrice(was)}</s>{' '}
       <span className="price-now">{formatPrice(now)}</span>
     </span>
   );

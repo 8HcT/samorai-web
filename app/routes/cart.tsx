@@ -14,6 +14,8 @@ import { PriceTag, PromoBadge } from '~/components/PriceTag';
 import { products } from '~/data/products';
 import { buildPriceBook } from '~/lib/pricing';
 import { loadPricing } from '~/lib/pricing.server';
+import { useLocale, useLocalePath, useT } from '~/i18n/useT';
+import { fill } from '~/lib/seo';
 
 /** Precios vigentes (y promociones) de todo el catálogo para pintar el carrito. */
 export async function loader() {
@@ -32,18 +34,15 @@ const PLACEHOLDER_COLOR_CLASS: Record<string, string> = {
   'Raw Aluminum': 'product-card__image-placeholder--aluminum',
 };
 
-const CHECKOUT_ERRORS: Record<string, string> = {
-  empty: 'Tu carrito está vacío.',
-  price: 'Algún artículo no tiene precio configurado todavía. Inténtalo más tarde.',
-  stripe: 'No se pudo iniciar el pago. Revisa la configuración de Stripe e inténtalo de nuevo.',
-  managed:
-    'Las llantas Victoria se venden ahora por juegos de 4 desde su ficha (preventa o compra directa con stock limitado). Quita el artículo del carrito y resérvalo o cómpralo desde la ficha del producto.',
-};
-
 export default function Cart({ loaderData }: Route.ComponentProps) {
   const { lines, setQuantity, remove, ready, count } = useCart();
   const [searchParams] = useSearchParams();
   const errorKey = searchParams.get('error');
+  const t = useT();
+  const c = t.cart;
+  const locale = useLocale();
+  const lp = useLocalePath();
+  const errorText = errorKey ? c.errors[errorKey] : undefined;
 
   const resolved = resolveCart(lines, loaderData.priceBook);
   const totalCents = cartTotalCents(resolved);
@@ -62,7 +61,7 @@ export default function Cart({ loaderData }: Route.ComponentProps) {
     return (
       <div className="section">
         <div className="container">
-          <SectionHeader eyebrow="Your Selection" title="Cart" />
+          <SectionHeader eyebrow={c.eyebrow} title={c.title} as="h1" />
         </div>
       </div>
     );
@@ -72,14 +71,12 @@ export default function Cart({ loaderData }: Route.ComponentProps) {
     return (
       <div className="section">
         <div className="container">
-          {errorKey && CHECKOUT_ERRORS[errorKey] && (
-            <p className="cart-error" role="alert">{CHECKOUT_ERRORS[errorKey]}</p>
-          )}
+          {errorText && <p className="cart-error" role="alert">{errorText}</p>}
           <div className="empty-state">
             <div className="empty-state__icon" aria-hidden="true">○</div>
-            <h3>Your cart is empty</h3>
-            <p>Browse the Victoria range to find your perfect set.</p>
-            <Button href="/the-wheels" variant="primary">Browse Wheels</Button>
+            <h3>{c.emptyTitle}</h3>
+            <p>{c.emptyBody}</p>
+            <Button href={lp('/the-wheels')} variant="primary">{c.browse}</Button>
           </div>
         </div>
       </div>
@@ -89,19 +86,17 @@ export default function Cart({ loaderData }: Route.ComponentProps) {
   return (
     <div className="section">
       <div className="container">
-        <SectionHeader eyebrow="Your Selection" title="Cart" />
+        <SectionHeader eyebrow={c.eyebrow} title={c.title} as="h1" />
 
-        {errorKey && CHECKOUT_ERRORS[errorKey] && (
-          <p className="cart-error" role="alert">{CHECKOUT_ERRORS[errorKey]}</p>
-        )}
+        {errorText && <p className="cart-error" role="alert">{errorText}</p>}
 
         <div className="cart-layout">
           {/* Items */}
           <div>
             {resolved.map((line) => {
               const { variant, product } = line;
-              const finishName = getFinish(product, variant.finishId)?.name ?? variant.color;
-              const spec = `${formatSize(variant.diameter, variant.width)} · ${formatEt(variant.et)} · ${variant.pcd}`;
+              const finishName = t.finishNames[variant.finishId] ?? getFinish(product, variant.finishId)?.name ?? variant.color;
+              const spec = `${formatSize(variant.diameter, variant.width, locale)} · ${formatEt(variant.et)} · ${variant.pcd}`;
               return (
                 <div key={variant.id} className="cart-item">
                   <div className="cart-item__image">
@@ -109,7 +104,7 @@ export default function Cart({ loaderData }: Route.ComponentProps) {
                       className={`product-card__image-placeholder ${PLACEHOLDER_COLOR_CLASS[variant.color] ?? 'product-card__image-placeholder--anthracite'}`}
                       style={{ width: '100%', height: '100%' }}
                       role="img"
-                      aria-label={`${product.name} in ${variant.color}`}
+                      aria-label={fill(c.imageAria, { name: product.name, finish: finishName })}
                     />
                   </div>
 
@@ -118,17 +113,17 @@ export default function Cart({ loaderData }: Route.ComponentProps) {
                     <p className="cart-item__spec">{finishName}</p>
                     <p className="cart-item__spec">{spec}</p>
                     <p className="cart-item__spec">
-                      Precio unitario: <PriceTag price={line.price} /> · IVA incluido
+                      {c.unitPrice} <PriceTag price={line.price} wasLabel={t.product.was} /> · {c.vatIncluded}
                     </p>
                     {line.price?.promotion && (
                       <p className="cart-item__spec">
                         <PromoBadge promotion={line.price.promotion} />
                       </p>
                     )}
-                    <div className="cart-item__qty" aria-label="Cantidad">
+                    <div className="cart-item__qty" aria-label={c.quantity}>
                       <button
                         className="cart-item__qty-btn"
-                        aria-label="Decrease quantity"
+                        aria-label={c.decrease}
                         onClick={() => setQuantity(variant.id, line.quantity - 1)}
                       >
                         −
@@ -138,7 +133,7 @@ export default function Cart({ loaderData }: Route.ComponentProps) {
                       </span>
                       <button
                         className="cart-item__qty-btn"
-                        aria-label="Increase quantity"
+                        aria-label={c.increase}
                         onClick={() => setQuantity(variant.id, line.quantity + 1)}
                       >
                         +
@@ -146,15 +141,15 @@ export default function Cart({ loaderData }: Route.ComponentProps) {
                       <button
                         className="cart-item__remove"
                         onClick={() => remove(variant.id)}
-                        aria-label={`Remove ${product.name}`}
+                        aria-label={fill(c.removeAria, { name: product.name })}
                       >
-                        Quitar
+                        {c.remove}
                       </button>
                     </div>
                   </div>
 
                   <div className="cart-item__price">
-                    <PriceTag price={line.price} quantity={line.quantity} />
+                    <PriceTag price={line.price} quantity={line.quantity} wasLabel={t.product.was} />
                   </div>
                 </div>
               );
@@ -163,27 +158,27 @@ export default function Cart({ loaderData }: Route.ComponentProps) {
 
           {/* Summary */}
           <div className="cart-summary">
-            <h2 className="cart-summary__title">Order Summary</h2>
+            <h2 className="cart-summary__title">{c.summary}</h2>
             <div className="cart-summary__row">
-              <span>Subtotal (IVA incluido)</span>
+              <span>{c.subtotal}</span>
               <span>{formatPrice(totalCents)}</span>
             </div>
             {savedCents > 0 && (
               <div className="cart-summary__row">
-                <span>Ahorras (promoción)</span>
+                <span>{c.saved}</span>
                 <span className="price-now">−{formatPrice(savedCents)}</span>
               </div>
             )}
             <div className="cart-summary__row">
-              <span>Envío</span>
-              <span>Calculado en el checkout</span>
+              <span>{c.shipping}</span>
+              <span>{c.shippingFree}</span>
             </div>
             <div className="cart-summary__total">
-              <span>Total</span>
+              <span>{c.total}</span>
               <span>{formatPrice(totalCents)}</span>
             </div>
             <p className="caption" style={{ marginTop: 'var(--space-2)' }}>
-              IVA incluido. No se añaden impuestos adicionales.
+              {c.taxNote}
             </p>
 
             {/* POST nativo al resource route → crea la sesión y redirige a Stripe */}
@@ -196,12 +191,12 @@ export default function Cart({ loaderData }: Route.ComponentProps) {
                 className="w-full"
                 onClick={() => trackEvent('checkout_started', { itemCount: count })}
               >
-                Proceed to Checkout
+                {c.checkout}
               </Button>
             </form>
 
             <div className="cart-notice">
-              Pago seguro con Stripe · IVA incluido · Envío calculado en el checkout.
+              {c.notice}
             </div>
           </div>
         </div>
