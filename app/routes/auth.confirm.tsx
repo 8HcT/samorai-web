@@ -14,7 +14,7 @@ export function meta(args: Route.MetaArgs) {
 }
 
 export function headers() {
-  return { 'Cache-Control': 'private, no-store', 'Referrer-Policy': 'no-referrer' };
+  return { 'Cache-Control': 'private, no-store', 'Referrer-Policy': 'same-origin' };
 }
 
 const OTP_TYPES: EmailOtpType[] = ['email', 'magiclink', 'signup', 'recovery', 'invite', 'email_change'];

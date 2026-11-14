@@ -10,7 +10,7 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export function headers() {
-  return { 'Cache-Control': 'private, no-store', 'Referrer-Policy': 'no-referrer' };
+  return { 'Cache-Control': 'private, no-store', 'Referrer-Policy': 'same-origin' };
 }
 
 /**

@@ -21,6 +21,10 @@ export function assertSameOrigin(request: Request): void {
   const referer = request.headers.get('Referer');
   const source = origin && origin !== 'null' ? origin : referer;
   if (!source) {
+    // Con algunas políticas de referer el navegador manda `Origin: null` y
+    // ningún Referer. `Sec-Fetch-Site` lo pone el propio navegador (una web
+    // externa no puede falsificarlo) y dice si la petición sale de esta web.
+    if (request.headers.get('Sec-Fetch-Site') === 'same-origin') return;
     throw new Response('Origen de la petición no verificable', { status: 403 });
   }
   let host: string;
@@ -61,10 +65,16 @@ export function safeNextPath(next: string | null | undefined, fallback = '/cuent
   return next;
 }
 
-/** Cabeceras para páginas con enlaces privados o datos personales. */
+/**
+ * Cabeceras para páginas con enlaces privados o datos personales.
+ * `same-origin`: la URL nunca sale hacia otras webs, pero los formularios de
+ * la propia web siguen llevando su origen (con `no-referrer` el navegador
+ * envía `Origin: null` y la comprobación de `assertSameOrigin` no puede
+ * verificar de dónde viene la petición).
+ */
 export const PRIVATE_PAGE_HEADERS = {
   'Cache-Control': 'private, no-store',
-  'Referrer-Policy': 'no-referrer',
+  'Referrer-Policy': 'same-origin',
   'X-Robots-Tag': 'noindex, nofollow',
 } as const;
 
