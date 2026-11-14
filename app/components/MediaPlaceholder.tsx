@@ -1,5 +1,6 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { optimizedSrc, optimizedSrcSet } from '~/lib/images';
+import { useT } from '~/i18n/useT';
 
 /**
  * Hueco de imagen. Si el archivo `file` existe, muestra la imagen; si no (o si
@@ -29,6 +30,7 @@ export function MediaPlaceholder({
 }) {
   // 0 = WebP optimizada · 1 = original (si falta la variante) · 2 = sin imagen
   const [stage, setStage] = useState(0);
+  const { a11y } = useT();
   useEffect(() => setStage(0), [file]);
 
   const showImg = Boolean(file) && stage < 2;
@@ -36,8 +38,9 @@ export function MediaPlaceholder({
   return (
     <div
       className={`media-ph ${showImg ? 'media-ph--filled' : ''} ${className}`}
-      role="img"
-      aria-label={showImg ? label : `Imagen pendiente: ${label}`}
+      // Con imagen, la describe su `alt`; sin ella, el hueco se anuncia como imagen pendiente.
+      role={showImg ? undefined : 'img'}
+      aria-label={showImg ? undefined : a11y.pendingImage.replace('{label}', label)}
       style={{ aspectRatio: ratio, ...style }}
     >
       <span className="media-ph__label">

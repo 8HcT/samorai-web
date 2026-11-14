@@ -14,7 +14,7 @@ import { PriceTag, PromoBadge } from '~/components/PriceTag';
 import { products } from '~/data/products';
 import { buildPriceBook } from '~/lib/pricing';
 import { loadPricing } from '~/lib/pricing.server';
-import { useLocale, useLocalePath, useT } from '~/i18n/useT';
+import { useLocale, useT } from '~/i18n/useT';
 import { fill } from '~/lib/seo';
 
 /** Precios vigentes (y promociones) de todo el catálogo para pintar el carrito. */
@@ -41,7 +41,6 @@ export default function Cart({ loaderData }: Route.ComponentProps) {
   const t = useT();
   const c = t.cart;
   const locale = useLocale();
-  const lp = useLocalePath();
   const errorText = errorKey ? c.errors[errorKey] : undefined;
 
   const resolved = resolveCart(lines, loaderData.priceBook);
@@ -76,7 +75,7 @@ export default function Cart({ loaderData }: Route.ComponentProps) {
             <div className="empty-state__icon" aria-hidden="true">○</div>
             <h3>{c.emptyTitle}</h3>
             <p>{c.emptyBody}</p>
-            <Button href={lp('/the-wheels')} variant="primary">{c.browse}</Button>
+            <Button href="/the-wheels" variant="primary">{c.browse}</Button>
           </div>
         </div>
       </div>
@@ -184,6 +183,7 @@ export default function Cart({ loaderData }: Route.ComponentProps) {
             {/* POST nativo al resource route → crea la sesión y redirige a Stripe */}
             <form method="post" action="/api/checkout">
               <input type="hidden" name="cart" value={JSON.stringify(lines)} />
+              <input type="hidden" name="locale" value={locale} />
               <Button
                 type="submit"
                 variant="primary"

@@ -1,6 +1,6 @@
 import type { MetaDescriptor } from 'react-router';
-import { defaultLocale, supportedLocales, t, type Locale } from '~/i18n/config';
-import { isLocalizedPath, localeFromPath, localizePath, splitLocalePath } from '~/i18n/paths';
+import { supportedLocales, t, type Locale } from '~/i18n/config';
+import { fallbackLocaleForPath, isLocalizedPath, localeFromPath, localizePath, splitLocalePath } from '~/i18n/paths';
 
 /**
  * SEO centralizado: título, descripción, canonical, hreflang, Open Graph,
@@ -28,7 +28,7 @@ interface MetaContext {
 export function rootSeoData(args: MetaContext): RootSeoData {
   const data = args.matches.find((m) => m?.id === 'root')?.data as Partial<RootSeoData> | undefined;
   return {
-    locale: localeFromPath(args.location.pathname) ?? data?.locale ?? defaultLocale,
+    locale: localeFromPath(args.location.pathname) ?? data?.locale ?? fallbackLocaleForPath(args.location.pathname),
     origin: data?.origin ?? '',
   };
 }

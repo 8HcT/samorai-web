@@ -5,9 +5,12 @@ import { createAuthClient, isAuthConfigured } from '~/lib/auth/session.server';
 import { claimGuestRecords, markEmailVerified } from '~/lib/presale/account.server';
 import { safeNextPath } from '~/lib/security.server';
 import { accountHomePath } from '~/lib/presale/config.server';
+import { t as translations } from '~/i18n/config';
+import { useT } from '~/i18n/useT';
+import { rootSeoData } from '~/lib/seo';
 
-export function meta({}: Route.MetaArgs) {
-  return [{ title: 'Acceso | SAMORAI' }, { name: 'robots', content: 'noindex' }];
+export function meta(args: Route.MetaArgs) {
+  return [{ title: translations(rootSeoData(args).locale).account.titles.access }, { name: 'robots', content: 'noindex' }];
 }
 
 export function headers() {
@@ -58,16 +61,13 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export default function AuthConfirm({ loaderData }: Route.ComponentProps) {
+  const a = useT().account;
   return (
     <div className="placeholder-page">
       <div className="placeholder-page__inner">
-        <h1>Enlace no válido</h1>
-        <p>
-          {loaderData.error === 'not_configured'
-            ? 'El acceso de clientes todavía no está disponible.'
-            : 'El enlace ha caducado o ya se ha usado. Pide uno nuevo y ábrelo en este mismo dispositivo.'}
-        </p>
-        <Link to="/cuenta/acceso" className="btn btn-primary">Pedir un enlace nuevo</Link>
+        <h1>{a.invalidLinkTitle}</h1>
+        <p>{loaderData.error === 'not_configured' ? a.notAvailableYet : a.invalidLinkBody}</p>
+        <Link to="/cuenta/acceso" className="btn btn-primary">{a.newLink}</Link>
       </div>
     </div>
   );

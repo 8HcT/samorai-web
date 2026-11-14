@@ -1,28 +1,20 @@
-import type { ReactNode } from 'react';
-
-interface LegalPageProps {
-  eyebrow: string;
-  title: string;
-  /** Última actualización (placeholder hasta validación legal) */
-  updated?: string;
-  children: ReactNode;
-}
+import { useT } from '~/i18n/useT';
 
 /**
- * Chrome común de las páginas legales (/legal, /privacidad, /cookies).
- * El contenido es PLACEHOLDER: debe redactarlo o validarlo un abogado
- * antes del lanzamiento (LSSI + RGPD). Ver Sección 2 del Master Brief.
+ * Páginas legales (/legal, /privacidad, /cookies) en los dos idiomas.
+ * El contenido es PROVISIONAL (i18n `legal.*`): debe redactarlo o validarlo
+ * un abogado antes del lanzamiento (LSSI + RGPD). Ver Sección 2 del Master Brief.
  */
-export function LegalPage({ eyebrow, title, updated, children }: LegalPageProps) {
+export function LegalPage({ doc }: { doc: 'notice' | 'privacy' | 'cookies' }) {
+  const l = useT().legal;
+  const { eyebrow, title, sections } = l[doc];
   return (
     <>
       <div className="page-hero">
         <div className="container">
           <span className="eyebrow">{eyebrow}</span>
           <h1>{title}</h1>
-          {updated && (
-            <p className="page-hero__subtitle">Última actualización: {updated}</p>
-          )}
+          <p className="page-hero__subtitle">{l.updated} {l.pending}</p>
         </div>
       </div>
 
@@ -40,12 +32,15 @@ export function LegalPage({ eyebrow, title, updated, children }: LegalPageProps)
               color: 'var(--color-text-secondary)',
             }}
           >
-            <strong style={{ color: 'var(--s-gold)' }}>Texto pendiente.</strong>{' '}
-            Contenido de marcador de posición. La redacción definitiva debe ser
-            elaborada o validada por un abogado antes del lanzamiento.
+            <strong style={{ color: 'var(--s-gold)' }}>{l.pendingTitle}</strong> {l.pendingBody}
           </div>
 
-          {children}
+          {sections.map((s) => (
+            <div key={s.h}>
+              <h3>{s.h}</h3>
+              <p>{s.p}</p>
+            </div>
+          ))}
         </div>
       </section>
     </>

@@ -48,9 +48,10 @@ const victoria = products.find((p) => p.slug === 'victoria')!;
 const silver85 = victoria.variants.find((v) => v.finishId === 'silver-metallic' && v.width === 8.5)!;
 const black9 = victoria.variants.find((v) => v.finishId === 'black-metallic' && v.width === 9)!;
 
-async function checkout(lines: { variantId: string; quantity: number }[]) {
+async function checkout(lines: { variantId: string; quantity: number }[], locale?: string) {
   const body = new FormData();
   body.set('cart', JSON.stringify(lines));
+  if (locale) body.set('locale', locale);
   const request = new Request('http://localhost/api/checkout', { method: 'POST', body });
   try {
     return (await action({ request, params: {}, context: {} } as never)) as Response;
@@ -92,6 +93,27 @@ describe('checkout del carrito con promociones', () => {
     expect(silver.price_data?.product_data?.metadata).toMatchObject({ basePriceCents: '27500' });
     expect(black.price_data).toMatchObject({ unit_amount: 30000 });
     expect(created[0].metadata?.cart).toBe(`${silver85.id}:4:22000,${black9.id}:1:30000`);
+  });
+
+  it('compra desde la web en inglés: pago de Stripe y correo en inglés; resumen de la tienda en castellano', async () => {
+    created.length = 0;
+    const res = await checkout([{ variantId: black9.id, quantity: 4 }], 'en');
+    expect(res.status).toBe(303);
+    const params = created[0];
+    expect(params.locale).toBe('en');
+    expect(params.metadata?.locale).toBe('en');
+    expect(params.shipping_options?.[0]).toMatchObject({ shipping_rate_data: { display_name: 'Free shipping' } });
+    expect(params.payment_intent_data?.description).toContain('Black Metallic 18x9');
+  });
+
+  it('sin idioma en el formulario usa el del navegador; con «es», todo en castellano', async () => {
+    created.length = 0;
+    await checkout([{ variantId: black9.id, quantity: 4 }]);
+    expect(created[0].locale).toBe('en'); // la petición de test no trae Accept-Language → inglés
+    created.length = 0;
+    await checkout([{ variantId: black9.id, quantity: 4 }], 'es');
+    expect(created[0]).toMatchObject({ locale: 'es', metadata: { locale: 'es' } });
+    expect(created[0].shipping_options?.[0]).toMatchObject({ shipping_rate_data: { display_name: 'Envío gratuito' } });
   });
 
   it('el precio del navegador se ignora', async () => {

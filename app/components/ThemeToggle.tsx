@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useT } from '~/i18n/useT';
 
 type Theme = 'dark' | 'light';
 const STORAGE_KEY = 'samorai_theme';
@@ -11,6 +12,7 @@ const STORAGE_KEY = 'samorai_theme';
 export function ThemeToggle() {
   const [theme, setTheme] = useState<Theme>('light');
   const [mounted, setMounted] = useState(false);
+  const a = useT().a11y;
 
   useEffect(() => {
     const current = (document.documentElement.getAttribute('data-theme') as Theme) || 'light';
@@ -32,8 +34,8 @@ export function ThemeToggle() {
       type="button"
       className="theme-toggle"
       onClick={toggle}
-      aria-label={`Cambiar a tema ${isDark ? 'claro' : 'oscuro'}`}
-      title={`Cambiar a tema ${isDark ? 'claro' : 'oscuro'}`}
+      aria-label={isDark ? a.themeToLight : a.themeToDark}
+      title={isDark ? a.themeToLight : a.themeToDark}
       aria-pressed={mounted ? !isDark : undefined}
     >
       <span aria-hidden="true">{isDark ? '☀' : '☾'}</span>

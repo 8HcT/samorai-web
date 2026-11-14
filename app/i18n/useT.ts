@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useLocation, useRouteLoaderData } from 'react-router';
-import { locales, defaultLocale, type Locale } from './config';
-import { localeFromPath, localizePath } from './paths';
+import { locales, type Locale } from './config';
+import { fallbackLocaleForPath, localeFromPath, localizePath } from './paths';
 
 /**
  * Idioma activo: el de la URL en páginas públicas (`/en/…` = inglés) y, en
@@ -12,7 +12,7 @@ import { localeFromPath, localizePath } from './paths';
 export function useLocale(): Locale {
   const { pathname } = useLocation();
   const data = useRouteLoaderData('root') as { locale?: Locale } | undefined;
-  return localeFromPath(pathname) ?? data?.locale ?? defaultLocale;
+  return localeFromPath(pathname) ?? data?.locale ?? fallbackLocaleForPath(pathname);
 }
 
 /** Cadenas de traducción del idioma activo. Uso: `const t = useT(); t.nav.home`. */

@@ -12,7 +12,7 @@ import type { Route } from './+types/root';
 import '~/styles/global.css';
 import { preferredLocale, resolveLocale } from '~/i18n/config';
 import { localeFromPath, localizePath } from '~/i18n/paths';
-import { useLocale } from '~/i18n/useT';
+import { useLocale, useLocalePath, useT } from '~/i18n/useT';
 import { canonicalOrigin } from '~/lib/env.server';
 import { presaleEnabled } from '~/lib/presale/config.server';
 import {
@@ -116,16 +116,18 @@ export default function App() {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let message = 'Oops!';
-  let details = 'An unexpected error occurred.';
+  const e = useT().errors;
+  const lp = useLocalePath();
+  let message = e.errorTitle;
+  let details = e.unexpected;
+  let title = e.errorTitle;
   let stack: string | undefined;
 
   if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? '404' : 'Error';
-    details =
-      error.status === 404
-        ? 'The requested page could not be found.'
-        : error.statusText || details;
+    const notFound = error.status === 404;
+    message = notFound ? '404' : e.errorTitle;
+    details = notFound ? e.notFound : details;
+    title = notFound ? e.notFoundTitle : e.errorTitle;
   } else if (import.meta.env.DEV && error instanceof Error) {
     details = error.message;
     stack = error.stack;
@@ -147,6 +149,8 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
         fontFamily: 'system-ui, sans-serif',
       }}
     >
+      <title>{`${title} | SAMORAI`}</title>
+      <meta name="robots" content="noindex" />
       <h1 style={{ fontSize: '4rem', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{message}</h1>
       <p style={{ color: 'rgba(237,237,237,0.7)', maxWidth: '40ch' }}>{details}</p>
       {stack && (
@@ -166,8 +170,8 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
           <code>{stack}</code>
         </pre>
       )}
-      <a href="/" style={{ color: '#D7B55B', marginTop: '1rem' }}>
-        ← Back to home
+      <a href={lp('/')} style={{ color: '#D7B55B', marginTop: '1rem' }}>
+        {e.backHome}
       </a>
     </div>
   );

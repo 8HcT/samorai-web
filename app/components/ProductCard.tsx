@@ -64,7 +64,7 @@ export function ProductCard({ product, activeColor, finish, price }: ProductCard
           <ProductMedia color={finish.color} src={src} alt={`${product.model} — ${finishName(finish)}`} />
           {(product.featured || price?.promotion) && (
             <div className="badges">
-              {product.featured && <span className="badge badge-new">New</span>}
+              {product.featured && <span className="badge badge-new">{t.product.newBadge}</span>}
               {price?.promotion && <PromoBadge promotion={price.promotion} />}
             </div>
           )}
@@ -74,7 +74,7 @@ export function ProductCard({ product, activeColor, finish, price }: ProductCard
         </div>
 
         <div className="body">
-          <p className="coll">Wheels · {product.model}</p>
+          <p className="coll">{t.product.collection} · {product.model}</p>
           <h3 className="nm">{finishName(finish)}</h3>
           <div className="row">
             {price ? (
@@ -107,7 +107,7 @@ export function ProductCard({ product, activeColor, finish, price }: ProductCard
 
         {product.featured && (
           <div className="badges">
-            <span className="badge badge-new">New</span>
+            <span className="badge badge-new">{t.product.newBadge}</span>
           </div>
         )}
 
@@ -117,7 +117,7 @@ export function ProductCard({ product, activeColor, finish, price }: ProductCard
       </div>
 
       <div className="body">
-        <p className="coll">Wheels · {product.specs.pcd}</p>
+        <p className="coll">{t.product.collection} · {product.specs.pcd}</p>
         <h3 className="nm">{product.model}</h3>
         <div className="row">
           <span className="price">{product.priceLabel}</span>

@@ -37,12 +37,12 @@ export function Header() {
 
   return (
     <header className="navbar samorai-header">
-      <NavLink to={lp('/')} className="nv-logo" aria-label="SAMORAI — home" onClick={() => setOpen(false)}>
+      <NavLink to={lp('/')} className="nv-logo" aria-label={t.a11y.homeLink} onClick={() => setOpen(false)}>
         <img src="/logo.svg" alt="SAMORAI" className="nv-logo__img" />
       </NavLink>
 
       {/* Navegación de escritorio */}
-      <nav aria-label="Main navigation" className="nv-desktop">
+      <nav aria-label={t.a11y.mainNav} className="nv-desktop">
         <ul className="nv-links" role="list">
           {NAV.map(({ to, key, end }) => (
             <li key={to}>
@@ -78,7 +78,7 @@ export function Header() {
       <button
         type="button"
         className="nv-toggle"
-        aria-label={open ? 'Cerrar menú' : 'Abrir menú'}
+        aria-label={open ? t.a11y.closeMenu : t.a11y.openMenu}
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
       >
@@ -89,7 +89,7 @@ export function Header() {
       {open && (
         <>
           <div className="nv-mobile-overlay" onClick={() => setOpen(false)} aria-hidden="true" />
-          <div className="nv-mobile" role="dialog" aria-modal="true" aria-label="Menú">
+          <div className="nv-mobile" role="dialog" aria-modal="true" aria-label={t.a11y.menu}>
             <ul className="nv-mobile__links" role="list">
               {NAV.map(({ to, key, end }) => (
                 <li key={to}>

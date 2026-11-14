@@ -56,6 +56,8 @@ export interface OrderRecord {
   createdAt: string;
   /** Compra de prueba de 1 € (ver ~/lib/orders/test-purchase). */
   isTest?: boolean;
+  /** Idioma del cliente (correo de confirmación). Por defecto, castellano. */
+  locale?: 'es' | 'en';
 }
 
 /**

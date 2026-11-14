@@ -170,9 +170,10 @@ describe('webhook: registro de la compra', () => {
     });
   });
 
-  it('una compra real guarda acabado, medida y ET de cada línea', async () => {
-    await processCartSession(session({ cart: `${black9.id}:4:30000` }));
+  it('una compra real guarda acabado, medida y ET de cada línea (y el idioma del cliente)', async () => {
+    await processCartSession(session({ cart: `${black9.id}:4:30000`, locale: 'en' }));
     expect(recorded[0].isTest).toBe(false);
+    expect(recorded[0].locale).toBe('en');
     expect(recorded[0].lines[0]).toMatchObject({
       variantId: black9.id, quantity: 4, unitPriceCents: 30000,
       finishId: 'black-metallic', finishName: 'Black Metallic', diameter: 18, width: 9, et: black9.et,

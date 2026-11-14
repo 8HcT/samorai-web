@@ -237,6 +237,20 @@ ficha ya configurada). `/contacto`, la ficha y el carrito ya salen traducidos
 en inglés (antes `/en/contacto` y parte de la ficha estaban en castellano) y
 `/contacto` tiene su `h1`.
 
+**Idiomas (14-11-2026):** todas las pantallas que se pueden ver con la preventa
+apagada salen en castellano y en inglés (también acceso de admin, recuperar y
+cambiar contraseña, pedido confirmado, pago cancelado, 404, páginas legales y
+textos para lectores de pantalla). El cliente que compra en inglés ve el pago
+de Stripe en inglés y recibe el correo de confirmación en inglés; el aviso a
+la tienda sigue en castellano e indica el idioma del cliente.
+
+Siguen **solo en castellano**, a propósito:
+- El panel `/admin` (uso interno del equipo).
+- Las pantallas y correos de la **preventa** (desactivada): reservas, «Mi
+  cuenta», registro. Traducirlas al activarla.
+- Los correos de **Supabase Auth** (enlace de acceso y recuperar contraseña):
+  se editan en Supabase → Authentication → Emails (un solo idioma).
+
 | # | Qué | Quién |
 |---|---|---|
 | S1 | `SITE_URL=https://www.samoraiwheels.com` en Vercel (lo usan canonical y sitemap; sin él se usa el host de la petición) | Tú |

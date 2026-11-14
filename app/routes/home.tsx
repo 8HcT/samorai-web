@@ -22,7 +22,7 @@ export function meta(args: Route.MetaArgs) {
 }
 
 export default function Home() {
-  const h = useT().home;
+  const { home: h, a11y } = useT();
 
   return (
     <>
@@ -69,7 +69,7 @@ export default function Home() {
       </section>
 
       {/* 4 · Cita de marca (banda oscura fija) */}
-      <section className="section band-dark" aria-label="Manifiesto">
+      <section className="section band-dark" aria-label={a11y.manifesto}>
         <div className="container">
           <blockquote className="dynasty-quote">
             {h.quotePre}<em>{h.quoteAccent}</em>{h.quotePost}
@@ -87,7 +87,7 @@ export default function Home() {
               <p style={{ marginTop: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>{h.cBody}</p>
               <Button href="/contacto" variant="primary">{h.cCta}</Button>
             </div>
-            <MediaPlaceholder label="Contacto" file="/images/home-contacto.png" ratio="7 / 5" />
+            <MediaPlaceholder label="Contacto" alt={h.altContact} file="/images/home-contacto.png" ratio="7 / 5" />
           </div>
         </div>
       </section>

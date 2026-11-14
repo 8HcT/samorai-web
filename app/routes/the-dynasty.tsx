@@ -16,7 +16,7 @@ export function meta(args: Route.MetaArgs) {
  * el `--hero-bg` del hero).
  */
 export default function TheDynasty() {
-  const d = useT().dynasty;
+  const { dynasty: d, a11y } = useT();
 
   return (
     <>
@@ -89,7 +89,7 @@ export default function TheDynasty() {
       </section>
 
       {/* 4 · Cita de cierre (banda oscura fija) */}
-      <section className="section band-dark" aria-label="Manifiesto">
+      <section className="section band-dark" aria-label={a11y.manifesto}>
         <div className="container">
           <hr className="sep-line" style={{ marginBottom: 'var(--space-12)' }} />
           <blockquote className="dynasty-quote">

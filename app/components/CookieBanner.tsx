@@ -33,7 +33,7 @@ export function CookieBanner() {
     <div
       className="cookies"
       role="dialog"
-      aria-label="Aviso de cookies"
+      aria-label={t.a11y.cookieNotice}
       style={{ position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 'var(--z-overlay)' }}
     >
       <p>

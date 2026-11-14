@@ -8,6 +8,7 @@ import { priceVariant, type PricingSnapshot } from '~/lib/pricing';
 import { loadPricing } from '~/lib/pricing.server';
 import { isTestVariantId } from '~/lib/orders/test-purchase';
 import { startTestCheckout } from '~/lib/orders/test-checkout.server';
+import { isLocale, resolveLocale, t as translations, type Locale } from '~/i18n/config';
 import { formatSize, formatEt } from '~/lib/format';
 import { fallbackPriceCents, siteUrl } from '~/lib/env.server';
 import { shippingCheckoutParams } from '~/lib/stripe/checkout-options.server';
@@ -39,6 +40,14 @@ export async function action({ request }: Route.ActionArgs) {
   }
 
   if (lines.length === 0) return redirect('/cart?error=empty');
+
+  // Idioma del cliente: el del carrito (campo oculto) o, si no, el de su
+  // navegador. Stripe muestra el pago en ese idioma y el correo sale en él.
+  const formLocale = String(form.get('locale') ?? '');
+  const locale: Locale = isLocale(formLocale)
+    ? formLocale
+    : resolveLocale(request.headers.get('Cookie'), request.headers.get('Accept-Language'));
+  const tr = translations(locale);
 
   // Compra de prueba de 1 € (solo administradores, ver /admin/estado).
   if (lines.some((l) => isTestVariantId(String(l?.variantId)))) {
@@ -91,11 +100,13 @@ export async function action({ request }: Route.ActionArgs) {
       continue;
     }
 
-    const finishName = getFinish(product, variant.finishId)?.name ?? variant.color;
-    const size = formatSize(variant.diameter, variant.width);
+    const finishName = tr.finishNames[variant.finishId] ?? getFinish(product, variant.finishId)?.name ?? variant.color;
+    const size = formatSize(variant.diameter, variant.width, locale);
     const promo = price.promotion;
+    // Resumen para la tienda (dashboard de Stripe): siempre en castellano.
+    const finishEs = getFinish(product, variant.finishId)?.name ?? variant.color;
     summaryParts.push(
-      `${product.model} ${finishName} ${size} ${formatEt(variant.et)} ×${quantity}${promo ? ` (${promo.badge} -${promo.percentOff}%)` : ''}`
+      `${product.model} ${finishEs} ${formatSize(variant.diameter, variant.width)} ${formatEt(variant.et)} ×${quantity}${promo ? ` (${promo.badge} -${promo.percentOff}%)` : ''}`
     );
     charged.push(`${variant.id}:${quantity}:${price.finalCents}`);
 
@@ -110,7 +121,12 @@ export async function action({ request }: Route.ActionArgs) {
         product_data: {
           name: `${product.name} · ${finishName} · ${size} ${formatEt(variant.et)}${promo ? ` · ${promo.badge} −${promo.percentOff}%` : ''}`,
           ...(promo
-            ? { description: `Precio anterior ${formatPrice(price.baseCents)} por llanta. ${promo.badge}: −${promo.percentOff}%.` }
+            ? {
+                description:
+                  locale === 'en'
+                    ? `Previous price ${formatPrice(price.baseCents)} per wheel. ${promo.badge}: −${promo.percentOff}%.`
+                    : `Precio anterior ${formatPrice(price.baseCents)} por llanta. ${promo.badge}: −${promo.percentOff}%.`,
+              }
             : {}),
           metadata: {
             model: product.model,
@@ -138,10 +154,11 @@ export async function action({ request }: Route.ActionArgs) {
     const base = siteUrl();
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
+      locale,
       line_items: lineItems,
       success_url: `${base}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${base}/cancel`,
-      ...shippingCheckoutParams(),
+      ...shippingCheckoutParams(locale),
       automatic_tax: { enabled: false }, // activar tras configurar Stripe Tax
       // El resumen también en el pago, para verlo desde el dashboard de Stripe.
       payment_intent_data: {
@@ -157,6 +174,8 @@ export async function action({ request }: Route.ActionArgs) {
         cart: charged.join(',').slice(0, 490),
         summary: summaryParts.join('; ').slice(0, 490),
         itemCount: String(lines.reduce((s, l) => s + (Number(l.quantity) || 0), 0)),
+        // Idioma del correo de confirmación al cliente.
+        locale,
       },
     });
 

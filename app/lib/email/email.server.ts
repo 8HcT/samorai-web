@@ -19,6 +19,49 @@ import { getVariantById, getFinish } from '~/data/products';
 import { formatPrice } from '~/lib/money';
 import { formatSize, formatEt } from '~/lib/format';
 import { TEST_PRODUCT_NAME, cartOrderCode, isTestVariantId } from '~/lib/orders/test-purchase';
+import { t as translations } from '~/i18n/config';
+
+/**
+ * Idioma del correo al CLIENTE (el de la web en la que compró). Los avisos
+ * internos a la tienda van siempre en castellano.
+ */
+export type MailLang = 'es' | 'en';
+
+const MAIL = {
+  es: {
+    dateLocale: 'es-ES',
+    finish: 'Acabado', size: 'Medida', offset: 'Offset', ref: 'Ref.',
+    unit: 'unidad', units: 'unidades', wheel: 'llanta', wheels: 'llantas',
+    shipTo: 'Dirección de envío', contact: 'Contacto', billing: 'Dirección de facturación', notProvided: 'No facilitada',
+    order: 'Pedido', date: 'Fecha', quantity: 'Unidades',
+    subtotal: 'Subtotal', shipping: 'Envío', free: 'Gratuito', total: 'Total (IVA incluido)',
+    thanks: '¡Gracias por tu pedido!',
+    received: 'Hemos recibido tu pago correctamente. Aquí tienes el resumen de tu compra:',
+    closing: (ref: string) =>
+      `Te contactaremos con los detalles del envío. Si algún dato de la dirección no es correcto, responde a este correo cuanto antes indicando la referencia <strong>#${ref}</strong>.`,
+    subject: (ref: string) => `Tu pedido SAMORAI #${ref} · confirmado`,
+    footer: 'SAMORAI Wheels · Precio por llanta, IVA incluido.',
+    testTitle: 'COMPRA DE PRUEBA.',
+    testBody:
+      'Sirve para comprobar que pagos, pedidos y correos funcionan. No hay que preparar ningún envío: el euro se devuelve desde el panel de administración.',
+  },
+  en: {
+    dateLocale: 'en-GB',
+    finish: 'Finish', size: 'Size', offset: 'Offset', ref: 'Ref.',
+    unit: 'unit', units: 'units', wheel: 'wheel', wheels: 'wheels',
+    shipTo: 'Shipping address', contact: 'Contact', billing: 'Billing address', notProvided: 'Not provided',
+    order: 'Order', date: 'Date', quantity: 'Units',
+    subtotal: 'Subtotal', shipping: 'Shipping', free: 'Free', total: 'Total (VAT included)',
+    thanks: 'Thank you for your order!',
+    received: 'We have received your payment. Here is a summary of your purchase:',
+    closing: (ref: string) =>
+      `We will contact you with the shipping details. If any part of the address is wrong, please reply to this email as soon as possible quoting the reference <strong>#${ref}</strong>.`,
+    subject: (ref: string) => `Your SAMORAI order #${ref} · confirmed`,
+    footer: 'SAMORAI Wheels · Price per wheel, VAT included.',
+    testTitle: 'TEST PURCHASE.',
+    testBody: 'Used to check that payments, orders and emails work. Nothing is shipped: the euro is refunded from the admin panel.',
+  },
+} as const;
 
 let _resend: Resend | null = null;
 
@@ -45,7 +88,7 @@ export function recipients(name: string): string[] {
 }
 
 /** Datos de una línea desglosados (modelo, acabado, medida, ET, referencia). */
-function lineDetails(variantId: string) {
+function lineDetails(variantId: string, lang: MailLang = 'es') {
   if (isTestVariantId(variantId)) {
     return { title: TEST_PRODUCT_NAME, finish: null, size: null, et: null, ref: variantId };
   }
@@ -56,8 +99,8 @@ function lineDetails(variantId: string) {
   const { product, variant } = found;
   return {
     title: product.name,
-    finish: getFinish(product, variant.finishId)?.name ?? variant.color,
-    size: formatSize(variant.diameter, variant.width),
+    finish: translations(lang).finishNames[variant.finishId] ?? getFinish(product, variant.finishId)?.name ?? variant.color,
+    size: formatSize(variant.diameter, variant.width, lang),
     et: formatEt(variant.et),
     ref: variant.id,
   };
@@ -69,11 +112,11 @@ function orderRef(order: OrderRecord): string {
 }
 
 /** Aviso destacado en los correos de una compra de prueba. */
-function testBanner(order: OrderRecord): string {
+function testBanner(order: OrderRecord, lang: MailLang = 'es'): string {
   if (!order.isTest) return '';
+  const m = MAIL[lang];
   return `<p style="margin:0 0 20px;padding:12px 14px;border:2px solid #c00;color:#c00;font-size:13px;line-height:1.6;">
-    <strong>COMPRA DE PRUEBA.</strong> Sirve para comprobar que pagos, pedidos y correos funcionan.
-    No hay que preparar ningún envío: el euro se devuelve desde el panel de administración.
+    <strong>${m.testTitle}</strong> ${m.testBody}
   </p>`;
 }
 
@@ -82,9 +125,9 @@ function totalUnits(order: OrderRecord): number {
   return order.lines.reduce((sum, l) => sum + l.quantity, 0);
 }
 
-export function formatDate(iso: string): string {
+export function formatDate(iso: string, lang: MailLang = 'es'): string {
   try {
-    return new Intl.DateTimeFormat('es-ES', {
+    return new Intl.DateTimeFormat(MAIL[lang].dateLocale, {
       dateStyle: 'long',
       timeStyle: 'short',
       timeZone: 'Europe/Madrid',
@@ -98,18 +141,18 @@ export function formatDate(iso: string): string {
  * Nombre del país a partir del código ISO que devuelve Stripe ("ES" → "España").
  * Se usa `Intl.DisplayNames` para no mantener una lista a mano.
  */
-export function countryName(code: string | null): string | null {
+export function countryName(code: string | null, lang: MailLang = 'es'): string | null {
   if (!code) return null;
   try {
-    return new Intl.DisplayNames(['es'], { type: 'region' }).of(code) ?? code;
+    return new Intl.DisplayNames([lang], { type: 'region' }).of(code) ?? code;
   } catch {
     return code;
   }
 }
 
 /** Dirección en varias líneas, lista para copiar en una etiqueta de envío. */
-export function addressHtml(address: OrderAddress | null): string {
-  if (!address) return '<span style="color:#999;">No facilitada</span>';
+export function addressHtml(address: OrderAddress | null, lang: MailLang = 'es'): string {
+  if (!address) return `<span style="color:#999;">${MAIL[lang].notProvided}</span>`;
   const region = [address.postalCode, address.city].filter(Boolean).join(' ');
   // La provincia solo aporta si no repite la ciudad (Madrid, Madrid…).
   const state =
@@ -122,20 +165,21 @@ export function addressHtml(address: OrderAddress | null): string {
     address.line2,
     region,
     state,
-    countryName(address.country),
+    countryName(address.country, lang),
   ].filter((p): p is string => Boolean(p && p.trim()));
   return parts.map(esc).join('<br>');
 }
 
-function rowsHtml(order: OrderRecord): string {
+function rowsHtml(order: OrderRecord, lang: MailLang = 'es'): string {
+  const m = MAIL[lang];
   return order.lines
     .map((l) => {
-      const d = lineDetails(l.variantId);
+      const d = lineDetails(l.variantId, lang);
       const lineTotal = formatPrice(l.unitPriceCents * l.quantity);
       const specs = [
-        d.finish && `Acabado: ${d.finish}`,
-        d.size && `Medida: ${d.size}`,
-        d.et && `Offset: ${d.et}`,
+        d.finish && `${m.finish}: ${d.finish}`,
+        d.size && `${m.size}: ${d.size}`,
+        d.et && `${m.offset}: ${d.et}`,
       ]
         .filter(Boolean)
         .map((s) => esc(String(s)))
@@ -145,8 +189,8 @@ function rowsHtml(order: OrderRecord): string {
           <td style="padding:14px 0;border-bottom:1px solid #eee;color:${INK};font-size:14px;">
             <strong style="font-size:15px;">${esc(d.title)}</strong><br>
             <span style="color:#555;font-size:13px;line-height:1.7;">${specs}</span><br>
-            <span style="color:#999;font-size:11px;">Ref. ${esc(d.ref)}</span><br>
-            <span style="color:#888;font-size:12px;">${l.quantity} ${l.quantity === 1 ? 'unidad' : 'unidades'} × ${formatPrice(l.unitPriceCents)}</span>
+            <span style="color:#999;font-size:11px;">${m.ref} ${esc(d.ref)}</span><br>
+            <span style="color:#888;font-size:12px;">${l.quantity} ${l.quantity === 1 ? m.unit : m.units} × ${formatPrice(l.unitPriceCents)}</span>
           </td>
           <td style="padding:14px 0;border-bottom:1px solid #eee;text-align:right;color:${INK};font-size:14px;font-weight:600;white-space:nowrap;vertical-align:top;">
             ${lineTotal}
@@ -157,7 +201,8 @@ function rowsHtml(order: OrderRecord): string {
 }
 
 /** Bloque de dos columnas con envío y contacto. */
-function detailsHtml(order: OrderRecord, opts: { showBilling: boolean }): string {
+function detailsHtml(order: OrderRecord, opts: { showBilling: boolean }, lang: MailLang = 'es'): string {
+  const m = MAIL[lang];
   const billingDiffers =
     opts.showBilling &&
     order.billingAddress != null &&
@@ -167,11 +212,11 @@ function detailsHtml(order: OrderRecord, opts: { showBilling: boolean }): string
     <table style="width:100%;border-collapse:collapse;margin:22px 0 0;">
       <tr>
         <td style="vertical-align:top;padding:0 12px 0 0;width:50%;">
-          <p style="margin:0 0 6px;color:#888;font-size:11px;letter-spacing:1px;text-transform:uppercase;">Dirección de envío</p>
-          <p style="margin:0;color:${INK};font-size:13px;line-height:1.7;">${addressHtml(order.shippingAddress)}</p>
+          <p style="margin:0 0 6px;color:#888;font-size:11px;letter-spacing:1px;text-transform:uppercase;">${m.shipTo}</p>
+          <p style="margin:0;color:${INK};font-size:13px;line-height:1.7;">${addressHtml(order.shippingAddress, lang)}</p>
         </td>
         <td style="vertical-align:top;padding:0 0 0 12px;width:50%;">
-          <p style="margin:0 0 6px;color:#888;font-size:11px;letter-spacing:1px;text-transform:uppercase;">Contacto</p>
+          <p style="margin:0 0 6px;color:#888;font-size:11px;letter-spacing:1px;text-transform:uppercase;">${m.contact}</p>
           <p style="margin:0;color:${INK};font-size:13px;line-height:1.7;">
             ${order.customerName ? `${esc(order.customerName)}<br>` : ''}
             ${order.customerEmail ? `${esc(order.customerEmail)}<br>` : ''}
@@ -183,8 +228,8 @@ function detailsHtml(order: OrderRecord, opts: { showBilling: boolean }): string
         billingDiffers
           ? `<tr>
                <td colspan="2" style="padding:18px 0 0;">
-                 <p style="margin:0 0 6px;color:#888;font-size:11px;letter-spacing:1px;text-transform:uppercase;">Dirección de facturación</p>
-                 <p style="margin:0;color:${INK};font-size:13px;line-height:1.7;">${addressHtml(order.billingAddress)}</p>
+                 <p style="margin:0 0 6px;color:#888;font-size:11px;letter-spacing:1px;text-transform:uppercase;">${m.billing}</p>
+                 <p style="margin:0;color:${INK};font-size:13px;line-height:1.7;">${addressHtml(order.billingAddress, lang)}</p>
                </td>
              </tr>`
           : ''
@@ -215,26 +260,28 @@ export function shell(
 }
 
 /** Cabecera: referencia, fecha y nº de llantas. */
-function summaryHtml(order: OrderRecord): string {
+function summaryHtml(order: OrderRecord, lang: MailLang = 'es'): string {
   const units = totalUnits(order);
+  const m = MAIL[lang];
   return `
     <table style="width:100%;border-collapse:collapse;margin:0 0 20px;background:#fafafa;border:1px solid #eee;">
       <tr>
-        <td style="padding:12px 14px;color:#888;font-size:11px;letter-spacing:1px;text-transform:uppercase;">Pedido</td>
+        <td style="padding:12px 14px;color:#888;font-size:11px;letter-spacing:1px;text-transform:uppercase;">${m.order}</td>
         <td style="padding:12px 14px;color:${INK};font-size:13px;font-weight:700;text-align:right;">#${esc(orderRef(order))}</td>
       </tr>
       <tr>
-        <td style="padding:0 14px 12px;color:#888;font-size:11px;letter-spacing:1px;text-transform:uppercase;">Fecha</td>
-        <td style="padding:0 14px 12px;color:${INK};font-size:13px;text-align:right;">${esc(formatDate(order.createdAt))}</td>
+        <td style="padding:0 14px 12px;color:#888;font-size:11px;letter-spacing:1px;text-transform:uppercase;">${m.date}</td>
+        <td style="padding:0 14px 12px;color:${INK};font-size:13px;text-align:right;">${esc(formatDate(order.createdAt, lang))}</td>
       </tr>
       <tr>
-        <td style="padding:0 14px 12px;color:#888;font-size:11px;letter-spacing:1px;text-transform:uppercase;">Unidades</td>
-        <td style="padding:0 14px 12px;color:${INK};font-size:13px;text-align:right;">${units} ${units === 1 ? 'llanta' : 'llantas'}</td>
+        <td style="padding:0 14px 12px;color:#888;font-size:11px;letter-spacing:1px;text-transform:uppercase;">${m.quantity}</td>
+        <td style="padding:0 14px 12px;color:${INK};font-size:13px;text-align:right;">${units} ${units === 1 ? m.wheel : m.wheels}</td>
       </tr>
     </table>`;
 }
 
-function orderTable(order: OrderRecord): string {
+function orderTable(order: OrderRecord, lang: MailLang = 'es'): string {
+  const m = MAIL[lang];
   const total = formatPrice(order.amountTotalCents);
   // El subtotal solo se muestra si aporta algo (si hay envío cobrado).
   const shipping = order.shippingCents;
@@ -242,21 +289,21 @@ function orderTable(order: OrderRecord): string {
 
   return `
     <table style="width:100%;border-collapse:collapse;margin:8px 0 4px;">
-      ${rowsHtml(order)}
+      ${rowsHtml(order, lang)}
       ${
         showBreakdown
           ? `<tr>
-               <td style="padding:14px 0 0;color:#666;font-size:13px;">Subtotal</td>
+               <td style="padding:14px 0 0;color:#666;font-size:13px;">${m.subtotal}</td>
                <td style="padding:14px 0 0;text-align:right;color:#666;font-size:13px;">${formatPrice(order.amountSubtotalCents)}</td>
              </tr>
              <tr>
-               <td style="padding:6px 0 0;color:#666;font-size:13px;">Envío</td>
-               <td style="padding:6px 0 0;text-align:right;color:#666;font-size:13px;">${shipping === 0 ? 'Gratuito' : formatPrice(shipping)}</td>
+               <td style="padding:6px 0 0;color:#666;font-size:13px;">${m.shipping}</td>
+               <td style="padding:6px 0 0;text-align:right;color:#666;font-size:13px;">${shipping === 0 ? m.free : formatPrice(shipping)}</td>
              </tr>`
           : ''
       }
       <tr>
-        <td style="padding:14px 0 0;color:${INK};font-size:15px;font-weight:700;">Total (IVA incluido)</td>
+        <td style="padding:14px 0 0;color:${INK};font-size:15px;font-weight:700;">${m.total}</td>
         <td style="padding:14px 0 0;text-align:right;color:${GOLD};font-size:18px;font-weight:700;">${total}</td>
       </tr>
     </table>`;
@@ -265,18 +312,19 @@ function orderTable(order: OrderRecord): string {
 /** HTML del correo de confirmación que recibe el cliente. */
 function customerEmailHtml(order: OrderRecord): string {
   const ref = orderRef(order);
+  const lang: MailLang = order.locale ?? 'es';
+  const m = MAIL[lang];
   return shell(
-    '¡Gracias por tu pedido!',
-    `${testBanner(order)}<p style="color:#444;font-size:14px;line-height:1.6;margin:0 0 16px;">
-       Hemos recibido tu pago correctamente. Aquí tienes el resumen de tu compra:
+    m.thanks,
+    `${testBanner(order, lang)}<p style="color:#444;font-size:14px;line-height:1.6;margin:0 0 16px;">
+       ${m.received}
      </p>
-     ${summaryHtml(order)}${orderTable(order)}
-     ${detailsHtml(order, { showBilling: true })}
+     ${summaryHtml(order, lang)}${orderTable(order, lang)}
+     ${detailsHtml(order, { showBilling: true }, lang)}
      <p style="color:#888;font-size:12px;line-height:1.6;margin:22px 0 0;">
-       Te contactaremos con los detalles del envío. Si algún dato de la dirección
-       no es correcto, responde a este correo cuanto antes indicando la
-       referencia <strong>#${esc(ref)}</strong>.
-     </p>`
+       ${m.closing(esc(ref))}
+     </p>`,
+    m.footer
   );
 }
 
@@ -341,6 +389,7 @@ function shopEmailHtml(order: OrderRecord): string {
      ${detailsHtml(order, { showBilling: true })}
      <p style="color:#999;font-size:11px;line-height:1.8;margin:24px 0 0;padding-top:14px;border-top:1px solid #eee;">
        Estado del pago: <strong>${esc(order.paymentStatus)}</strong><br>
+       Idioma del cliente: <strong>${order.locale === 'en' ? 'inglés (responder en inglés)' : 'castellano'}</strong><br>
        Sesión de Stripe: ${esc(order.stripeSessionId)}<br>
        ${
          order.stripePaymentIntentId
@@ -380,6 +429,7 @@ function shopEmailText(order: OrderRecord): string {
     order.customerPhone ? `  Tel. ${order.customerPhone}` : '  Sin teléfono',
     ...(order.customerEmail ? [`  ${order.customerEmail}`] : []),
     '',
+    `Idioma del cliente: ${order.locale === 'en' ? 'inglés' : 'castellano'}`,
     `Stripe: ${order.stripeSessionId}`,
   ].join('\n');
 }
@@ -420,7 +470,7 @@ export async function sendOrderEmails(order: OrderRecord): Promise<OrderEmailRes
       const { error } = await resend.emails.send({
         from,
         to: order.customerEmail,
-        subject: `${tag}Tu pedido SAMORAI #${ref} · confirmado`,
+        subject: `${tag}${MAIL[order.locale ?? 'es'].subject(ref)}`,
         html: customerEmailHtml(order),
       });
       // El SDK devuelve el error en lugar de lanzarlo.

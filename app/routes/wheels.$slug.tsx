@@ -375,7 +375,7 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
                 </span>
                 {product.featured && (
                   <span className="badges" style={{ position: 'absolute', top: '14px', left: '14px', zIndex: 2 }}>
-                    <span className="badge badge-new">New</span>
+                    <span className="badge badge-new">{t.product.newBadge}</span>
                   </span>
                 )}
               </button>
@@ -409,7 +409,7 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
 
           {/* Info + configuración inline */}
           <div className="product-detail__info">
-            <p className="product-detail__model">Wheels · {product.model}</p>
+            <p className="product-detail__model">{t.product.collection} · {product.model}</p>
             <h1 className="product-detail__name">{product.name}</h1>
 
             {/* Titular de precio (el precio dinámico va abajo, junto al botón) */}

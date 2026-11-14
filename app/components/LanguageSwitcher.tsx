@@ -1,5 +1,5 @@
 import { useLocation } from 'react-router';
-import { useLocale } from '~/i18n/useT';
+import { useLocale, useT } from '~/i18n/useT';
 import { supportedLocales, LOCALE_COOKIE, type Locale } from '~/i18n/config';
 import { isLocalizedPath, localizePath, splitLocalePath } from '~/i18n/paths';
 
@@ -11,6 +11,7 @@ import { isLocalizedPath, localizePath, splitLocalePath } from '~/i18n/paths';
  */
 export function LanguageSwitcher() {
   const locale = useLocale();
+  const { a11y } = useT();
   const location = useLocation();
 
   function choose(next: Locale) {
@@ -25,7 +26,7 @@ export function LanguageSwitcher() {
   }
 
   return (
-    <div className="lang-switch" role="group" aria-label="Idioma / Language">
+    <div className="lang-switch" role="group" aria-label={a11y.language}>
       {supportedLocales.map((l) => (
         <button
           key={l}

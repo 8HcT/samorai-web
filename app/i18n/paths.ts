@@ -58,6 +58,15 @@ export function localizePath(to: string, locale: Locale): string {
   return `${path === '/' ? EN_PREFIX : `${EN_PREFIX}${path}`}${rest}`;
 }
 
+/**
+ * Idioma de último recurso cuando no hay datos del servidor (p. ej. una URL
+ * que no existe: el 404 se pinta sin el loader raíz). Bajo `/en` → inglés;
+ * en el resto, castellano, que es el idioma de la raíz del sitio.
+ */
+export function fallbackLocaleForPath(pathname: string): Locale {
+  return splitLocalePath(pathname).prefixed ? 'en' : 'es';
+}
+
 /** Idioma que fija la propia URL, o `null` si la ruta no es localizada. */
 export function localeFromPath(pathname: string): Locale | null {
   const { prefixed, path } = splitLocalePath(pathname);

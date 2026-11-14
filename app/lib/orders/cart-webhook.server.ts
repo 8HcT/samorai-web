@@ -126,6 +126,7 @@ export async function processCartSession(session: Stripe.Checkout.Session): Prom
     lines,
     createdAt: new Date().toISOString(),
     isTest,
+    locale: session.metadata?.locale === 'en' ? 'en' : 'es',
   };
 
   const { isNew, orderId } = await recordOrder(order);
