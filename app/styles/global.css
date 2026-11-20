@@ -22,6 +22,7 @@
 @import './components.css';
 @import './utilities.css';
 @import './presale.css';           /* preventa, cuenta, reserva/pedido */
+@import './feedback.css';          /* carga: barra de progreso, esqueletos, avisos */
 @import './admin.css';             /* panel /admin */
 
 /* --- Temas claro/oscuro (debe ir al final para poder sobrescribir) --- */

@@ -10,6 +10,8 @@
  *  · Colores validados con validate_palette.js en claro y oscuro (admin.css).
  */
 import type { ReactNode } from 'react';
+import { Link } from 'react-router';
+import { ORDER_STATUS_LABEL, label } from '~/lib/presale/labels';
 
 export function HeroFigure({ label, value, hint }: { label: string; value: string; hint?: ReactNode }) {
   return (
@@ -21,13 +23,35 @@ export function HeroFigure({ label, value, hint }: { label: string; value: strin
   );
 }
 
-export function StatTile({ label, value, hint }: { label: string; value: string; hint?: ReactNode }) {
-  return (
-    <div className="viz-tile">
+export function StatTile({
+  label,
+  value,
+  hint,
+  href,
+  attention = false,
+}: {
+  label: string;
+  value: string;
+  hint?: ReactNode;
+  /** Enlace a la lista que explica la cifra (p. ej. pedidos por enviar). */
+  href?: string;
+  /** Resalta la cifra cuando pide hacer algo. */
+  attention?: boolean;
+}) {
+  const className = `viz-tile${attention ? ' viz-tile--attention' : ''}`;
+  const body = (
+    <>
       <p className="viz-tile__label">{label}</p>
       <p className="viz-tile__value">{value}</p>
       {hint && <p className="viz-tile__hint">{hint}</p>}
-    </div>
+    </>
+  );
+  return href ? (
+    <Link to={href} className={className}>
+      {body}
+    </Link>
+  ) : (
+    <div className={className}>{body}</div>
   );
 }
 
@@ -111,12 +135,54 @@ export function StockBar({ capacity, segments, available }: { capacity: number; 
   );
 }
 
+export type Tone = 'good' | 'warning' | 'critical' | 'neutral' | 'info' | 'violet';
+
+const TONE_ICON: Record<Tone, string> = {
+  good: '✓',
+  warning: '!',
+  critical: '×',
+  neutral: '•',
+  info: 'i',
+  violet: '→',
+};
+
 /** Aviso de estado con icono + texto (el color nunca va solo). */
-export function StatusChip({ tone, children }: { tone: 'good' | 'warning' | 'critical' | 'neutral'; children: ReactNode }) {
-  const icon = tone === 'good' ? '✓' : tone === 'warning' ? '!' : tone === 'critical' ? '×' : '•';
+export function StatusChip({
+  tone,
+  children,
+  size = 'md',
+  icon,
+}: {
+  tone: Tone;
+  children: ReactNode;
+  size?: 'sm' | 'md';
+  /** Símbolo propio (por defecto, el del tono). */
+  icon?: string;
+}) {
   return (
-    <span className={`status-chip status-chip--${tone}`}>
-      <span aria-hidden="true">{icon}</span> {children}
+    <span className={`status-chip status-chip--${tone}${size === 'sm' ? ' status-chip--sm' : ''}`}>
+      <span className="status-chip__icon" aria-hidden="true">{icon ?? TONE_ICON[tone]}</span>
+      <span>{children}</span>
     </span>
+  );
+}
+
+/** Tono e icono de cada estado de pedido (pagado = toca prepararlo). */
+const ORDER_TONE: Record<string, { tone: Tone; icon: string }> = {
+  paid: { tone: 'warning', icon: '€' },
+  in_production: { tone: 'info', icon: '⚙' },
+  ready_to_ship: { tone: 'violet', icon: '▣' },
+  shipped: { tone: 'info', icon: '→' },
+  delivered: { tone: 'good', icon: '✓' },
+  cancelled: { tone: 'neutral', icon: '×' },
+  refunded: { tone: 'neutral', icon: '↺' },
+};
+
+export function OrderStatusChip({ status, size }: { status: string; size?: 'sm' | 'md' }) {
+  const t = ORDER_TONE[status] ?? { tone: 'neutral' as Tone, icon: '•' };
+  return (
+    <StatusChip tone={t.tone} icon={t.icon} size={size}>
+      {label(ORDER_STATUS_LABEL, status)}
+    </StatusChip>
   );
 }

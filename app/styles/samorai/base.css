@@ -57,7 +57,7 @@ p, h1, h2, h3, h4, h5, h6 { overflow-wrap: break-word; }
   font-family: var(--font-script);
   text-transform: none;
   font-weight: 400;
-  color: var(--s-gold);
+  color: var(--accent-ink);
   line-height: 1;
 }
 
@@ -68,7 +68,7 @@ p, h1, h2, h3, h4, h5, h6 { overflow-wrap: break-word; }
   font-size: var(--fs-label);
   letter-spacing: var(--tr-label);
   text-transform: uppercase;
-  color: var(--gold-70);
+  color: var(--accent-ink-soft);
 }
 
 /* =====================================================
@@ -85,7 +85,7 @@ p, h1, h2, h3, h4, h5, h6 { overflow-wrap: break-word; }
   font-family: ui-monospace, "SF Mono", Menlo, monospace;
   font-size: 11px;
   letter-spacing: .02em;
-  color: var(--gold-70);
+  color: var(--accent-ink-soft);
   background: var(--gold-10);
   border: 1px solid var(--gold-30);
   padding: 2px 7px;

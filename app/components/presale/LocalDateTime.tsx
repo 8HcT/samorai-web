@@ -8,10 +8,13 @@ import { useEffect, useState } from 'react';
 export function LocalDateTime({
   iso,
   dateOnly = false,
+  compact = false,
   className,
 }: {
   iso: string | null | undefined;
   dateOnly?: boolean;
+  /** Formato corto para tablas: «Hoy, 12:05», «Ayer, 18:30», «14 nov, 09:12». */
+  compact?: boolean;
   className?: string;
 }) {
   const [local, setLocal] = useState(false);
@@ -20,6 +23,14 @@ export function LocalDateTime({
   if (!iso) return <span className={className}>—</span>;
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return <span className={className}>—</span>;
+
+  if (compact) {
+    return (
+      <time dateTime={date.toISOString()} className={className} suppressHydrationWarning title={fullText(date)}>
+        {compactText(date, local)}
+      </time>
+    );
+  }
 
   // Ojo: Intl no admite mezclar dateStyle/timeStyle con timeZoneName, así
   // que la versión local usa componentes sueltos.
@@ -42,6 +53,36 @@ export function LocalDateTime({
       {text}
     </time>
   );
+}
+
+function fullText(date: Date): string {
+  try {
+    return new Intl.DateTimeFormat('es-ES', { dateStyle: 'full', timeStyle: 'short' }).format(date);
+  } catch {
+    return date.toISOString();
+  }
+}
+
+/** Texto corto. En el servidor, hora de Madrid; en el navegador, la local. */
+function compactText(date: Date, local: boolean): string {
+  const tz = local ? {} : { timeZone: 'Europe/Madrid' };
+  try {
+    const time = new Intl.DateTimeFormat('es-ES', { hour: '2-digit', minute: '2-digit', ...tz }).format(date);
+    if (local) {
+      const now = new Date();
+      const day = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+      const diff = Math.round((day(now) - day(date)) / 86_400_000);
+      if (diff === 0) return `Hoy, ${time}`;
+      if (diff === 1) return `Ayer, ${time}`;
+      const sameYear = now.getFullYear() === date.getFullYear();
+      const d = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short', ...(sameYear ? {} : { year: 'numeric' }) }).format(date);
+      return `${d.replace('.', '')}, ${time}`;
+    }
+    const d = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short', year: 'numeric', ...tz }).format(date);
+    return `${d.replace('.', '')}, ${time}`;
+  } catch {
+    return date.toISOString();
+  }
 }
 
 /** Fecha sin hora guardada como `date` (YYYY-MM-DD): no depende de la zona. */

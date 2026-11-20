@@ -1,0 +1,151 @@
+/* ============================================================
+   SAMORAI · Estados de carga y respuesta (web y panel)
+   · .nav-progress  barra de progreso al cambiar de página
+   · .skeleton      bloques de carga con brillo
+   · .spin          indicador de actividad (toma el color del texto)
+   · .toast         aviso flotante con el resultado de una acción
+   Respetan prefers-reduced-motion.
+   ============================================================ */
+
+:root {
+  --skeleton-base: rgba(237, 237, 237, 0.07);
+  --skeleton-shine: rgba(237, 237, 237, 0.09);
+}
+:root[data-theme='light'] {
+  --skeleton-base: rgba(29, 29, 29, 0.07);
+  --skeleton-shine: rgba(255, 255, 255, 0.6);
+}
+
+/* ---------- Barra de progreso de navegación ---------- */
+.nav-progress {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 3px;
+  z-index: 1000;
+  pointer-events: none;
+}
+.nav-progress__bar {
+  display: block;
+  height: 100%;
+  background: var(--s-gold);
+  box-shadow: 0 0 10px rgba(var(--rgb-gold), 0.6);
+  transform-origin: left center;
+  transform: scaleX(0);
+}
+.nav-progress--loading .nav-progress__bar {
+  animation: nav-progress-grow 12s cubic-bezier(0.08, 0.82, 0.17, 1) forwards;
+}
+.nav-progress--done .nav-progress__bar {
+  transform: scaleX(1);
+  opacity: 0;
+  transition: transform 0.2s var(--ease), opacity 0.25s ease 0.2s;
+}
+@keyframes nav-progress-grow {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(0.92); }
+}
+
+/* ---------- Esqueletos ---------- */
+.skeleton {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+  vertical-align: middle;
+  max-width: 100%;
+  background: var(--skeleton-base);
+  border-radius: 2px;
+}
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, var(--skeleton-shine), transparent);
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+.skeleton-text {
+  display: grid;
+  gap: 0.5em;
+  width: 100%;
+}
+.skeleton-text .skeleton { display: block; }
+@keyframes skeleton-shimmer {
+  to { transform: translateX(100%); }
+}
+
+/* ---------- Indicador de actividad ---------- */
+.spin {
+  display: inline-block;
+  flex: none;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, currentColor 25%, transparent);
+  border-top-color: currentColor;
+  animation: spin 0.7s linear infinite;
+  vertical-align: -0.15em;
+}
+
+/* ---------- Aviso flotante ---------- */
+.toast-region {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--toast-offset, 24px) + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 900;
+  width: min(560px, calc(100vw - 32px));
+  pointer-events: none;
+}
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 14px 14px 16px;
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--status-good, #0ca30c);
+  box-shadow: var(--shadow-lg);
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  animation: toast-in 0.28s var(--ease);
+}
+.toast--error { border-left-color: var(--status-critical, #d03b3b); }
+.toast__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--status-good, #0ca30c);
+}
+.toast--error .toast__icon { background: var(--status-critical, #d03b3b); }
+.toast__text { margin: 0; flex: 1; max-width: none; }
+.toast__close {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  margin: -4px -4px -4px 0;
+  border: 0;
+  background: none;
+  color: var(--color-text-muted);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+.toast__close:hover { color: var(--color-text-primary); }
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-progress--loading .nav-progress__bar { animation: none; transform: scaleX(0.6); }
+  .skeleton::after { animation: none; }
+  .spin { animation-duration: 1.6s; }
+  .toast { animation: none; }
+}

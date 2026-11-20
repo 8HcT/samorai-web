@@ -1,14 +1,16 @@
 import type { Route } from './+types/orders';
-import { Form, Link, useLocation } from 'react-router';
+import { Form, Link, useLocation, useNavigation, useSubmit } from 'react-router';
 import { requireAdmin } from '~/lib/auth/session.server';
 import { listOrders, orderFiltersFromUrl } from '~/lib/presale/admin.server';
 import { loadItemsFor } from '~/lib/admin/store.server';
 import { itemsSummary, type StoreItem } from '~/lib/admin/store-stats';
-import { ORDER_STATUS_LABEL, label } from '~/lib/presale/labels';
+import { ORDER_STATUS_LABEL } from '~/lib/presale/labels';
 import { formatPrice } from '~/lib/money';
 import { cartOrderRef, isTestOrder } from '~/lib/orders/test-purchase';
 import { LocalDateTime } from '~/components/presale/LocalDateTime';
-import { StatusChip } from '~/components/admin/AdminViz';
+import { OrderStatusChip, StatusChip } from '~/components/admin/AdminViz';
+import { IconDownload } from '~/components/admin/icons';
+import { SubmitButton } from '~/components/ui/SubmitButton';
 
 export async function loader({ request }: Route.LoaderArgs) {
   await requireAdmin(request);
@@ -31,62 +33,101 @@ const KIND_LABEL: Record<string, string> = { cart: 'Tienda', direct: 'Venta dire
 
 export default function AdminOrders({ loaderData }: Route.ComponentProps) {
   const { orders, filters } = loaderData;
-  const { search } = useLocation();
+  const { search, pathname } = useLocation();
+  const navigation = useNavigation();
+  const submit = useSubmit();
+  const filtering = navigation.state === 'loading' && navigation.location?.pathname === pathname;
   const toShip = orders.filter((o) => ['paid', 'in_production', 'ready_to_ship'].includes(o.status) && !o.isTest).length;
+  const hasFilters = Boolean(filters.status || filters.kind || filters.q);
 
   return (
     <>
-      <h1 className="admin-title">Pedidos</h1>
-      <p className="admin-sub">
-        {orders.length} pedido(s){toShip > 0 ? ` · ${toShip} pendiente(s) de enviar` : ''}. Abre uno para pasarlo a fabricación,
-        marcarlo como enviado (con nº de seguimiento), cancelarlo o devolver el pago.
-      </p>
-      <Form method="get" className="admin-filters">
-        <label className="admin-field">Estado
-          <select name="status" defaultValue={filters.status ?? ''}>
+      <div className="admin-pagehead">
+        <div>
+          <h1 className="admin-title">Pedidos</h1>
+          <p className="admin-sub">
+            {orders.length === 1 ? '1 pedido' : `${orders.length} pedidos`}
+            {toShip > 0 ? ` · ${toShip} pendiente(s) de enviar` : ''}
+            {hasFilters ? ' con estos filtros' : ''}. Abre uno para pasarlo a fabricación, marcarlo como enviado,
+            cancelarlo o devolver el pago.
+          </p>
+        </div>
+        {/* Descarga directa del CSV con los mismos filtros (no es una navegación de la app). */}
+        <a className="btn btn-outline btn-sm" href={`/admin/pedidos.csv${search}`} download>
+          <IconDownload />
+          Descargar CSV
+        </a>
+      </div>
+
+      <Form method="get" className="admin-filters" role="search" aria-label="Filtrar pedidos">
+        <label className="admin-field">
+          Estado
+          <select name="status" defaultValue={filters.status ?? ''} onChange={(e) => submit(e.currentTarget.form)}>
             <option value="">Todos</option>
             {Object.entries(ORDER_STATUS_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
         </label>
-        <label className="admin-field">Tipo
-          <select name="kind" defaultValue={filters.kind ?? ''}>
+        <label className="admin-field">
+          Tipo
+          <select name="kind" defaultValue={filters.kind ?? ''} onChange={(e) => submit(e.currentTarget.form)}>
             <option value="">Todos</option>
             {Object.entries(KIND_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
         </label>
-        <label className="admin-field">Buscar<input name="q" defaultValue={filters.q ?? ''} placeholder="Código, email o nombre" /></label>
-        <button type="submit" className="btn btn-outline btn-sm">Filtrar</button>
-        {/* Descarga directa del CSV con los mismos filtros (no es una navegación de la app). */}
-        <a className="btn btn-ghost btn-sm" href={`/admin/pedidos.csv${search}`} download>Descargar CSV</a>
+        <label className="admin-field admin-field--grow">
+          Buscar
+          <input name="q" type="search" defaultValue={filters.q ?? ''} placeholder="Código, email o nombre" enterKeyHint="search" />
+        </label>
+        <div className="admin-filters__actions">
+          <SubmitButton className="btn btn-primary" pending={filtering} pendingText="Buscando…">Buscar</SubmitButton>
+          {hasFilters && <Link to="/admin/pedidos" className="btn btn-ghost">Quitar filtros</Link>}
+        </div>
       </Form>
-      <div className="admin-table-wrap admin-section" style={{ padding: 0 }}>
-        <table className="admin-table admin-table--stack">
-          <thead><tr><th>Pedido</th><th>Fecha</th><th>Cliente</th><th>Artículos</th><th>Estado</th><th className="num">Total</th></tr></thead>
-          <tbody>
-            {orders.length === 0 && <tr><td colSpan={6} className="admin-muted">No hay pedidos con estos filtros.</td></tr>}
-            {orders.map((o) => (
-              <tr key={o.id}>
-                <td>
-                  <Link to={`/admin/pedidos/${o.id}`}>{o.code ?? cartOrderRef(o.stripe_session_id)}</Link>
-                  {o.isTest && <div><StatusChip tone="neutral">Prueba</StatusChip></div>}
-                  {o.review_reason && <div className="admin-muted">⚠ {o.review_reason}</div>}
-                </td>
-                <td><LocalDateTime iso={o.created_at} /></td>
-                <td>{o.customer_name ?? '—'}<div className="admin-muted">{o.customer_email ?? ''}</div></td>
-                <td>{o.summary || '—'}</td>
-                <td>
-                  {label(ORDER_STATUS_LABEL, o.status)}
-                  {o.tracking_number && <div className="admin-muted">{o.carrier ?? ''} {o.tracking_number}</div>}
-                </td>
-                <td className="num">
-                  {formatPrice(o.amount_total_cents)}
-                  {o.refunded_cents > 0 && <div className="admin-muted">devuelto {formatPrice(o.refunded_cents)}</div>}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+
+      <section className="admin-section admin-section--flush">
+        <div className="admin-table-wrap">
+          <table className="admin-table admin-table--stack admin-table--orders">
+            <thead>
+              <tr><th>Pedido</th><th>Fecha</th><th>Cliente</th><th>Artículos</th><th>Estado</th><th className="num">Total</th></tr>
+            </thead>
+            <tbody>
+              {orders.length === 0 && (
+                <tr>
+                  <td colSpan={6} style={{ padding: '32px 20px' }}>
+                    <p className="viz-empty" style={{ margin: 0 }}>
+                      {hasFilters ? 'No hay pedidos con estos filtros.' : 'Todavía no hay pedidos.'}{' '}
+                      {hasFilters && <Link to="/admin/pedidos">Ver todos</Link>}
+                    </p>
+                  </td>
+                </tr>
+              )}
+              {orders.map((o) => (
+                <tr key={o.id} className="is-link">
+                  <td className="c-code">
+                    <Link to={`/admin/pedidos/${o.id}`} prefetch="intent">{o.code ?? cartOrderRef(o.stripe_session_id)}</Link>
+                    {o.isTest && <> <StatusChip tone="neutral" size="sm">Prueba</StatusChip></>}
+                    {o.review_reason && <span className="cell-sub">⚠ {o.review_reason}</span>}
+                  </td>
+                  <td className="c-date nowrap"><LocalDateTime iso={o.created_at} compact /></td>
+                  <td className="c-customer">
+                    {o.customer_name ?? '—'}
+                    <span className="cell-sub">{o.customer_email ?? ''}</span>
+                  </td>
+                  <td className="c-items">{o.summary || '—'}</td>
+                  <td className="c-status">
+                    <OrderStatusChip status={o.status} size="sm" />
+                    {o.tracking_number && <span className="cell-sub">{o.carrier ?? ''} {o.tracking_number}</span>}
+                  </td>
+                  <td className="c-total num">
+                    {formatPrice(o.amount_total_cents)}
+                    {o.refunded_cents > 0 && <span className="cell-sub">devuelto {formatPrice(o.refunded_cents)}</span>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </>
   );
 }

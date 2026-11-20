@@ -29,6 +29,14 @@
   --color-accent-muted:  var(--gold-10);
   --color-accent-border: var(--gold-30);
 
+  /* ---- acento como COLOR DE TEXTO ----
+     El dorado de marca (#D7B55B) es para fondos, bordes y botones. Como
+     texto sobre el fondo claro solo da ~1,8:1 de contraste, así que los
+     textos dorados usan estos tokens: en tema oscuro valen el dorado de
+     siempre y en tema claro un dorado tinta (theme.css) que pasa AA. */
+  --accent-ink:      var(--s-gold);
+  --accent-ink-soft: var(--gold-70);
+
   /* ---- bordes ---- */
   --color-border:        var(--hairline);
   --color-border-strong: var(--gold-30);

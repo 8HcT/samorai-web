@@ -10,7 +10,7 @@
   border: 0;
 }
 
-.text-accent   { color: var(--color-accent); }
+.text-accent   { color: var(--accent-ink); }
 .text-muted    { color: var(--color-text-muted); }
 .text-secondary { color: var(--color-text-secondary); }
 

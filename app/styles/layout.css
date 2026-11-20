@@ -106,7 +106,7 @@
   font-weight: 500;
   font-size: .8rem;
   letter-spacing: .07em;
-  color: var(--s-gold);
+  color: var(--accent-ink);
   transition: color .25s var(--ease);
 }
 .navbar .nv-cart:hover,
@@ -165,8 +165,8 @@
   transition: color var(--transition-fast);
 }
 .nv-mobile__links a:hover,
-.nv-mobile__links a.active { color: var(--s-gold); }
-.nv-mobile__cart { color: var(--s-gold); }
+.nv-mobile__links a.active { color: var(--accent-ink); }
+.nv-mobile__cart { color: var(--accent-ink); }
 .nv-mobile__controls { display: flex; align-items: center; gap: var(--space-4); padding-top: var(--space-2); }
 
 @media (max-width: 900px) {
@@ -183,7 +183,7 @@
   justify-content: center;
   border: 1px solid var(--hairline);
   border-radius: var(--radius-input);
-  color: var(--s-gold);
+  color: var(--accent-ink);
   font-size: 15px;
   line-height: 1;
   background: none;
@@ -225,7 +225,7 @@
   text-transform: uppercase;
   letter-spacing: .08em;
   font-size: .78rem;
-  color: var(--s-gold);
+  color: var(--accent-ink);
 }
 
 /* Carrito — botón quitar y banner de error de checkout */
@@ -240,7 +240,7 @@
   cursor: pointer;
   transition: color var(--transition-fast);
 }
-.cart-item__remove:hover { color: var(--s-gold); }
+.cart-item__remove:hover { color: var(--accent-ink); }
 
 .cart-error {
   border-left: 3px solid var(--s-red);

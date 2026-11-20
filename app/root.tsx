@@ -13,6 +13,7 @@ import '~/styles/global.css';
 import { preferredLocale, resolveLocale } from '~/i18n/config';
 import { localeFromPath, localizePath } from '~/i18n/paths';
 import { useLocale, useLocalePath, useT } from '~/i18n/useT';
+import { NavProgress } from '~/components/ui/NavProgress';
 import { canonicalOrigin } from '~/lib/env.server';
 import { presaleEnabled } from '~/lib/presale/config.server';
 import {
@@ -112,7 +113,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <>
+      <NavProgress />
+      <Outlet />
+    </>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {

@@ -32,7 +32,7 @@
 .btn-primary { background: var(--s-gold); color: var(--s-black); border-color: var(--s-gold); }
 .btn-primary:hover { background: var(--s-gold-dark); border-color: var(--s-gold-dark); }
 
-.btn-outline { border-color: var(--s-gold); color: var(--s-gold); }
+.btn-outline { border-color: var(--s-gold); color: var(--accent-ink); }
 .btn-outline:hover { background: var(--s-gold); color: var(--s-black); }
 
 .btn-ghost { border-color: var(--light-30); color: var(--s-light); }
@@ -84,7 +84,7 @@
   padding: 28px;
 }
 .drawer .dw-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 26px; }
-.drawer .dw-head .x { color: var(--s-gold); font-size: 20px; }
+.drawer .dw-head .x { color: var(--accent-ink); font-size: 20px; }
 .drawer ul { list-style: none; margin: 0; padding: 0; }
 .drawer li { border-bottom: 1px solid var(--gold-10); }
 .drawer li:last-child { border-bottom: 0; }
@@ -95,8 +95,8 @@
   font-size: .9rem; letter-spacing: .05em; color: var(--s-light);
   transition: color .2s var(--ease), padding-left .2s var(--ease);
 }
-.drawer a:hover { color: var(--s-gold); padding-left: 6px; }
-.drawer a .ch { color: var(--gold-50); }
+.drawer a:hover { color: var(--accent-ink); padding-left: 6px; }
+.drawer a .ch { color: var(--accent-ink-soft); }
 
 /* ---------------------------------------------------------
    FOOTER (03)
@@ -111,14 +111,14 @@
 }
 .footer .ft-brand .wm { font-family: var(--font-display); font-weight: 700; letter-spacing: .2em; text-transform: uppercase; font-size: 1.1rem; }
 .footer .ft-brand p { color: var(--light-50); font-size: var(--fs-caption); max-width: 28ch; margin: 14px 0 0; }
-.footer h4 { font-family: var(--font-display); text-transform: uppercase; font-weight: 500; font-size: .72rem; letter-spacing: .12em; color: var(--gold-70); margin: 0 0 18px; }
+.footer h4 { font-family: var(--font-display); text-transform: uppercase; font-weight: 500; font-size: .72rem; letter-spacing: .12em; color: var(--accent-ink-soft); margin: 0 0 18px; }
 .footer ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 11px; }
 .footer ul a { color: var(--light-70); text-decoration: none; font-size: var(--fs-caption); transition: color .2s var(--ease); }
-.footer ul a:hover { color: var(--s-gold); }
+.footer ul a:hover { color: var(--accent-ink); }
 .footer .news .field { display: flex; border-bottom: 1px solid var(--gold-30); margin-top: 8px; }
 .footer .news input { flex: 1; background: none; border: 0; color: var(--s-light); font-family: var(--font-body); font-size: var(--fs-caption); padding: 10px 0; outline: none; }
 .footer .news input::placeholder { color: var(--light-30); }
-.footer .news button { background: none; border: 0; color: var(--s-gold); font-family: var(--font-display); text-transform: uppercase; letter-spacing: .08em; font-size: .7rem; padding: 0 4px; }
+.footer .news button { background: none; border: 0; color: var(--accent-ink); font-family: var(--font-display); text-transform: uppercase; letter-spacing: .08em; font-size: .7rem; padding: 0 4px; }
 @media (max-width: 760px) { .footer { grid-template-columns: 1fr 1fr; } }
 
 /* ---------------------------------------------------------
@@ -142,9 +142,9 @@
 }
 .pcard:hover .ph .ov { opacity: 1; }
 .pcard .body { padding: 18px 20px 22px; }
-.pcard .coll { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--gold-70); font-weight: 500; }
+.pcard .coll { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent-ink-soft); font-weight: 500; }
 .pcard .nm { font-family: var(--font-display); text-transform: uppercase; font-weight: 500; letter-spacing: .04em; font-size: 1.05rem; color: var(--s-light); margin: 8px 0 0; transition: color .2s var(--ease); }
-.pcard:hover .nm { color: var(--s-gold); }
+.pcard:hover .nm { color: var(--accent-ink); }
 .pcard .row { display: flex; justify-content: space-between; align-items: baseline; margin-top: 14px; }
 .pcard .price { font-family: var(--font-display); font-size: .95rem; color: var(--s-light); letter-spacing: .03em; }
 .pcard .badges { position: absolute; top: 14px; left: 14px; display: flex; gap: 8px; flex-wrap: wrap; z-index: 2; }
@@ -156,7 +156,7 @@
 }
 .badge-new      { background: var(--s-gold); color: var(--s-black); }
 .badge-sold     { border: 1px solid var(--s-light); color: var(--s-light); background: rgba(29,29,29,.4); }
-.badge-limited  { background: var(--s-brown); border: 1px solid var(--s-gold-dark); color: var(--s-gold); }
+.badge-limited  { background: var(--s-brown); border: 1px solid var(--s-gold-dark); color: var(--accent-ink); }
 .badge-homol    { background: var(--s-green); color: var(--s-sky); }
 .badge-homol svg { width: 11px; height: 11px; }
 
@@ -177,7 +177,7 @@
 
 .spec-table { width: 100%; border-collapse: collapse; font-size: var(--fs-caption); }
 .spec-table caption { text-align: left; font-family: var(--font-display); text-transform: uppercase; letter-spacing: .08em; font-size: .8rem; color: var(--s-light); padding-bottom: 14px; }
-.spec-table th { background: var(--gold-10); color: var(--gold-70); text-align: left; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; font-size: 10px; padding: 12px 16px; border-bottom: 1px solid var(--surface-line); }
+.spec-table th { background: var(--gold-10); color: var(--accent-ink-soft); text-align: left; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; font-size: 10px; padding: 12px 16px; border-bottom: 1px solid var(--surface-line); }
 .spec-table td { padding: 13px 16px; border-bottom: 1px solid var(--surface-line); color: var(--light-70); }
 .spec-table td:first-child { color: var(--light-50); width: 42%; }
 .spec-table td:last-child { color: var(--s-light); }
@@ -187,7 +187,7 @@
    FORMULARIOS — Input (16) · Pills (17) · Select (18)
    --------------------------------------------------------- */
 .field-group { display: flex; flex-direction: column; gap: 8px; max-width: 320px; }
-.field-group label { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--gold-70); font-weight: 500; }
+.field-group label { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent-ink-soft); font-weight: 500; }
 .s-input {
   background: transparent; border: 0; border-bottom: 1px solid var(--gold-30);
   color: var(--s-light); font-family: var(--font-body); font-size: var(--fs-body);
@@ -217,7 +217,7 @@
 }
 .s-select select:focus { border-bottom-color: var(--s-gold); }
 .s-select option { background: var(--s-black); }
-.s-select .chev { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); color: var(--s-gold); pointer-events: none; }
+.s-select .chev { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); color: var(--accent-ink); pointer-events: none; }
 
 /* ---------------------------------------------------------
    EDITORIAL — Hero (19) · Manifiesto (20) · Separador (21) · Galería (22)
@@ -229,14 +229,14 @@
 .hero .hero-img { position: absolute; inset: 0; background: center/cover no-repeat; }
 .hero .hero-img::after { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(29,29,29,.92), rgba(29,29,29,.35) 55%, rgba(29,29,29,.5)); }
 .hero .hero-body { position: relative; z-index: 2; max-width: 30ch; }
-.hero .ov-label { color: var(--gold-70); }
+.hero .ov-label { color: var(--accent-ink-soft); }
 .hero h3 { font-size: clamp(2rem,4.5vw,3.2rem); letter-spacing: .04em; color: var(--s-light); margin: 14px 0; line-height: 1.02; }
 .hero p { color: var(--light-70); text-transform: none; font-family: var(--font-body); margin: 0 0 24px; }
 
 .manifesto { border-left: 4px solid var(--s-gold); padding: 8px 0 8px 36px; max-width: 720px; }
 .manifesto .script { font-size: clamp(2rem, 5vw, 3.2rem); display: block; margin-bottom: 8px; }
 .manifesto p { font-family: var(--font-display); text-transform: uppercase; font-weight: 700; font-size: clamp(1.5rem,3.2vw,2.2rem); line-height: 1.15; letter-spacing: .02em; color: var(--s-light); margin: 0; }
-.manifesto .by { font-family: var(--font-body); text-transform: uppercase; letter-spacing: .14em; font-size: 11px; color: var(--gold-70); margin-top: 22px; font-weight: 500; }
+.manifesto .by { font-family: var(--font-body); text-transform: uppercase; letter-spacing: .14em; font-size: 11px; color: var(--accent-ink-soft); margin-top: 22px; font-weight: 500; }
 
 .lifegrid { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 160px; gap: 6px; }
 .lifegrid a { position: relative; overflow: hidden; text-decoration: none; }
@@ -245,7 +245,7 @@
   position: absolute; inset: 0; display: flex; align-items: flex-end; padding: 16px;
   background: rgba(29,29,29,.5); opacity: 0; transition: opacity .3s var(--ease);
   font-family: var(--font-display); text-transform: uppercase; letter-spacing: .08em;
-  font-size: .8rem; color: var(--s-gold);
+  font-size: .8rem; color: var(--accent-ink);
 }
 .lifegrid a:hover img { transform: scale(1.05); }
 .lifegrid a:hover .cap { opacity: 1; }
@@ -276,7 +276,7 @@
   background: var(--s-black); border-top: 1px solid var(--gold-30); padding: 20px 28px;
 }
 .cookies p { margin: 0; font-size: var(--fs-caption); color: var(--light-70); max-width: 60ch; }
-.cookies p a { color: var(--s-gold); }
+.cookies p a { color: var(--accent-ink); }
 .cookies .acts { display: flex; gap: 12px; }
 
 /* ---------------------------------------------------------
@@ -298,18 +298,18 @@
 .specimen { border: 1px solid var(--hairline); padding: 28px var(--sp-4); display: flex; flex-direction: column; gap: 6px; }
 .specimen + .specimen { border-top: 0; }
 .specimen .lvl-meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
-.specimen .lvl-meta .nm { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--gold-70); font-weight: 600; }
+.specimen .lvl-meta .nm { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent-ink-soft); font-weight: 600; }
 .specimen .lvl-meta .spec { font-size: 11px; color: var(--light-50); font-family: ui-monospace, monospace; }
 
 /* spacing scale viz */
 .space-row { display: flex; align-items: center; gap: 20px; padding: 10px 0; border-bottom: 1px solid var(--gold-10); }
-.space-row .lbl { width: 70px; font-family: ui-monospace, monospace; font-size: 12px; color: var(--gold-70); }
+.space-row .lbl { width: 70px; font-family: ui-monospace, monospace; font-size: 12px; color: var(--accent-ink-soft); }
 .space-row .bar { height: 16px; background: var(--s-gold); }
 .space-row .px { font-size: 11px; color: var(--light-50); font-family: ui-monospace, monospace; }
 
 /* grid viz */
 .grid-viz { display: grid; grid-template-columns: repeat(12, 1fr); gap: 12px; border: 1px solid var(--hairline); padding: 20px; }
-.grid-viz span { height: 90px; background: var(--gold-10); border: 1px solid var(--gold-30); display: grid; place-items: center; font-size: 10px; color: var(--gold-70); font-family: ui-monospace, monospace; }
+.grid-viz span { height: 90px; background: var(--gold-10); border: 1px solid var(--gold-30); display: grid; place-items: center; font-size: 10px; color: var(--accent-ink-soft); font-family: ui-monospace, monospace; }
 
 /* ============================================================
    05 · COMPARADOR FONDO CLARO / OSCURO

@@ -39,7 +39,7 @@ p {
   font-size: var(--fs-label);
   letter-spacing: var(--tr-label);
   text-transform: uppercase;
-  color: var(--gold-70);
+  color: var(--accent-ink-soft);
   margin-bottom: var(--space-4);
 }
 

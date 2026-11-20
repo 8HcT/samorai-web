@@ -410,8 +410,14 @@ function checkTestPurchase(test: TestPurchaseSummary | null, now: Date): HealthC
   };
 }
 
-export async function runHealthChecks(request: Request, now: Date = new Date()) {
-  const testPurchase = await loadTestPurchase().catch(() => null);
+export async function runHealthChecks(
+  request: Request,
+  now: Date = new Date(),
+  /** Última compra de prueba ya leída (evita repetir la consulta). */
+  preloadedTestPurchase?: TestPurchaseSummary | null
+) {
+  const testPurchase =
+    preloadedTestPurchase !== undefined ? preloadedTestPurchase : await loadTestPurchase().catch(() => null);
   const checks = await Promise.all([
     Promise.resolve(checkConfig()),
     Promise.resolve(checkDomain(request)),

@@ -4,7 +4,7 @@ import { Await, Link } from 'react-router';
 import { requireAdmin } from '~/lib/auth/session.server';
 import { loadDashboard } from '~/lib/presale/admin.server';
 import { presaleEnabled } from '~/lib/presale/config.server';
-import { BATCH_STATUS_LABEL, ORDER_STATUS_LABEL, label } from '~/lib/presale/labels';
+import { BATCH_STATUS_LABEL, label } from '~/lib/presale/labels';
 import { loadStoreStats } from '~/lib/admin/store.server';
 import { referencePrices } from '~/lib/admin/store-stats';
 import { PriceTable } from '~/components/admin/PriceTable';
@@ -12,7 +12,7 @@ import { healthSummary, runHealthChecks } from '~/lib/admin/health.server';
 import { loadPricing } from '~/lib/pricing.server';
 import { formatPrice } from '~/lib/money';
 import { cartOrderRef } from '~/lib/orders/test-purchase';
-import { BarList, HeroFigure, StatTile, StatusChip, StockBar } from '~/components/admin/AdminViz';
+import { BarList, HeroFigure, OrderStatusChip, StatTile, StatusChip, StockBar } from '~/components/admin/AdminViz';
 import { DemandPanels, KpiPanel } from '~/components/admin/DemandPanels';
 import { LocalDateTime } from '~/components/presale/LocalDateTime';
 
@@ -40,91 +40,124 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 const units = (n: number) => `${n} ${n === 1 ? 'llanta' : 'llantas'}`;
 
+function HealthChip({ health }: { health: Promise<{ errors: number; warnings: number } | null> }) {
+  return (
+    <Suspense
+      fallback={
+        <span className="admin-skel-chip skeleton" role="status" aria-label="Comprobando el estado del sistema…" />
+      }
+    >
+      <Await resolve={health} errorElement={<StatusChip tone="neutral">Estado del sistema: sin datos</StatusChip>}>
+        {(h) => (
+          <Link to="/admin/estado">
+            {!h ? (
+              <StatusChip tone="neutral">Estado del sistema: sin datos</StatusChip>
+            ) : h.errors > 0 ? (
+              <StatusChip tone="critical">Estado del sistema: {h.errors} con error</StatusChip>
+            ) : h.warnings > 0 ? (
+              <StatusChip tone="warning">Estado del sistema: {h.warnings} a revisar</StatusChip>
+            ) : (
+              <StatusChip tone="good">Sistema: todo correcto</StatusChip>
+            )}
+          </Link>
+        )}
+      </Await>
+    </Suspense>
+  );
+}
+
 export default function AdminDashboard({ loaderData }: Route.ComponentProps) {
   const { store, prices, health, presale } = loaderData;
 
   return (
     <>
-      <h1 className="admin-title">Panel</h1>
-
-      <div className="admin-actions" style={{ marginBottom: 'var(--space-6)' }}>
-        <Suspense fallback={<StatusChip tone="neutral">Comprobando el estado del sistema…</StatusChip>}>
-          <Await resolve={health} errorElement={<StatusChip tone="neutral">Estado del sistema: sin datos</StatusChip>}>
-            {(h) =>
-              !h ? (
-                <Link to="/admin/estado"><StatusChip tone="neutral">Estado del sistema: sin datos</StatusChip></Link>
-              ) : h.errors > 0 ? (
-                <Link to="/admin/estado"><StatusChip tone="critical">Estado del sistema: {h.errors} con error</StatusChip></Link>
-              ) : h.warnings > 0 ? (
-                <Link to="/admin/estado"><StatusChip tone="warning">Estado del sistema: {h.warnings} a revisar</StatusChip></Link>
-              ) : (
-                <Link to="/admin/estado"><StatusChip tone="good">Estado del sistema: todo correcto</StatusChip></Link>
-              )
-            }
-          </Await>
-        </Suspense>
-        {store && store.toShip > 0 && (
-          <Link to="/admin/pedidos?status=paid">
-            <StatusChip tone="warning">{store.toShip} pedido(s) pendientes de enviar</StatusChip>
-          </Link>
-        )}
+      <div className="admin-pagehead">
+        <div>
+          <h1 className="admin-title">Panel</h1>
+          <p className="admin-sub">Resumen de la tienda. Las compras de prueba no cuentan en las cifras.</p>
+        </div>
+        <HealthChip health={health} />
       </div>
+
+      {store && store.toShip > 0 && (
+        <div className="admin-notice admin-notice--warning" role="status">
+          <div>
+            <strong>{store.toShip === 1 ? 'Hay 1 pedido pendiente de enviar.' : `Hay ${store.toShip} pedidos pendientes de enviar.`}</strong>{' '}
+            <Link to="/admin/pedidos?status=paid">Ver los pedidos por preparar →</Link>
+          </div>
+        </div>
+      )}
 
       {!store ? (
         <div className="admin-notice admin-notice--error" role="alert">
-          No se pudieron leer los pedidos de la base de datos. Mira <Link to="/admin/estado">Estado</Link>.
+          <div>
+            No se pudieron leer los pedidos de la base de datos. Mira <Link to="/admin/estado">Estado</Link>.
+          </div>
         </div>
       ) : (
         <>
-          <section className="admin-section">
-            <h2>Tienda</h2>
+          <section className="admin-section" aria-labelledby="kpi-title">
+            <h2 id="kpi-title">Tienda</h2>
             <div className="viz-kpis">
               <HeroFigure
                 label="Ingresos netos"
                 value={formatPrice(store.netRevenueCents)}
-                hint={`Cobrado menos devuelto, IVA incluido · últimos 30 días ${formatPrice(store.netRevenue30Cents)}`}
+                hint={<>Cobrado menos devuelto, IVA incluido.<br />Últimos 30 días: <strong>{formatPrice(store.netRevenue30Cents)}</strong></>}
               />
-              <StatTile label="Pedidos hoy" value={String(store.orders.today)} hint={`${store.orders.last7} en 7 días · ${store.orders.last30} en 30 días`} />
-              <StatTile label="Pedidos totales" value={String(store.orders.total)} hint={store.orders.cancelled ? `${store.orders.cancelled} cancelados o devueltos` : 'Sin cancelaciones'} />
-              <StatTile label="Llantas vendidas" value={String(store.unitsSold)} hint="Sin contar cancelados ni devueltos" />
-              <StatTile label="Ticket medio" value={store.averageOrderCents == null ? '—' : formatPrice(store.averageOrderCents)} hint="Importe medio por pedido" />
               <StatTile
                 label="Pendientes de enviar"
                 value={String(store.toShip)}
                 hint={`${store.pipeline.paid} por preparar · ${store.pipeline.inProduction} en fabricación · ${store.pipeline.readyToShip} listos`}
+                href={store.toShip > 0 ? '/admin/pedidos?status=paid' : undefined}
+                attention={store.toShip > 0}
               />
+              <StatTile label="Pedidos hoy" value={String(store.orders.today)} hint="Desde las 00:00 (hora de Madrid)" />
+              <StatTile label="Pedidos (30 días)" value={String(store.orders.last30)} hint={`${store.orders.last7} en los últimos 7 días`} />
+              <StatTile label="Pedidos totales" value={String(store.orders.total)} hint="Desde la apertura de la tienda" />
+              <StatTile label="Llantas vendidas" value={String(store.unitsSold)} hint="Sin cancelados ni devueltos" />
+              <StatTile label="Ticket medio" value={store.averageOrderCents == null ? '—' : formatPrice(store.averageOrderCents)} hint="Importe medio por pedido" />
               <StatTile label="Enviados" value={String(store.pipeline.shipped)} hint={`${store.pipeline.delivered} entregados`} />
-              <StatTile label="Devuelto" value={formatPrice(store.refundedCents)} hint="Devoluciones hechas en Stripe" />
+              <StatTile
+                label="Devuelto"
+                value={formatPrice(store.refundedCents)}
+                hint={store.orders.cancelled ? `${store.orders.cancelled} pedido(s) cancelados o devueltos` : 'Sin devoluciones'}
+              />
             </div>
-            <p className="admin-muted" style={{ marginTop: 'var(--space-3)' }}>Las compras de prueba no cuentan en estas cifras.</p>
           </section>
 
           <section className="admin-section">
-            <h2>Últimos pedidos</h2>
+            <div className="admin-section__head">
+              <h2>Últimos pedidos</h2>
+              <Link to="/admin/pedidos">Ver todos los pedidos →</Link>
+            </div>
             <div className="admin-table-wrap">
-              <table className="admin-table admin-table--stack">
+              <table className="admin-table admin-table--stack admin-table--orders">
                 <thead>
                   <tr><th>Pedido</th><th>Fecha</th><th>Cliente</th><th>Artículos</th><th>Estado</th><th className="num">Total</th></tr>
                 </thead>
                 <tbody>
-                  {store.recent.length === 0 && <tr><td colSpan={6} className="admin-muted">Todavía no hay pedidos.</td></tr>}
+                  {store.recent.length === 0 && (
+                    <tr><td colSpan={6} className="viz-empty">Todavía no hay pedidos. Aparecerán aquí en cuanto entre el primero.</td></tr>
+                  )}
                   {store.recent.map((o) => (
-                    <tr key={o.id}>
-                      <td>
+                    <tr key={o.id} className="is-link">
+                      <td className="c-code">
                         <Link to={`/admin/pedidos/${o.id}`}>{o.code ?? cartOrderRef(o.stripe_session_id)}</Link>
-                        {o.isTest && <div><StatusChip tone="neutral">Prueba</StatusChip></div>}
+                        {o.isTest && <> <StatusChip tone="neutral" size="sm">Prueba</StatusChip></>}
                       </td>
-                      <td><LocalDateTime iso={o.created_at} /></td>
-                      <td>{o.customer_name ?? '—'}<div className="admin-muted">{o.customer_email ?? ''}</div></td>
-                      <td>{o.summary || '—'}</td>
-                      <td>{label(ORDER_STATUS_LABEL, o.status)}</td>
-                      <td className="num">{formatPrice(o.amount_total_cents)}</td>
+                      <td className="c-date nowrap"><LocalDateTime iso={o.created_at} compact /></td>
+                      <td className="c-customer">
+                        {o.customer_name ?? '—'}
+                        <span className="cell-sub">{o.customer_email ?? ''}</span>
+                      </td>
+                      <td className="c-items">{o.summary || '—'}</td>
+                      <td className="c-status"><OrderStatusChip status={o.status} size="sm" /></td>
+                      <td className="c-total num">{formatPrice(o.amount_total_cents)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <p style={{ marginTop: 'var(--space-3)' }}><Link to="/admin/pedidos">Ver todos los pedidos →</Link></p>
           </section>
 
           <section className="admin-section">
@@ -148,9 +181,11 @@ export default function AdminDashboard({ loaderData }: Route.ComponentProps) {
       )}
 
       <section className="admin-section">
-        <h2>Precio vigente de cada referencia</h2>
+        <div className="admin-section__head">
+          <h2>Precio vigente de cada referencia</h2>
+          <Link to="/admin/precios">Cambiar precios o crear una promoción →</Link>
+        </div>
         <PriceTable prices={prices} />
-        <p style={{ marginTop: 'var(--space-3)' }}><Link to="/admin/precios">Cambiar precios o crear una promoción →</Link></p>
       </section>
 
       {presale && (

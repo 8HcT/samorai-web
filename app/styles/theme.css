@@ -31,6 +31,11 @@
   --gold-30: rgba(215, 181, 91, .38);
   --gold-10: rgba(215, 181, 91, .12);
 
+  /* Dorado como texto: tinta oscura con contraste AA (4,9:1 sobre #EDEDED,
+     5,8:1 sobre blanco). Los fondos y botones siguen con el dorado de marca. */
+  --accent-ink:      #7F611B;
+  --accent-ink-soft: #7F611B;
+
   /* líneas / superficies derivadas */
   --hairline:      rgba(29, 29, 29, .16);
   --surface-line:  rgba(29, 29, 29, .12);
@@ -49,7 +54,35 @@
   --shadow-xl: 0 16px 48px rgba(0, 0, 0, .20);
 }
 
+/* Zonas que son oscuras en los dos temas (heroes con imagen, banda de cita,
+   visor de fotos): el dorado de texto vuelve a ser el brillante. */
+:root[data-theme="light"] .page-hero,
+:root[data-theme="light"] .band-dark,
+:root[data-theme="light"] .lightbox {
+  --accent-ink: var(--s-gold);
+  --accent-ink-soft: rgba(215, 181, 91, .85);
+}
+
 /* --- Ajustes puntuales de componentes que fijan color en duro --- */
+
+/* Botones: el texto sobre dorado va siempre en tinta oscura. Con --s-black
+   invertido, en tema claro quedaba texto claro sobre dorado (1,7:1). */
+:root[data-theme="light"] .btn-primary,
+:root[data-theme="light"] .btn-outline:hover { color: #1D1D1D; }
+:root[data-theme="light"] .btn-primary:hover { color: #EDEDED; }
+:root[data-theme="light"] .btn-primary .spinner { border-color: rgba(29, 29, 29, .3); border-top-color: #1D1D1D; }
+:root[data-theme="light"] .btn-outline { color: var(--accent-ink); }
+
+/* Resto de piezas con fondo dorado (selector de idioma, etiqueta «Nuevo»,
+   pasos del configurador…): texto siempre en tinta oscura. */
+:root[data-theme="light"] .lang-switch__btn.active,
+:root[data-theme="light"] .badge-new,
+:root[data-theme="light"] .pill.active,
+:root[data-theme="light"] .theme-switch button.active,
+:root[data-theme="light"] .button--primary,
+:root[data-theme="light"] .product-card__badge,
+:root[data-theme="light"] .config-field__step,
+:root[data-theme="light"] ::selection { color: #1D1D1D; }
 
 /* Navbar: fondo translúcido acorde al tema (por defecto es rgba oscuro). */
 :root[data-theme="light"] .navbar {
