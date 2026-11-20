@@ -6,7 +6,19 @@ import { assertSameOrigin } from '~/lib/security.server';
 import { formatPrice } from '~/lib/money';
 import { formatSize } from '~/lib/format';
 import { applyPercentOff } from '~/lib/pricing';
-import { utcIsoToMadridLocal } from '~/lib/presale/datetime';
+import { madridLocalToUtcIso, utcIsoToMadridLocal } from '~/lib/presale/datetime';
+import {
+  addDaysLocal,
+  describeDuration,
+  isLocalDateTime,
+  lastDiscountDay,
+  longDateTime,
+  minutesBetween,
+  nextWeekdayMidnight,
+  nowLocal,
+  shortSpan,
+  tomorrowMidnight,
+} from '~/lib/admin/promo-dates';
 import { LocalDateTime } from '~/components/presale/LocalDateTime';
 import { StatusChip } from '~/components/admin/AdminViz';
 import { PriceTable } from '~/components/admin/PriceTable';
@@ -80,11 +92,15 @@ export async function action({ request }: Route.ActionArgs) {
   return fail('invalid_fields');
 }
 
-function promotionState(p: PromotionRow, now: string): { label: string; tone: 'good' | 'warning' | 'neutral' | 'info' } {
-  if (!p.active) return { label: 'Pausada', tone: 'neutral' };
-  if (p.ends_at <= now) return { label: 'Finalizada', tone: 'neutral' };
-  if (p.starts_at > now) return { label: 'Programada', tone: 'info' };
-  return { label: 'Activa', tone: 'good' };
+function promotionState(p: PromotionRow, now: string): { label: string; tone: 'good' | 'warning' | 'neutral' | 'info'; detail: string } {
+  const t = new Date(now).getTime();
+  const starts = new Date(p.starts_at).getTime();
+  const ends = new Date(p.ends_at).getTime();
+  const inWindow = starts <= t && t < ends;
+  if (!p.active) return { label: 'Pausada', tone: 'neutral', detail: inWindow ? 'en fechas, pero sin aplicar' : '' };
+  if (ends <= t) return { label: 'Finalizada', tone: 'neutral', detail: `terminó hace ${shortSpan(p.ends_at, now)}` };
+  if (starts > t) return { label: 'Programada', tone: 'info', detail: `empieza en ${shortSpan(now, p.starts_at)}` };
+  return { label: 'Activa', tone: 'good', detail: `termina en ${shortSpan(now, p.ends_at)}` };
 }
 
 const toToast = (ad: ActionData | undefined): ToastMessage | null =>
@@ -185,14 +201,216 @@ function PromotionActions({ p, disabled, onResult }: { p: PromotionRow; disabled
   );
 }
 
+type ScopeOption = { slug: string; name: string; finishes: { id: string; name: string }[] };
+
+const WEEK_MIN = 7 * 24 * 60;
+
+/**
+ * Alta o edición de una promoción. Las fechas tienen atajos («Lunes 00:00»,
+ * «3 semanas») y un resumen en palabras de cuándo empieza y acaba, para no
+ * equivocarse con el día de fin (a las 00:00 ese día ya no tiene descuento).
+ */
+function PromotionForm({
+  editing,
+  prices,
+  scope,
+  promotions,
+  errors,
+  now,
+  disabled,
+}: {
+  editing: PromotionRow | null;
+  prices: PriceRow[];
+  scope: ScopeOption[];
+  promotions: PromotionRow[];
+  errors?: string[];
+  now: string;
+  disabled: boolean;
+}) {
+  const [percent, setPercent] = useState<number>(editing?.percent_off ?? 20);
+  const [start, setStart] = useState(() => utcIsoToMadridLocal(editing?.starts_at));
+  const [end, setEnd] = useState(() => utcIsoToMadridLocal(editing?.ends_at));
+  const validPercent = Number.isFinite(percent) && percent >= 1 && percent <= 90;
+  const hasStart = isLocalDateTime(start);
+  const span = hasStart && isLocalDateTime(end) ? minutesBetween(start, end) : null;
+  const pickedWeeks = span != null && span > 0 && span % WEEK_MIN === 0 ? span / WEEK_MIN : null;
+  const instant = (local: string) => new Date(madridLocalToUtcIso(local) ?? '').getTime();
+
+  // Otras promociones activas que coinciden en fechas (se aplica la de mayor descuento).
+  const overlaps = useMemo(() => {
+    if (span == null || span <= 0) return [];
+    const s = instant(start);
+    const e = instant(end);
+    return promotions.filter(
+      (p) => p.id !== editing?.id && p.active && new Date(p.starts_at).getTime() < e && new Date(p.ends_at).getTime() > s
+    );
+  }, [span, start, end, promotions, editing?.id]);
+  const nowMs = new Date(now).getTime();
+  const startsInPast = span != null && span > 0 && instant(start) < nowMs;
+  const endsInPast = span != null && span > 0 && instant(end) <= nowMs;
+  const summaryTone = span == null ? '' : span <= 0 || endsInPast ? ' admin-notice--error' : ' admin-notice--ok';
+
+  return (
+    <section className="admin-section" id="promocion" style={{ scrollMarginTop: 80 }}>
+      <h2>{editing ? `Editar «${editing.name}»` : 'Nueva promoción'}</h2>
+      {errors && (
+        <div className="admin-notice admin-notice--error" role="alert">
+          <div>{errors.map((e) => <div key={e}>{e}</div>)}</div>
+        </div>
+      )}
+      <Form method="post" className="admin-form">
+        <input type="hidden" name="intent" value="save_promotion" />
+        {editing && <input type="hidden" name="id" value={editing.id} />}
+        <div className="admin-form-row">
+          <label className="admin-field">
+            Nombre interno
+            <input name="name" required maxLength={80} defaultValue={editing?.name ?? ''} placeholder="Black Friday 2026" autoComplete="off" />
+          </label>
+          <label className="admin-field">
+            Etiqueta en la web
+            <input name="badge" maxLength={40} defaultValue={editing?.badge ?? ''} placeholder="Black Friday" autoComplete="off" />
+            <small>Se ve junto al precio, p. ej. «Black Friday −20%».</small>
+          </label>
+          <label className="admin-field">
+            Descuento
+            <span className="admin-input-affix">
+              <input
+                name="percent_off"
+                type="number"
+                min={1}
+                max={90}
+                required
+                value={Number.isFinite(percent) ? percent : ''}
+                onChange={(e) => setPercent(e.currentTarget.valueAsNumber)}
+              />
+              <span aria-hidden="true">%</span>
+            </span>
+          </label>
+        </div>
+
+        <div className="admin-form-row">
+          <div className="admin-field-group">
+            <label className="admin-field">
+              Empieza (hora de Madrid)
+              <input name="starts_at" type="datetime-local" required value={start} onChange={(e) => setStart(e.currentTarget.value)} />
+            </label>
+            <div className="date-presets" role="group" aria-label="Atajos para el inicio">
+              <button type="button" className="preset-chip" onClick={() => setStart(nowLocal(new Date()))}>Ahora</button>
+              <button type="button" className="preset-chip" onClick={() => setStart(tomorrowMidnight(new Date()))}>Mañana 00:00</button>
+              <button type="button" className="preset-chip" onClick={() => setStart(nextWeekdayMidnight(new Date(), 1))}>Lunes 00:00</button>
+            </div>
+          </div>
+          <div className="admin-field-group">
+            <label className="admin-field">
+              Termina (hora de Madrid)
+              <input name="ends_at" type="datetime-local" required value={end} onChange={(e) => setEnd(e.currentTarget.value)} />
+            </label>
+            <div className="date-presets" role="group" aria-label="Duración contada desde el inicio">
+              <span className="date-presets__label">Dura</span>
+              {[1, 2, 3, 4].map((w) => (
+                <button
+                  key={w}
+                  type="button"
+                  className="preset-chip"
+                  aria-pressed={pickedWeeks === w}
+                  disabled={!hasStart}
+                  title={hasStart ? undefined : 'Elige antes el inicio'}
+                  onClick={() => setEnd(addDaysLocal(start, 7 * w) ?? end)}
+                >
+                  {w} {w === 1 ? 'semana' : 'semanas'}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className={`admin-notice${summaryTone}`} aria-live="polite">
+          {span == null ? (
+            'Elige cuándo empieza y cuándo termina. Con «Lunes 00:00» y «3 semanas» queda una promoción de tres semanas desde el próximo lunes.'
+          ) : span <= 0 ? (
+            'La fecha de fin tiene que ser posterior a la de inicio.'
+          ) : (
+            <>
+              Empieza el <strong>{longDateTime(start)}</strong>
+              {startsInPast && ' (ya ha pasado: se aplica en cuanto la guardes)'} y termina el{' '}
+              <strong>{longDateTime(end)}</strong>. Dura {describeDuration(span)}: el último día con descuento es el{' '}
+              <strong>{lastDiscountDay(end)}</strong>.
+              {endsInPast && ' Ojo: esa fecha de fin ya ha pasado, así que no se aplicaría.'}
+            </>
+          )}
+        </div>
+        {overlaps.length > 0 && (
+          <div className="admin-notice admin-notice--warning">
+            Coincide en fechas con {overlaps.map((p) => `«${p.name}» (−${p.percent_off} %)`).join(', ')}. Donde afecten a las mismas
+            llantas se aplica la de mayor descuento; no se suman.
+          </div>
+        )}
+
+        {scope.map((product) => (
+          <fieldset key={product.slug}>
+            <legend>Aplica a <span className="admin-muted" style={{ fontWeight: 400 }}>(sin marcar nada = toda la tienda)</span></legend>
+            <div className="admin-checks">
+              <label className="admin-check">
+                <input
+                  type="checkbox"
+                  name="product_slugs"
+                  value={product.slug}
+                  defaultChecked={!editing || editing.product_slugs.length === 0 || editing.product_slugs.includes(product.slug)}
+                />
+                {product.name} (modelo completo)
+              </label>
+              {product.finishes.map((f) => (
+                <label key={f.id} className="admin-check">
+                  <input
+                    type="checkbox"
+                    name="finish_ids"
+                    value={f.id}
+                    defaultChecked={!editing || editing.finish_ids.length === 0 || editing.finish_ids.includes(f.id)}
+                  />
+                  {f.name}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        ))}
+        <label className="admin-check">
+          <input type="checkbox" name="active" defaultChecked={editing?.active ?? true} />
+          Activa (si la desmarcas, queda pausada aunque esté en fechas)
+        </label>
+        {prices.length > 0 && validPercent && (
+          <div className="admin-notice" aria-live="polite">
+            <div>
+              <strong>Así quedará con −{percent} %:</strong>{' '}
+              {prices
+                .map((r) => {
+                  const base = r.storedCents ?? r.defaultCents;
+                  return `${formatSize(18, r.width)}: ${formatPrice(base)} → ${formatPrice(applyPercentOff(base, percent))}`;
+                })
+                .join(' · ')}
+            </div>
+          </div>
+        )}
+        <p className="admin-hint">
+          El precio tachado de la web es el precio normal de cada medida. Por ley tiene que ser el más bajo de los últimos 30 días:
+          no subas precios justo antes de una promoción.
+        </p>
+        <div className="admin-actions">
+          <SubmitButton className="btn btn-primary" match={{ intent: 'save_promotion' }} pendingText="Guardando…" disabled={disabled}>
+            {editing ? 'Guardar cambios' : 'Crear promoción'}
+          </SubmitButton>
+          {editing && <Link className="btn btn-ghost" to="/admin/precios">Cancelar</Link>}
+        </div>
+      </Form>
+    </section>
+  );
+}
+
 export default function AdminPrices({ loaderData, actionData }: Route.ComponentProps) {
   const { prices, promotions, scope, references, setupMissing, now } = loaderData;
   const [params] = useSearchParams();
   const editing = promotions.find((p) => p.id === params.get('editar')) ?? null;
   const ad = actionData as ActionData | undefined;
   const [fetcherToast, setFetcherToast] = useState<ToastMessage | null>(null);
-  const [percent, setPercent] = useState<number>(editing?.percent_off ?? 20);
-  useEffect(() => setPercent(editing?.percent_off ?? 20), [editing?.id, editing?.percent_off]);
   const flashKey = params.get('guardada') ? 'guardada' : params.get('eliminada') ? 'eliminada' : null;
   // Objeto estable: el aviso solo debe reaparecer cuando cambia el resultado.
   const toast = useMemo<ToastMessage | null>(
@@ -202,8 +420,6 @@ export default function AdminPrices({ loaderData, actionData }: Route.ComponentP
       (flashKey ? { ok: true, message: flashKey === 'guardada' ? 'Promoción guardada.' : 'Promoción eliminada.' } : null),
     [ad, fetcherToast, flashKey]
   );
-  const validPercent = Number.isFinite(percent) && percent >= 1 && percent <= 90;
-
   const scopeLabel = (p: PromotionRow) => {
     const models = p.product_slugs.length === 0 ? 'Todos los modelos' : p.product_slugs.map((s) => scope.find((x) => x.slug === s)?.name ?? s).join(', ');
     const allFinishes = scope.flatMap((x) => x.finishes);
@@ -275,7 +491,10 @@ export default function AdminPrices({ loaderData, actionData }: Route.ComponentP
                         <span className="cell-strong">{p.name}</span>
                         <span className="cell-sub">Etiqueta en la web: «{p.badge} −{p.percent_off}%»</span>
                       </td>
-                      <td data-label="Estado"><StatusChip tone={state.tone} size="sm">{state.label}</StatusChip></td>
+                      <td data-label="Estado">
+                        <StatusChip tone={state.tone} size="sm">{state.label}</StatusChip>
+                        {state.detail && <span className="cell-sub">{state.detail}</span>}
+                      </td>
                       <td data-label="Descuento" className="num cell-strong">−{p.percent_off} %</td>
                       <td data-label="Fechas" className="nowrap">
                         <LocalDateTime iso={p.starts_at} compact />
@@ -294,104 +513,16 @@ export default function AdminPrices({ loaderData, actionData }: Route.ComponentP
         )}
       </section>
 
-      <section className="admin-section" id="promocion" style={{ scrollMarginTop: 80 }}>
-        <h2>{editing ? `Editar «${editing.name}»` : 'Nueva promoción'}</h2>
-        {ad?.errors && (
-          <div className="admin-notice admin-notice--error" role="alert">
-            <div>{ad.errors.map((e) => <div key={e}>{e}</div>)}</div>
-          </div>
-        )}
-        <Form method="post" className="admin-form" key={editing?.id ?? 'new'}>
-          <input type="hidden" name="intent" value="save_promotion" />
-          {editing && <input type="hidden" name="id" value={editing.id} />}
-          <div className="admin-form-row">
-            <label className="admin-field">
-              Nombre interno
-              <input name="name" required maxLength={80} defaultValue={editing?.name ?? ''} placeholder="Black Friday 2026" autoComplete="off" />
-            </label>
-            <label className="admin-field">
-              Etiqueta en la web
-              <input name="badge" maxLength={40} defaultValue={editing?.badge ?? ''} placeholder="Black Friday" autoComplete="off" />
-              <small>Se ve junto al precio, p. ej. «Black Friday −20%».</small>
-            </label>
-            <label className="admin-field">
-              Descuento
-              <span className="admin-input-affix">
-                <input
-                  name="percent_off"
-                  type="number"
-                  min={1}
-                  max={90}
-                  required
-                  value={Number.isFinite(percent) ? percent : ''}
-                  onChange={(e) => setPercent(e.currentTarget.valueAsNumber)}
-                />
-                <span aria-hidden="true">%</span>
-              </span>
-            </label>
-          </div>
-          <div className="admin-form-row">
-            <label className="admin-field">
-              Empieza (hora de Madrid)
-              <input name="starts_at" type="datetime-local" required defaultValue={utcIsoToMadridLocal(editing?.starts_at)} />
-            </label>
-            <label className="admin-field">
-              Termina (hora de Madrid)
-              <input name="ends_at" type="datetime-local" required defaultValue={utcIsoToMadridLocal(editing?.ends_at)} />
-            </label>
-          </div>
-          {scope.map((product) => (
-            <fieldset key={product.slug}>
-              <legend>Aplica a <span className="admin-muted" style={{ fontWeight: 400 }}>(sin marcar nada = toda la tienda)</span></legend>
-              <div className="admin-checks">
-                <label className="admin-check">
-                  <input
-                    type="checkbox"
-                    name="product_slugs"
-                    value={product.slug}
-                    defaultChecked={!editing || editing.product_slugs.length === 0 || editing.product_slugs.includes(product.slug)}
-                  />
-                  {product.name} (modelo completo)
-                </label>
-                {product.finishes.map((f) => (
-                  <label key={f.id} className="admin-check">
-                    <input
-                      type="checkbox"
-                      name="finish_ids"
-                      value={f.id}
-                      defaultChecked={!editing || editing.finish_ids.length === 0 || editing.finish_ids.includes(f.id)}
-                    />
-                    {f.name}
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-          ))}
-          <label className="admin-check">
-            <input type="checkbox" name="active" defaultChecked={editing?.active ?? true} />
-            Activa (si la desmarcas, queda pausada aunque esté en fechas)
-          </label>
-          {prices.length > 0 && validPercent && (
-            <div className="admin-notice" aria-live="polite">
-              <div>
-                <strong>Así quedará con −{percent} %:</strong>{' '}
-                {prices
-                  .map((r) => {
-                    const base = r.storedCents ?? r.defaultCents;
-                    return `${formatSize(18, r.width)}: ${formatPrice(base)} → ${formatPrice(applyPercentOff(base, percent))}`;
-                  })
-                  .join(' · ')}
-              </div>
-            </div>
-          )}
-          <div className="admin-actions">
-            <SubmitButton className="btn btn-primary" match={{ intent: 'save_promotion' }} pendingText="Guardando…" disabled={setupMissing}>
-              {editing ? 'Guardar cambios' : 'Crear promoción'}
-            </SubmitButton>
-            {editing && <Link className="btn btn-ghost" to="/admin/precios">Cancelar</Link>}
-          </div>
-        </Form>
-      </section>
+      <PromotionForm
+        key={editing?.id ?? 'new'}
+        editing={editing}
+        prices={prices}
+        scope={scope}
+        promotions={promotions}
+        errors={ad?.errors}
+        now={now}
+        disabled={setupMissing}
+      />
     </>
   );
 }

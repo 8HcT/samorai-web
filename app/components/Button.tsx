@@ -47,7 +47,7 @@ export function Button({
 
   if (href && !disabled) {
     return (
-      <Link to={lp(href)} className={classes} aria-label={ariaLabel}>
+      <Link prefetch="intent" to={lp(href)} className={classes} aria-label={ariaLabel}>
         {children}
       </Link>
     );

@@ -53,7 +53,7 @@ export function ProductCard({ product, activeColor, finish, price }: ProductCard
     const src =
       showSecondary && finish.images[1] ? finish.images[1] : finish.images[0];
     return (
-      <Link
+      <Link prefetch="intent"
         className="pcard"
         to={lp(`/the-wheels/${product.slug}?finish=${finish.id}`)}
         aria-label={`${product.model} — ${finishName(finish)}`}
@@ -98,7 +98,7 @@ export function ProductCard({ product, activeColor, finish, price }: ProductCard
   ).slice(0, 4);
 
   return (
-    <Link className="pcard" to={lp(`/the-wheels/${product.slug}`)}>
+    <Link prefetch="intent" className="pcard" to={lp(`/the-wheels/${product.slug}`)}>
       <div className="ph">
         {/* Placeholder hasta tener fotografía real (PRD-XXA) */}
         <div className={`product-card__image-placeholder ${placeholderClass}`}>

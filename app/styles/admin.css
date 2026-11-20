@@ -1112,3 +1112,28 @@ fieldset.admin-form-row {
 @media (max-width: 380px) {
   .admin-tabbar a { font-size: 0.625rem; }
 }
+
+/* ---------- Atajos de fechas (promociones) ---------- */
+.admin-field-group { display: grid; gap: 8px; align-content: start; }
+.date-presets { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.date-presets__label { font-size: 0.8125rem; color: var(--a-muted); margin-right: 2px; }
+.preset-chip {
+  min-height: 34px;
+  padding: 4px 12px;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--a-text);
+  background: transparent;
+  border: 1px solid var(--a-border-strong);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.preset-chip:hover:not(:disabled) { border-color: var(--a-link); }
+.preset-chip:focus-visible { outline: 2px solid var(--a-link); outline-offset: 2px; }
+.preset-chip[aria-pressed='true'] { background: var(--tone-info-bg); border-color: var(--tone-info); }
+.preset-chip:disabled { opacity: 0.45; cursor: not-allowed; }
+@media (max-width: 860px) {
+  .preset-chip { min-height: 40px; padding-inline: 14px; }
+}

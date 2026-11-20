@@ -259,6 +259,7 @@ export const en = {
   },
   /** Textos para lectores de pantalla (no se ven, pero se leen). */
   a11y: {
+    loadingPage: 'Loading page…',
     homeLink: 'SAMORAI — home',
     mainNav: 'Main navigation',
     openMenu: 'Open menu',

@@ -257,6 +257,7 @@ export const es: TranslationKeys = {
     ],
   },
   a11y: {
+    loadingPage: 'Cargando la página…',
     homeLink: 'SAMORAI — inicio',
     mainNav: 'Navegación principal',
     openMenu: 'Abrir menú',

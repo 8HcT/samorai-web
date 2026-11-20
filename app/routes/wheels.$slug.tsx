@@ -573,7 +573,7 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
                   <span className="product-added__check" aria-hidden="true">✓</span>
                   {t.product.addedTitle}
                 </span>
-                <Link to="/cart" className="btn btn-outline btn-sm">{t.product.viewCart}</Link>
+                <Link prefetch="intent" to="/cart" className="btn btn-outline btn-sm">{t.product.viewCart}</Link>
               </div>
             )}
             {offer.mode === 'legacy' && (

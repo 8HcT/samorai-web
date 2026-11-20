@@ -37,7 +37,7 @@ export function Header() {
 
   return (
     <header className="navbar samorai-header">
-      <NavLink to={lp('/')} className="nv-logo" aria-label={t.a11y.homeLink} onClick={() => setOpen(false)}>
+      <NavLink prefetch="intent" to={lp('/')} className="nv-logo" aria-label={t.a11y.homeLink} onClick={() => setOpen(false)}>
         <img src="/logo.svg" alt="SAMORAI" className="nv-logo__img" />
       </NavLink>
 
@@ -46,7 +46,7 @@ export function Header() {
         <ul className="nv-links" role="list">
           {NAV.map(({ to, key, end }) => (
             <li key={to}>
-              <NavLink to={lp(to)} end={end} className={({ isActive }) => (isActive ? 'active' : undefined)}>
+              <NavLink prefetch="intent" to={lp(to)} end={end} className={({ isActive }) => (isActive ? 'active' : undefined)}>
                 {t.nav[key]}
               </NavLink>
             </li>
@@ -56,14 +56,14 @@ export function Header() {
 
       <div className="nv-cta nv-desktop">
         {presale && (
-          <NavLink
+          <NavLink prefetch="intent"
             to="/cuenta"
             className={({ isActive }) => `nv-cart nv-account${isActive ? ' active' : ''}`}
           >
             {t.nav.account}
           </NavLink>
         )}
-        <NavLink
+        <NavLink prefetch="intent"
           to="/cart"
           className={({ isActive }) => `nv-cart${isActive ? ' active' : ''}`}
           aria-label={cartLabel}
@@ -76,7 +76,7 @@ export function Header() {
 
       {/* Móvil: carrito siempre a mano (con contador) + botón de menú */}
       <div className="nv-mobile-actions">
-        <NavLink
+        <NavLink prefetch="intent"
           to="/cart"
           className={({ isActive }) => `nv-cart-icon${isActive ? ' active' : ''}`}
           aria-label={cartLabel}
@@ -108,7 +108,7 @@ export function Header() {
             <ul className="nv-mobile__links" role="list">
               {NAV.map(({ to, key, end }) => (
                 <li key={to}>
-                  <NavLink
+                  <NavLink prefetch="intent"
                     to={lp(to)}
                     end={end}
                     onClick={() => setOpen(false)}
@@ -120,13 +120,13 @@ export function Header() {
               ))}
               {presale && (
                 <li>
-                  <NavLink to="/cuenta" onClick={() => setOpen(false)}>
+                  <NavLink prefetch="intent" to="/cuenta" onClick={() => setOpen(false)}>
                     {t.nav.account}
                   </NavLink>
                 </li>
               )}
               <li>
-                <NavLink to="/cart" onClick={() => setOpen(false)} className="nv-mobile__cart">
+                <NavLink prefetch="intent" to="/cart" onClick={() => setOpen(false)} className="nv-mobile__cart">
                   {cartLabel}
                 </NavLink>
               </li>

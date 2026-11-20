@@ -170,3 +170,62 @@
 .cart-checkout { width: 100%; justify-content: center; }
 .cart-item__image .product-media { background: #fff; }
 .auth-submit { justify-content: center; }
+
+/* ---------- Cambio de página lento (web pública) ----------
+   Capa fija bajo la cabecera con el esqueleto de la página que llega. No
+   sustituye a la página actual: su scroll se conserva para «atrás». */
+.page-loading {
+  position: fixed;
+  inset: var(--header-height) 0 0 0;
+  z-index: calc(var(--z-header) - 1);
+  overflow: hidden;
+  background: var(--s-black);
+  animation: page-loading-in 0.16s ease both;
+}
+@keyframes page-loading-in {
+  from { opacity: 0; }
+}
+.page-skel-hero {
+  display: flex;
+  align-items: flex-end;
+  min-height: min(72vh, 680px);
+  padding-block: var(--space-16);
+  background: var(--skeleton-base);
+}
+.page-skel-hero--compact { min-height: min(54vh, 480px); padding-block: var(--space-12); }
+.page-skel-hero .container { display: grid; gap: 18px; width: 100%; }
+.page-skel-stack { display: grid; gap: 22px; align-content: start; }
+.page-skel-stack--tight { gap: 12px; }
+.page-skel-row { display: flex; flex-wrap: wrap; gap: 10px; }
+@media (max-width: 640px) {
+  .page-skel-desktop-only { display: none; }
+  .page-skel-hero { min-height: 56vh; }
+  .page-skel-hero--compact { min-height: 34vh; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-loading { animation: none; }
+}
+.page-skel-gallery {
+  display: grid;
+  grid-template-columns: calc((100% - 60px) / 6) 1fr;
+  gap: 12px;
+  align-items: start;
+}
+.page-skel-swatches { display: grid; gap: 12px; }
+.page-skel-thumbs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+/* Después de la regla base (si no, esta la anula): en móvil la ficha enseña 4 por fila. */
+@media (max-width: 900px) {
+  .page-skel-thumbs { grid-template-columns: repeat(4, 1fr); }
+}
+.page-skel-card {
+  display: grid;
+  gap: 28px;
+  padding: clamp(20px, 3vw, 32px);
+  border: 1px solid var(--hairline);
+}
+.page-skel-empty {
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+  padding-block: var(--space-16);
+}

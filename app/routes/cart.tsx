@@ -17,7 +17,7 @@ import { loadPricing } from '~/lib/pricing.server';
 import { useLocale, useT } from '~/i18n/useT';
 import { fill } from '~/lib/seo';
 import { ProductMedia } from '~/components/ProductMedia';
-import { Skeleton, SkeletonText } from '~/components/ui/Skeleton';
+import { CartSkeletonBody } from '~/components/PageSkeleton';
 import { Spinner } from '~/components/ui/Spinner';
 
 /** Precios vigentes (y promociones) de todo el catálogo para pintar el carrito. */
@@ -66,27 +66,8 @@ export default function Cart({ loaderData }: Route.ComponentProps) {
       <div className="section">
         <div className="container">
           <SectionHeader eyebrow={c.eyebrow} title={c.title} as="h1" />
-          <div className="cart-layout" role="status" aria-label={c.loadingCart}>
-            <div>
-              {[0, 1].map((i) => (
-                <div key={i} className="cart-item" aria-hidden="true">
-                  <div className="cart-item__image"><Skeleton width="100%" height="100%" /></div>
-                  <div style={{ display: 'grid', gap: 10 }}>
-                    <Skeleton width="45%" height={18} />
-                    <SkeletonText lines={2} />
-                    <Skeleton width={120} height={36} />
-                  </div>
-                  <div className="cart-item__price"><Skeleton width={80} height={20} /></div>
-                </div>
-              ))}
-            </div>
-            <div className="cart-summary" aria-hidden="true">
-              <Skeleton width="50%" height={20} />
-              <div style={{ display: 'grid', gap: 14, margin: '24px 0' }}>
-                <SkeletonText lines={3} />
-              </div>
-              <Skeleton width="100%" height={52} />
-            </div>
+          <div role="status" aria-label={c.loadingCart}>
+            <CartSkeletonBody />
           </div>
         </div>
       </div>

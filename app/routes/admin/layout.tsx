@@ -1,5 +1,5 @@
 import type { Route } from './+types/layout';
-import { useEffect, useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { Form, NavLink, Outlet, data, isRouteErrorResponse, Link, useLocation, useNavigation } from 'react-router';
 import { requireAdmin } from '~/lib/auth/session.server';
 import {
@@ -13,6 +13,7 @@ import {
 import { PRIVATE_PAGE_HEADERS } from '~/lib/security.server';
 import { StatusChip } from '~/components/admin/AdminViz';
 import { AdminPageSkeleton } from '~/components/admin/AdminSkeletons';
+import { useDelayed } from '~/components/ui/useDelayed';
 import {
   IconBatches,
   IconExternal,
@@ -73,20 +74,6 @@ const NAV: NavItem[] = [
 
 const navClass = ({ isActive, isPending }: { isActive: boolean; isPending: boolean }) =>
   [isActive ? 'active' : '', isPending ? 'pending' : ''].filter(Boolean).join(' ') || undefined;
-
-/** true solo si `active` dura más de `ms` (evita parpadeos en cargas rápidas). */
-function useDelayed(active: boolean, ms: number) {
-  const [on, setOn] = useState(false);
-  useEffect(() => {
-    if (!active) {
-      setOn(false);
-      return;
-    }
-    const t = window.setTimeout(() => setOn(true), ms);
-    return () => window.clearTimeout(t);
-  }, [active, ms]);
-  return on;
-}
 
 export default function AdminLayout({ loaderData }: Route.ComponentProps) {
   const { email, flags, presale } = loaderData;
