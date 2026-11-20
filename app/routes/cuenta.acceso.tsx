@@ -6,6 +6,7 @@ import { assertSameOrigin, normalizeEmail, safeNextPath } from '~/lib/security.s
 import { accountHomePath, presaleEnabled } from '~/lib/presale/config.server';
 import { t as translations } from '~/i18n/config';
 import { useT } from '~/i18n/useT';
+import { SubmitButton } from '~/components/ui/SubmitButton';
 import { rootSeoData } from '~/lib/seo';
 
 export function meta(args: Route.MetaArgs) {
@@ -89,6 +90,9 @@ export default function Login({ loaderData, actionData }: Route.ComponentProps) 
         {!configured && <div className="notice">{a.notConfigured}</div>}
 
         <div className="auth-grid">
+          {/* Solo equipo (sin altas): se entra con contraseña, así que va primero. */}
+          {signup ? (
+            <>
           <section className="account-card">
             <h2 className="account-card__title">{a.magicTitle}</h2>
             <p className="caption">{signup ? a.magicBody : a.magicBodyTeam}</p>
@@ -102,7 +106,14 @@ export default function Login({ loaderData, actionData }: Route.ComponentProps) 
               {actionData?.mode === 'magic' && (
                 <p className={actionData.ok ? 'notice notice--ok' : 'presale-form__error'} role="status">{message}</p>
               )}
-              <button type="submit" className="btn btn-primary w-full" disabled={busy || !configured}>{a.sendLink}</button>
+              <SubmitButton
+                className={`btn ${signup ? 'btn-primary' : 'btn-outline'} w-full auth-submit`}
+                match={{ intent: 'magic' }}
+                pendingText={a.sendingLink}
+                disabled={busy || !configured}
+              >
+                {a.sendLink}
+              </SubmitButton>
             </Form>
           </section>
 
@@ -122,7 +133,14 @@ export default function Login({ loaderData, actionData }: Route.ComponentProps) 
               {actionData?.mode === 'password' && !actionData.ok && (
                 <p className="presale-form__error" role="alert">{message}</p>
               )}
-              <button type="submit" className="btn btn-outline w-full" disabled={busy || !configured}>{a.signIn}</button>
+              <SubmitButton
+                className={`btn ${signup ? 'btn-outline' : 'btn-primary'} w-full auth-submit`}
+                match={{ intent: 'password' }}
+                pendingText={a.signingIn}
+                disabled={busy || !configured}
+              >
+                {a.signIn}
+              </SubmitButton>
             </Form>
             <p className="caption auth-links">
               <Link to="/cuenta/recuperar">{a.forgot}</Link>
@@ -134,6 +152,70 @@ export default function Login({ loaderData, actionData }: Route.ComponentProps) 
               )}
             </p>
           </section>
+            </>
+          ) : (
+            <>
+          <section className="account-card">
+            <h2 className="account-card__title">{a.passwordTitle}</h2>
+            <Form method="post" className="auth-form">
+              <input type="hidden" name="intent" value="password" />
+              <input type="hidden" name="next" value={next} />
+              <label className="presale-field">
+                <span>{a.email}</span>
+                <input type="email" name="email" required autoComplete="username" />
+              </label>
+              <label className="presale-field">
+                <span>{a.password}</span>
+                <input type="password" name="password" required autoComplete="current-password" />
+              </label>
+              {actionData?.mode === 'password' && !actionData.ok && (
+                <p className="presale-form__error" role="alert">{message}</p>
+              )}
+              <SubmitButton
+                className={`btn ${signup ? 'btn-outline' : 'btn-primary'} w-full auth-submit`}
+                match={{ intent: 'password' }}
+                pendingText={a.signingIn}
+                disabled={busy || !configured}
+              >
+                {a.signIn}
+              </SubmitButton>
+            </Form>
+            <p className="caption auth-links">
+              <Link to="/cuenta/recuperar">{a.forgot}</Link>
+              {signup && (
+                <>
+                  {' · '}
+                  <Link to="/cuenta/registro">{a.createWithPassword}</Link>
+                </>
+              )}
+            </p>
+          </section>
+          <section className="account-card">
+            <h2 className="account-card__title">{a.magicTitle}</h2>
+            <p className="caption">{signup ? a.magicBody : a.magicBodyTeam}</p>
+            <Form method="post" className="auth-form">
+              <input type="hidden" name="intent" value="magic" />
+              <input type="hidden" name="next" value={next} />
+              <label className="presale-field">
+                <span>{a.email}</span>
+                <input type="email" name="email" required autoComplete="email" />
+              </label>
+              {actionData?.mode === 'magic' && (
+                <p className={actionData.ok ? 'notice notice--ok' : 'presale-form__error'} role="status">{message}</p>
+              )}
+              <SubmitButton
+                className={`btn ${signup ? 'btn-primary' : 'btn-outline'} w-full auth-submit`}
+                match={{ intent: 'magic' }}
+                pendingText={a.sendingLink}
+                disabled={busy || !configured}
+              >
+                {a.sendLink}
+              </SubmitButton>
+            </Form>
+          </section>
+
+            </>
+          )}
         </div>
       </div>
     </div>

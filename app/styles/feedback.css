@@ -169,3 +169,4 @@
 .btn[aria-busy='true']:disabled { opacity: 0.85; }
 .cart-checkout { width: 100%; justify-content: center; }
 .cart-item__image .product-media { background: #fff; }
+.auth-submit { justify-content: center; }

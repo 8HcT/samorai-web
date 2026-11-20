@@ -26,7 +26,7 @@ export function LocalDateTime({
 
   if (compact) {
     return (
-      <time dateTime={date.toISOString()} className={className} suppressHydrationWarning title={fullText(date)}>
+      <time dateTime={date.toISOString()} className={className} suppressHydrationWarning title={fullText(date, local)}>
         {compactText(date, local)}
       </time>
     );
@@ -55,9 +55,9 @@ export function LocalDateTime({
   );
 }
 
-function fullText(date: Date): string {
+function fullText(date: Date, local: boolean): string {
   try {
-    return new Intl.DateTimeFormat('es-ES', { dateStyle: 'full', timeStyle: 'short' }).format(date);
+    return new Intl.DateTimeFormat('es-ES', { dateStyle: 'full', timeStyle: 'short', ...(local ? {} : { timeZone: 'Europe/Madrid' }) }).format(date);
   } catch {
     return date.toISOString();
   }
