@@ -33,6 +33,9 @@ export interface OrderAddress {
   city: string | null;
   state: string | null;
   country: string | null;
+  /** Solo en facturación, si compra como empresa (casilla de Stripe). */
+  company?: string | null;
+  taxId?: string | null;
 }
 
 export interface OrderRecord {
@@ -56,6 +59,8 @@ export interface OrderRecord {
   createdAt: string;
   /** Compra de prueba de 1 € (ver ~/lib/orders/test-purchase). */
   isTest?: boolean;
+  /** Motivo para revisar el pedido antes de enviarlo (destino especial…). */
+  reviewReason?: string | null;
   /** Idioma del cliente (correo de confirmación). Por defecto, castellano. */
   locale?: 'es' | 'en';
 }
@@ -121,6 +126,7 @@ export async function recordOrder(order: OrderRecord): Promise<{ isNew: boolean;
       customer_phone: order.customerPhone,
       shipping_address: order.shippingAddress,
       billing_address: order.billingAddress,
+      review_reason: order.reviewReason ?? null,
       subtotal_cents: order.amountSubtotalCents,
       amount_paid_cents: order.amountTotalCents,
     };

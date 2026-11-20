@@ -116,6 +116,8 @@ export interface AddressJson {
   city?: string | null;
   state?: string | null;
   country?: string | null;
+  company?: string | null;
+  taxId?: string | null;
 }
 
 export interface OrderRow {

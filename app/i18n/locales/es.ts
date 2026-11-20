@@ -278,6 +278,8 @@ export const es: TranslationKeys = {
     backHome: '← Volver al inicio',
   },
   account: {
+    showPassword: 'Mostrar contraseña',
+    hidePassword: 'Ocultar contraseña',
     eyebrow: 'Mi cuenta',
     loginTitle: 'Acceder',
     loginIntro:
@@ -345,6 +347,11 @@ export const es: TranslationKeys = {
       'Cuando salgan, te escribimos con el transportista y el número de seguimiento.',
     ],
     keepShopping: 'Seguir comprando',
+    processingTitle: 'Pago en proceso',
+    processingBody: 'Tu pedido está registrado y tu banco está confirmando el pago. Te escribiremos en cuanto se complete.',
+    unverifiedTitle: 'Gracias',
+    unverifiedBody: 'Si has completado el pago, en unos minutos recibirás la confirmación por correo. Si no te llega, escríbenos y lo revisamos.',
+    contactUs: 'Contactar',
     cancelTitle: 'Pago cancelado',
     cancelBody: 'No se ha realizado ningún cargo. Tu carrito sigue guardado.',
     backToCart: 'Volver al carrito',

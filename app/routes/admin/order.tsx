@@ -17,6 +17,7 @@ import { CopyButton } from '~/components/admin/CopyButton';
 import { IconArrowLeft, IconExternal } from '~/components/admin/icons';
 import { SubmitButton } from '~/components/ui/SubmitButton';
 import { Toast } from '~/components/ui/Toast';
+import { countryLabel, regionIfDistinct } from '~/lib/address';
 
 export async function loader({ request, params }: Route.LoaderArgs) {
   await requireAdmin(request);
@@ -150,10 +151,34 @@ export default function AdminOrder({ loaderData, actionData }: Route.ComponentPr
   const isTest = isTestOrder(o);
   const stripeTestMode = isStripeTestSession(o.stripe_session_id);
   const addressText = address
-    ? [address.name, address.line1, address.line2, [address.postalCode, address.city].filter(Boolean).join(' '), address.state, address.country]
+    ? [
+        address.name,
+        address.line1,
+        address.line2,
+        [address.postalCode, address.city].filter(Boolean).join(' '),
+        regionIfDistinct(address.country, address.state, address.city),
+        countryLabel(address.country),
+      ]
         .filter(Boolean)
         .join('\n')
     : '';
+  // Facturación: solo si cambia algo respecto al envío o compra como empresa.
+  const billing = o.billing_address;
+  const billingText =
+    billing && (billing.company || billing.taxId || billing.line1 !== address?.line1 || billing.postalCode !== address?.postalCode)
+      ? [
+          billing.company,
+          billing.taxId ? `NIF/IVA: ${billing.taxId}` : null,
+          billing.name !== billing.company ? billing.name : null,
+          billing.line1,
+          billing.line2,
+          [billing.postalCode, billing.city].filter(Boolean).join(' '),
+          regionIfDistinct(billing.country, billing.state, billing.city),
+          countryLabel(billing.country),
+        ]
+          .filter(Boolean)
+          .join('\n')
+      : '';
   const shippingLabel = [addressText, o.customer_phone ? `Tel. ${o.customer_phone}` : ''].filter(Boolean).join('\n');
 
   return (
@@ -231,6 +256,12 @@ export default function AdminOrder({ loaderData, actionData }: Route.ComponentPr
             <dt>Teléfono</dt><dd>{o.customer_phone ? <a href={`tel:${o.customer_phone.replace(/\s+/g, '')}`}>{o.customer_phone}</a> : '—'}</dd>
             <dt>Dirección</dt>
             <dd style={{ whiteSpace: 'pre-line' }}>{addressText || '—'}</dd>
+            {billingText && (
+              <>
+                <dt>Facturación</dt>
+                <dd style={{ whiteSpace: 'pre-line' }}>{billingText}</dd>
+              </>
+            )}
             <dt>Transportista</dt><dd>{o.carrier ?? '—'}</dd>
             <dt>Seguimiento</dt><dd>{o.tracking_number ?? '—'}</dd>
           </dl>

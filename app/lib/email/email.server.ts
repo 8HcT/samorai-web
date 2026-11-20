@@ -19,6 +19,7 @@ import { getVariantById, getFinish } from '~/data/products';
 import { formatPrice } from '~/lib/money';
 import { formatSize, formatEt } from '~/lib/format';
 import { TEST_PRODUCT_NAME, cartOrderCode, isTestVariantId } from '~/lib/orders/test-purchase';
+import { regionIfDistinct } from '~/lib/address';
 import { t as translations } from '~/i18n/config';
 
 /**
@@ -32,7 +33,7 @@ const MAIL = {
     dateLocale: 'es-ES',
     finish: 'Acabado', size: 'Medida', offset: 'Offset', ref: 'Ref.',
     unit: 'unidad', units: 'unidades', wheel: 'llanta', wheels: 'llantas',
-    shipTo: 'Dirección de envío', contact: 'Contacto', billing: 'Dirección de facturación', notProvided: 'No facilitada',
+    shipTo: 'Dirección de envío', contact: 'Contacto', billing: 'Dirección de facturación', notProvided: 'No facilitada', taxId: 'NIF/IVA:',
     order: 'Pedido', date: 'Fecha', quantity: 'Unidades',
     subtotal: 'Subtotal', shipping: 'Envío', free: 'Gratuito', total: 'Total (IVA incluido)',
     thanks: '¡Gracias por tu pedido!',
@@ -49,7 +50,7 @@ const MAIL = {
     dateLocale: 'en-GB',
     finish: 'Finish', size: 'Size', offset: 'Offset', ref: 'Ref.',
     unit: 'unit', units: 'units', wheel: 'wheel', wheels: 'wheels',
-    shipTo: 'Shipping address', contact: 'Contact', billing: 'Billing address', notProvided: 'Not provided',
+    shipTo: 'Shipping address', contact: 'Contact', billing: 'Billing address', notProvided: 'Not provided', taxId: 'Tax ID:',
     order: 'Order', date: 'Date', quantity: 'Units',
     subtotal: 'Subtotal', shipping: 'Shipping', free: 'Free', total: 'Total (VAT included)',
     thanks: 'Thank you for your order!',
@@ -120,6 +121,14 @@ function testBanner(order: OrderRecord, lang: MailLang = 'es'): string {
   </p>`;
 }
 
+/** Aviso en el correo a la tienda: pedido a revisar antes de enviarlo. */
+function reviewBanner(order: OrderRecord): string {
+  if (!order.reviewReason) return '';
+  return `<p style="margin:0 0 20px;padding:12px 14px;border:2px solid #b45309;color:#7c2d12;background:#fff7ed;font-size:13px;line-height:1.6;">
+    <strong>Revisar antes de enviar.</strong> ${esc(order.reviewReason)}
+  </p>`;
+}
+
 /** Nº total de llantas del pedido. */
 function totalUnits(order: OrderRecord): number {
   return order.lines.reduce((sum, l) => sum + l.quantity, 0);
@@ -154,13 +163,13 @@ export function countryName(code: string | null, lang: MailLang = 'es'): string 
 export function addressHtml(address: OrderAddress | null, lang: MailLang = 'es'): string {
   if (!address) return `<span style="color:#999;">${MAIL[lang].notProvided}</span>`;
   const region = [address.postalCode, address.city].filter(Boolean).join(' ');
-  // La provincia solo aporta si no repite la ciudad (Madrid, Madrid…).
-  const state =
-    address.state && address.state.trim().toLowerCase() !== (address.city ?? '').trim().toLowerCase()
-      ? address.state
-      : null;
+  // Provincia con nombre («M» → «Madrid») y solo si no repite la ciudad.
+  const state = regionIfDistinct(address.country, address.state, address.city);
   const parts = [
-    address.name,
+    address.company,
+    address.taxId ? `${MAIL[lang].taxId} ${address.taxId}` : null,
+    // Con compra de empresa, Stripe repite la razón social como nombre.
+    address.name !== address.company ? address.name : null,
     address.line1,
     address.line2,
     region,
@@ -384,7 +393,7 @@ function fulfilmentHtml(order: OrderRecord): string {
 function shopEmailHtml(order: OrderRecord): string {
   return shell(
     order.isTest ? 'Compra de prueba' : 'Nueva venta',
-    `${testBanner(order)}${fulfilmentHtml(order)}
+    `${testBanner(order)}${reviewBanner(order)}${fulfilmentHtml(order)}
      ${summaryHtml(order)}${orderTable(order)}
      ${detailsHtml(order, { showBilling: true })}
      <p style="color:#999;font-size:11px;line-height:1.8;margin:24px 0 0;padding-top:14px;border-top:1px solid #eee;">
@@ -414,6 +423,7 @@ function shopEmailText(order: OrderRecord): string {
 
   return [
     ...(order.isTest ? ['*** COMPRA DE PRUEBA: NO ENVIAR NADA (se devuelve desde el panel) ***', ''] : []),
+    ...(order.reviewReason ? [`*** REVISAR ANTES DE ENVIAR: ${order.reviewReason} ***`, ''] : []),
     `PEDIDO #${orderRef(order)}`,
     formatDate(order.createdAt),
     '',
@@ -423,11 +433,21 @@ function shopEmailText(order: OrderRecord): string {
     `TOTAL: ${formatPrice(order.amountTotalCents)} (IVA incluido)`,
     '',
     'ENVIAR A',
-    ...[address?.name, address?.line1, address?.line2, region, address?.state, countryName(address?.country ?? null)]
+    ...[
+      address?.name,
+      address?.line1,
+      address?.line2,
+      region,
+      regionIfDistinct(address?.country, address?.state, address?.city),
+      countryName(address?.country ?? null),
+    ]
       .filter(Boolean)
       .map((p) => `  ${p}`),
     order.customerPhone ? `  Tel. ${order.customerPhone}` : '  Sin teléfono',
     ...(order.customerEmail ? [`  ${order.customerEmail}`] : []),
+    ...(order.billingAddress?.company || order.billingAddress?.taxId
+      ? ['', 'FACTURAR A', ...[order.billingAddress.company, order.billingAddress.taxId ? `NIF/IVA: ${order.billingAddress.taxId}` : null].filter(Boolean).map((p) => `  ${p}`)]
+      : []),
     '',
     `Idioma del cliente: ${order.locale === 'en' ? 'inglés' : 'castellano'}`,
     `Stripe: ${order.stripeSessionId}`,

@@ -10,6 +10,7 @@ import { sendOrderEmails } from '~/lib/email/email.server';
 import { adminRpc, isPresaleDbConfigured } from '~/lib/presale/rpc.server';
 import { recordOrder, type OrderAddress, type OrderLineRecord, type OrderRecord } from './orders.server';
 import { TEST_PRICE_CENTS, TEST_PRODUCT_NAME, isTestVariantId } from './test-purchase';
+import { shippingReviewReason } from '~/lib/shipping';
 
 /**
  * Reconstruye las líneas desde `metadata.cart`:
@@ -59,10 +60,15 @@ export function sessionAddresses(session: Stripe.Checkout.Session): {
 } {
   const shipping = session.collected_information?.shipping_details ?? null;
   const customer = session.customer_details ?? null;
+  const billing = toAddress(customer?.address, customer?.name);
+  // Compra como empresa: razón social y NIF/IVA para la factura. Solo se
+  // añaden si existen, para que «facturación = envío» siga comparando igual.
+  const company = customer?.business_name?.trim() || null;
+  const taxId = (customer?.tax_ids ?? []).map((t) => t.value).filter(Boolean).join(', ') || null;
   return {
     shipping:
       toAddress(shipping?.address, shipping?.name) ?? toAddress(customer?.address, customer?.name),
-    billing: toAddress(customer?.address, customer?.name),
+    billing: billing ? { ...billing, ...(company ? { company } : {}), ...(taxId ? { taxId } : {}) } : null,
   };
 }
 
@@ -126,6 +132,8 @@ export async function processCartSession(session: Stripe.Checkout.Session): Prom
     lines,
     createdAt: new Date().toISOString(),
     isTest,
+    // Canarias, Ceuta, Melilla, Madeira, Azores: se cobra, pero hay que revisarlo antes de enviar.
+    reviewReason: isTest ? null : shippingReviewReason(shippingAddress),
     locale: session.metadata?.locale === 'en' ? 'en' : 'es',
   };
 

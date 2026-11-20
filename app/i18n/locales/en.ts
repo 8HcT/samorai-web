@@ -280,6 +280,8 @@ export const en = {
     backHome: '← Back to home',
   },
   account: {
+    showPassword: 'Show password',
+    hidePassword: 'Hide password',
     eyebrow: 'My account',
     loginTitle: 'Sign in',
     loginIntro:
@@ -348,6 +350,11 @@ export const en = {
       'When they ship, we email you the carrier and tracking number.',
     ],
     keepShopping: 'Continue shopping',
+    processingTitle: 'Payment processing',
+    processingBody: 'Your order is registered and your bank is confirming the payment. We will email you as soon as it is complete.',
+    unverifiedTitle: 'Thank you',
+    unverifiedBody: 'If you completed the payment, you will receive the confirmation by email in a few minutes. If it does not arrive, write to us and we will look into it.',
+    contactUs: 'Contact us',
     cancelTitle: 'Payment cancelled',
     cancelBody: 'No payment has been taken. Your cart is still saved.',
     backToCart: 'Back to cart',

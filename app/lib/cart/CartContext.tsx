@@ -75,7 +75,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
-  const clear = useCallback(() => setLines([]), []);
+  // También el guardado, al momento: si no, al hidratar (efecto del
+  // proveedor, que corre después del de la página) volvería el carrito.
+  const clear = useCallback(() => {
+    writeCart([]);
+    setLines([]);
+  }, []);
 
   const value = useMemo<CartContextValue>(
     () => ({ lines, count: cartCount(lines), ready, add, remove, setQuantity, clear }),
