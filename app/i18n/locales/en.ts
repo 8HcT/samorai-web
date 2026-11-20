@@ -130,6 +130,10 @@ export const en = {
     increase: 'Increase quantity',
     addToCart: 'Add to cart',
     added: 'Added ✓',
+    addedTitle: 'Added to your cart',
+    viewCart: 'View cart',
+    stickyChoose: 'Choose finish and size',
+    stickyTotal: 'Total',
     fitmentNote:
       'Fitment must be verified for each vehicle. Check PCD, center bore, ET range, diameter and brake caliper clearance before installing.',
     fitmentLink: 'Fitment enquiry →',
@@ -155,6 +159,8 @@ export const en = {
     'silver-metallic': 'Silver Metallic',
   } as Record<string, string>,
   cart: {
+    redirecting: 'Opening secure checkout…',
+    loadingCart: 'Loading your cart…',
     eyebrow: 'Your selection',
     title: 'Cart',
     emptyTitle: 'Your cart is empty',
@@ -332,6 +338,12 @@ export const en = {
     successEmail: 'We have sent the confirmation to',
     total: 'Total:',
     reference: 'Order reference: #{ref}',
+    nextTitle: 'What happens now',
+    nextSteps: [
+      'You will receive the order confirmation by email in a few minutes.',
+      'We prepare your wheels and check every detail before shipping.',
+      'When they ship, we email you the carrier and tracking number.',
+    ],
     keepShopping: 'Continue shopping',
     cancelTitle: 'Payment cancelled',
     cancelBody: 'No payment has been taken. Your cart is still saved.',

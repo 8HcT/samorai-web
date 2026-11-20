@@ -1,6 +1,6 @@
 import type { Route } from './+types/cart';
 import { seoMeta, seoStrings } from '~/lib/seo';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useCart } from '~/lib/cart/CartContext';
 import { resolveCart, cartTotalCents } from '~/lib/cart';
@@ -16,6 +16,9 @@ import { buildPriceBook } from '~/lib/pricing';
 import { loadPricing } from '~/lib/pricing.server';
 import { useLocale, useT } from '~/i18n/useT';
 import { fill } from '~/lib/seo';
+import { ProductMedia } from '~/components/ProductMedia';
+import { Skeleton, SkeletonText } from '~/components/ui/Skeleton';
+import { Spinner } from '~/components/ui/Spinner';
 
 /** Precios vigentes (y promociones) de todo el catálogo para pintar el carrito. */
 export async function loader() {
@@ -27,13 +30,6 @@ export function meta(args: Route.MetaArgs) {
   return seoMeta(args, { title: s.title, description: s.description, noindex: true });
 }
 
-const PLACEHOLDER_COLOR_CLASS: Record<string, string> = {
-  'Anthracite Grey': 'product-card__image-placeholder--anthracite',
-  'Black Metallic': 'product-card__image-placeholder--black',
-  'Silver Metallic': 'product-card__image-placeholder--silver',
-  'Raw Aluminum': 'product-card__image-placeholder--aluminum',
-};
-
 export default function Cart({ loaderData }: Route.ComponentProps) {
   const { lines, setQuantity, remove, ready, count } = useCart();
   const [searchParams] = useSearchParams();
@@ -42,6 +38,14 @@ export default function Cart({ loaderData }: Route.ComponentProps) {
   const c = t.cart;
   const locale = useLocale();
   const errorText = errorKey ? c.errors[errorKey] : undefined;
+  // Al pulsar «Pagar» se sale hacia Stripe: botón en espera y sin dobles envíos.
+  const [leaving, setLeaving] = useState(false);
+  useEffect(() => {
+    // Volver con «atrás» desde Stripe saca la página de la caché: reactivar el botón.
+    const reset = (e: PageTransitionEvent) => e.persisted && setLeaving(false);
+    window.addEventListener('pageshow', reset);
+    return () => window.removeEventListener('pageshow', reset);
+  }, []);
 
   const resolved = resolveCart(lines, loaderData.priceBook);
   const totalCents = cartTotalCents(resolved);
@@ -55,12 +59,35 @@ export default function Cart({ loaderData }: Route.ComponentProps) {
     if (ready) trackEvent('cart_viewed', { itemCount: count });
   }, [ready, count]);
 
-  // Antes de hidratar no sabemos el contenido real → evitar parpadeo.
+  // Antes de hidratar no sabemos el contenido real (vive en el navegador):
+  // esqueleto con la forma del carrito en vez de un hueco o un parpadeo.
   if (!ready) {
     return (
       <div className="section">
         <div className="container">
           <SectionHeader eyebrow={c.eyebrow} title={c.title} as="h1" />
+          <div className="cart-layout" role="status" aria-label={c.loadingCart}>
+            <div>
+              {[0, 1].map((i) => (
+                <div key={i} className="cart-item" aria-hidden="true">
+                  <div className="cart-item__image"><Skeleton width="100%" height="100%" /></div>
+                  <div style={{ display: 'grid', gap: 10 }}>
+                    <Skeleton width="45%" height={18} />
+                    <SkeletonText lines={2} />
+                    <Skeleton width={120} height={36} />
+                  </div>
+                  <div className="cart-item__price"><Skeleton width={80} height={20} /></div>
+                </div>
+              ))}
+            </div>
+            <div className="cart-summary" aria-hidden="true">
+              <Skeleton width="50%" height={20} />
+              <div style={{ display: 'grid', gap: 14, margin: '24px 0' }}>
+                <SkeletonText lines={3} />
+              </div>
+              <Skeleton width="100%" height={52} />
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -99,11 +126,11 @@ export default function Cart({ loaderData }: Route.ComponentProps) {
               return (
                 <div key={variant.id} className="cart-item">
                   <div className="cart-item__image">
-                    <div
-                      className={`product-card__image-placeholder ${PLACEHOLDER_COLOR_CLASS[variant.color] ?? 'product-card__image-placeholder--anthracite'}`}
-                      style={{ width: '100%', height: '100%' }}
-                      role="img"
-                      aria-label={fill(c.imageAria, { name: product.name, finish: finishName })}
+                    <ProductMedia
+                      color={variant.color}
+                      src={getFinish(product, variant.finishId)?.images[0]}
+                      alt={fill(c.imageAria, { name: product.name, finish: finishName })}
+                      sizes="120px"
                     />
                   </div>
 
@@ -181,18 +208,25 @@ export default function Cart({ loaderData }: Route.ComponentProps) {
             </p>
 
             {/* POST nativo al resource route → crea la sesión y redirige a Stripe */}
-            <form method="post" action="/api/checkout">
+            <form
+              method="post"
+              action="/api/checkout"
+              onSubmit={() => {
+                trackEvent('checkout_started', { itemCount: count });
+                setLeaving(true);
+              }}
+            >
               <input type="hidden" name="cart" value={JSON.stringify(lines)} />
               <input type="hidden" name="locale" value={locale} />
-              <Button
+              <button
                 type="submit"
-                variant="primary"
-                size="large"
-                className="w-full"
-                onClick={() => trackEvent('checkout_started', { itemCount: count })}
+                className="btn btn-primary btn-lg w-full cart-checkout"
+                disabled={leaving}
+                aria-busy={leaving || undefined}
               >
-                {c.checkout}
-              </Button>
+                {leaving && <Spinner size={16} />}
+                {leaving ? c.redirecting : c.checkout}
+              </button>
             </form>
 
             <div className="cart-notice">

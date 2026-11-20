@@ -74,16 +74,31 @@ export function Header() {
         <LanguageSwitcher />
       </div>
 
-      {/* Botón de menú móvil */}
-      <button
-        type="button"
-        className="nv-toggle"
-        aria-label={open ? t.a11y.closeMenu : t.a11y.openMenu}
-        aria-expanded={open}
-        onClick={() => setOpen((o) => !o)}
-      >
-        <span /><span /><span />
-      </button>
+      {/* Móvil: carrito siempre a mano (con contador) + botón de menú */}
+      <div className="nv-mobile-actions">
+        <NavLink
+          to="/cart"
+          className={({ isActive }) => `nv-cart-icon${isActive ? ' active' : ''}`}
+          aria-label={cartLabel}
+          onClick={() => setOpen(false)}
+        >
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M5 8h14l-1.2 11.2a1.5 1.5 0 0 1-1.5 1.3H7.7a1.5 1.5 0 0 1-1.5-1.3z" />
+            <path d="M9 8V6.5a3 3 0 0 1 6 0V8" />
+          </svg>
+          {/* key = cantidad: la insignia «salta» cada vez que cambia */}
+          {ready && count > 0 && <span key={count} className="nv-cart-icon__badge" aria-hidden="true">{count}</span>}
+        </NavLink>
+        <button
+          type="button"
+          className="nv-toggle"
+          aria-label={open ? t.a11y.closeMenu : t.a11y.openMenu}
+          aria-expanded={open}
+          onClick={() => setOpen((o) => !o)}
+        >
+          <span /><span /><span />
+        </button>
+      </div>
 
       {/* Menú móvil */}
       {open && (

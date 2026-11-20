@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { Form, useActionData, useNavigation } from 'react-router';
 import { trackEvent } from '~/lib/analytics/trackEvent';
 import { SectionHeader } from '~/components/SectionHeader';
-import { Button } from '~/components/Button';
+import { SubmitButton } from '~/components/ui/SubmitButton';
 import { sendContactEmail } from '~/lib/email/email.server';
 import { useT } from '~/i18n/useT';
 
@@ -39,7 +39,7 @@ export async function action({ request }: Route.ActionArgs) {
 export default function Support() {
   const actionData = useActionData<typeof action>();
   const nav = useNavigation();
-  const submitting = nav.state === 'submitting';
+  const submitting = nav.state !== 'idle' && nav.formMethod?.toUpperCase() === 'POST';
   const c = useT().contact;
   const errorText = { missing: c.errorMissing, email: c.errorEmail, send: c.errorSend };
 
@@ -117,9 +117,9 @@ export default function Support() {
                   <textarea id="cf-message" name="message" required className="s-input" rows={4} placeholder={c.messagePlaceholder} style={{ resize: 'vertical' }} />
                 </div>
 
-                <Button type="submit" variant="primary" disabled={submitting}>
-                  {submitting ? c.sending : c.send}
-                </Button>
+                <SubmitButton className="btn btn-primary" pending={submitting} pendingText={c.sending}>
+                  {c.send}
+                </SubmitButton>
               </Form>
             )}
           </div>

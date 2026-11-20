@@ -58,6 +58,17 @@ export default function Success({ loaderData }: Route.ComponentProps) {
             {c.reference.replace('{ref}', loaderData.ref)}
           </p>
         )}
+        <div className="next-steps">
+          <h2 className="next-steps__title">{c.nextTitle}</h2>
+          <ol className="next-steps__list">
+            {c.nextSteps.map((step, i) => (
+              <li key={i}>
+                <span className="next-steps__n" aria-hidden="true">{i + 1}</span>
+                <span>{step}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
         <Button href="/the-wheels" variant="primary" size="large">
           {c.keepShopping}
         </Button>

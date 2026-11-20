@@ -1,5 +1,5 @@
 import type { Route } from './+types/wheels.$slug';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { data, Link, useActionData, useNavigation, useSearchParams } from 'react-router';
 import {
   getProductBySlug,
@@ -315,8 +315,26 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
     add(variant.id, quantity);
     trackEvent('add_to_cart_clicked', { productId: product.id, variantId: variant.id, quantity });
     setAdded(true);
-    window.setTimeout(() => setAdded(false), 2200);
   }
+
+  // La confirmación «Añadido» se queda unos segundos (con enlace al carrito).
+  useEffect(() => {
+    if (!added) return;
+    const t = window.setTimeout(() => setAdded(false), 9000);
+    return () => window.clearTimeout(t);
+  }, [added]);
+
+  // Móvil: barra fija con precio y acción cuando el bloque de compra no se ve.
+  const buyRef = useRef<HTMLDivElement>(null);
+  const configRef = useRef<HTMLDivElement>(null);
+  const [buyVisible, setBuyVisible] = useState(true);
+  useEffect(() => {
+    const el = buyRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver(([entry]) => setBuyVisible(entry.isIntersecting), { rootMargin: '0px 0px -40px 0px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [offer.mode]);
 
   // Textos que dependen del idioma: nombres de acabado y valores técnicos.
   const finishName = (f: { id: string; name: string } | undefined) => (f ? t.finishNames[f.id] ?? f.name : '');
@@ -429,8 +447,9 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
             </p>
 
             {/* 1 · Acabado */}
-            <div className="product-detail__color-selector">
+            <div className="product-detail__color-selector" ref={configRef} style={{ scrollMarginTop: 'calc(var(--header-height) + 16px)' }}>
               <p className="product-detail__option-title">
+                <span className="config-step" aria-hidden="true">1</span>
                 {t.product.finish}
                 {finishId && (
                   <span style={{ color: 'var(--color-text-primary)', textTransform: 'none', letterSpacing: 0 }}>
@@ -457,7 +476,7 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
             {/* 2 · Medida (tras elegir acabado) */}
             {finishId && (
               <div className="product-detail__color-selector">
-                <p className="product-detail__option-title">{t.product.size}</p>
+                <p className="product-detail__option-title"><span className="config-step" aria-hidden="true">2</span>{t.product.size}</p>
                 <div className="pills" role="group" aria-label={t.product.selectSizeAria}>
                   {widths.map((w) => (
                     <button
@@ -476,7 +495,7 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
             {/* 3 · ET (tras elegir medida; solo los válidos) */}
             {finishId && width != null && (
               <div className="product-detail__color-selector">
-                <p className="product-detail__option-title">{t.product.offset}</p>
+                <p className="product-detail__option-title"><span className="config-step" aria-hidden="true">3</span>{t.product.offset}</p>
                 <div className="pills" role="group" aria-label={t.product.selectEtAria}>
                   {ets.map((value) => (
                     <button
@@ -491,12 +510,6 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
                 </div>
               </div>
             )}
-
-            {/* Características generales (solo lectura) */}
-            <div style={{ marginBottom: 'var(--space-8)' }}>
-              <p className="product-detail__option-title">{t.product.generalSpecs}</p>
-              <SpecList specs={specs} />
-            </div>
 
             {/* Producto con tirada de fabricación: preventa / compra directa
                 por juegos con stock real (sustituye al carrito). */}
@@ -535,7 +548,7 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
 
             {/* Cantidad + añadir al carrito (solo productos sin tirada) */}
             {offer.mode !== 'legacy' ? null : finishId ? (
-              <div className="product-detail__buy">
+              <div className="product-detail__buy" ref={buyRef}>
                 <div className="config-qty" aria-label={t.product.quantity}>
                   <button className="config-qty__btn" onClick={() => setQuantity((q) => Math.max(1, q - 1))} aria-label={t.product.decrease}>−</button>
                   <span className="config-qty__count" aria-live="polite">{quantity}</span>
@@ -552,7 +565,16 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
                 </Button>
               </div>
             ) : (
-              <p className="caption">{t.product.selectFinish}</p>
+              <div ref={buyRef}><p className="caption">{t.product.selectFinish}</p></div>
+            )}
+            {offer.mode === 'legacy' && added && (
+              <div className="product-added" role="status">
+                <span className="product-added__text">
+                  <span className="product-added__check" aria-hidden="true">✓</span>
+                  {t.product.addedTitle}
+                </span>
+                <Link to="/cart" className="btn btn-outline btn-sm">{t.product.viewCart}</Link>
+              </div>
             )}
             {offer.mode === 'legacy' && (
               <p className="product-detail__note">
@@ -579,6 +601,12 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
               <Link to={lp('/contacto')} style={{ color: 'var(--color-accent)' }}>{t.product.fitmentLink}</Link>
             </div>
 
+            {/* Características generales (solo lectura), tras la compra */}
+            <div style={{ marginTop: 'var(--space-10)' }}>
+              <p className="product-detail__option-title">{t.product.generalSpecs}</p>
+              <SpecList specs={specs} />
+            </div>
+
             {/* Description */}
             <div style={{ marginTop: 'var(--space-10)', paddingTop: 'var(--space-8)', borderTop: '1px solid var(--color-border)' }}>
               <p className="label" style={{ marginBottom: 'var(--space-4)' }}>{t.product.about}</p>
@@ -593,6 +621,39 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
         </div>
         */}
       </div>
+
+      {/* Móvil: precio + acción siempre a mano mientras el bloque de compra no se ve */}
+      {offer.mode === 'legacy' && (
+        <div className={`product-sticky${buyVisible ? '' : ' is-visible'}`} aria-hidden={buyVisible || undefined}>
+          <div className="product-sticky__price">
+            {width != null && unitPrice != null ? (
+              <>
+                <span className="product-sticky__label">{t.product.stickyTotal} · {quantity} × {formatPrice(unitPrice.finalCents)}</span>
+                <strong>{formatPrice(unitPrice.finalCents * quantity)}</strong>
+              </>
+            ) : (
+              <>
+                <span className="product-sticky__label">{product.name}</span>
+                <strong>{fromPrice ? `${t.product.from} ${formatPrice(fromPrice.finalCents)}` : ''}</strong>
+              </>
+            )}
+          </div>
+          {variant ? (
+            <button type="button" className="btn btn-primary" onClick={handleAddToCart} tabIndex={buyVisible ? -1 : undefined}>
+              {added ? t.product.added : t.product.addToCart}
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="btn btn-outline"
+              tabIndex={buyVisible ? -1 : undefined}
+              onClick={() => configRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+            >
+              {t.product.stickyChoose}
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Lightbox de zoom: imagen a tamaño completo sobre fondo oscurecido. */}
       {zoomOpen && (

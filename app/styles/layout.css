@@ -174,6 +174,59 @@
   .nv-toggle { display: flex; }
 }
 
+
+/* Móvil: carrito con contador junto al menú (zonas de toque de 44 px) */
+.nv-mobile-actions {
+  display: none;
+  align-items: center;
+  gap: 4px;
+  margin-right: -8px;
+}
+@media (max-width: 900px) {
+  .nv-mobile-actions { display: flex; }
+}
+.nv-toggle {
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+}
+.nv-cart-icon {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  color: var(--s-light);
+  -webkit-tap-highlight-color: transparent;
+}
+.nv-cart-icon.active { color: var(--accent-ink); }
+.nv-cart-icon__badge {
+  position: absolute;
+  top: 5px;
+  right: 3px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--s-gold);
+  color: #1D1D1D;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  animation: cart-badge-pop .45s var(--ease);
+}
+@keyframes cart-badge-pop {
+  0% { transform: scale(.4); }
+  60% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nv-cart-icon__badge { animation: none; }
+}
+
 /* Conmutador de tema */
 .theme-toggle {
   width: 32px;

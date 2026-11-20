@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { WheelColor } from '~/types/product';
 import { optimizedSrc, optimizedSrcSet } from '~/lib/images';
+import { useImageLoaded } from '~/components/ui/useImageLoaded';
 
 /** Swatch de color (placeholder) por acabado, mientras no hay foto real. */
 export const FINISH_SWATCH_CLASS: Record<WheelColor, string> = {
@@ -40,12 +41,16 @@ export function ProductMedia({
   useEffect(() => {
     setStage(0);
   }, [src]);
+  const { ref, loaded, onLoad } = useImageLoaded(`${src}:${stage}`);
 
   return (
     <div className={`product-card__image-placeholder ${FINISH_SWATCH_CLASS[color]} product-media ${className}`}>
       <div className="product-card__wheel-icon" aria-hidden="true" />
+      {src && stage < 2 && !loaded && <span className="skeleton img-shimmer" aria-hidden="true" />}
       {src && stage < 2 && (
         <img
+          ref={ref}
+          onLoad={onLoad}
           src={stage === 0 ? optimizedSrc(src, 1200) : src}
           srcSet={stage === 0 ? optimizedSrcSet(src) : undefined}
           sizes={stage === 0 ? sizes : undefined}

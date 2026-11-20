@@ -149,3 +149,23 @@
   .spin { animation-duration: 1.6s; }
   .toast { animation: none; }
 }
+
+/* Brillo de carga dentro del hueco de una imagen (MediaPlaceholder, ProductMedia).
+   Va debajo de la <img>: en cuanto la foto pinta, la tapa. */
+.img-shimmer {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  z-index: 0;
+}
+.media-ph__img,
+.product-media__img { z-index: 1; }
+
+/* Botón en espera: se desactiva, pero no debe parecer roto (el .btn:disabled
+   del sistema baja la opacidad al 30 %). */
+.btn[aria-busy='true']:disabled { opacity: 0.85; }
+.cart-checkout { width: 100%; justify-content: center; }
+.cart-item__image .product-media { background: #fff; }

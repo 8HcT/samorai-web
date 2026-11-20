@@ -1,6 +1,7 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { optimizedSrc, optimizedSrcSet } from '~/lib/images';
 import { useT } from '~/i18n/useT';
+import { useImageLoaded } from '~/components/ui/useImageLoaded';
 
 /**
  * Hueco de imagen. Si el archivo `file` existe, muestra la imagen; si no (o si
@@ -34,6 +35,7 @@ export function MediaPlaceholder({
   useEffect(() => setStage(0), [file]);
 
   const showImg = Boolean(file) && stage < 2;
+  const { ref, loaded, onLoad } = useImageLoaded(`${file}:${stage}`);
 
   return (
     <div
@@ -47,8 +49,12 @@ export function MediaPlaceholder({
         {label}
         <span className="media-ph__file">{file}</span>
       </span>
+      {/* Brillo de carga en el hueco mientras llega la foto */}
+      {showImg && !loaded && <span className="skeleton img-shimmer" aria-hidden="true" />}
       {showImg && (
         <img
+          ref={ref}
+          onLoad={onLoad}
           src={stage === 0 ? optimizedSrc(file, 1200) : file}
           srcSet={stage === 0 ? optimizedSrcSet(file) : undefined}
           sizes={stage === 0 ? sizes : undefined}

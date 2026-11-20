@@ -132,6 +132,10 @@ export const es: TranslationKeys = {
     increase: 'Aumentar cantidad',
     addToCart: 'Añadir al carrito',
     added: 'Añadido ✓',
+    addedTitle: 'Añadido a tu carrito',
+    viewCart: 'Ver carrito',
+    stickyChoose: 'Elige acabado y medida',
+    stickyTotal: 'Total',
     fitmentNote:
       'El fitment debe verificarse por vehículo. Comprueba PCD, buje central, rango de ET, diámetro y holgura de pinza de freno antes de instalar.',
     fitmentLink: 'Consultar fitment →',
@@ -155,6 +159,8 @@ export const es: TranslationKeys = {
     'silver-metallic': 'Silver Metallic',
   },
   cart: {
+    redirecting: 'Abriendo el pago seguro…',
+    loadingCart: 'Cargando tu carrito…',
     eyebrow: 'Tu selección',
     title: 'Carrito',
     emptyTitle: 'Tu carrito está vacío',
@@ -329,6 +335,12 @@ export const es: TranslationKeys = {
     successEmail: 'Hemos enviado la confirmación a',
     total: 'Total:',
     reference: 'Referencia del pedido: #{ref}',
+    nextTitle: 'Qué pasa ahora',
+    nextSteps: [
+      'En unos minutos te llega por correo la confirmación del pedido.',
+      'Preparamos tus llantas y revisamos cada detalle antes de enviarlas.',
+      'Cuando salgan, te escribimos con el transportista y el número de seguimiento.',
+    ],
     keepShopping: 'Seguir comprando',
     cancelTitle: 'Pago cancelado',
     cancelBody: 'No se ha realizado ningún cargo. Tu carrito sigue guardado.',
