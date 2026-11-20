@@ -15,20 +15,32 @@ import { cartOrderRef } from '~/lib/orders/test-purchase';
 import { BarList, HeroFigure, OrderStatusChip, StatTile, StatusChip, StockBar } from '~/components/admin/AdminViz';
 import { DemandPanels, KpiPanel } from '~/components/admin/DemandPanels';
 import { LocalDateTime } from '~/components/presale/LocalDateTime';
+import { loadCatalog } from '~/lib/catalog.server';
+import { variantAvailability } from '~/lib/catalog';
+import { products } from '~/data/products';
 
 export async function loader({ request }: Route.LoaderArgs) {
   await requireAdmin(request);
   const now = new Date();
-  const [store, pricing, presale] = await Promise.all([
+  const [store, pricing, presale, catalog] = await Promise.all([
     loadStoreStats(now).catch((err) => {
       console.error('[admin][panel] no se pudieron leer los pedidos', err);
       return null;
     }),
     loadPricing(),
     presaleEnabled() ? loadDashboard() : Promise.resolve(null),
+    loadCatalog({ fresh: true }),
   ]);
+  // Stock: cuántas referencias agotadas o con pocas unidades (aviso arriba).
+  const stockStates = products
+    .filter((p) => p.status === 'active')
+    .flatMap((p) => p.variants.map((v) => variantAvailability(catalog, p.slug, v)));
   return {
     store,
+    stock: {
+      soldOut: stockStates.filter((s) => s.reason === 'sold_out').length,
+      low: stockStates.filter((s) => s.low).length,
+    },
     prices: referencePrices(pricing, now),
     // Diferido: el panel se pinta ya y el resumen del estado llega después.
     health: runHealthChecks(request, now)
@@ -67,7 +79,7 @@ function HealthChip({ health }: { health: Promise<{ errors: number; warnings: nu
 }
 
 export default function AdminDashboard({ loaderData }: Route.ComponentProps) {
-  const { store, prices, health, presale } = loaderData;
+  const { store, stock, prices, health, presale } = loaderData;
 
   return (
     <>
@@ -84,6 +96,23 @@ export default function AdminDashboard({ loaderData }: Route.ComponentProps) {
           <div>
             <strong>{store.toShip === 1 ? 'Hay 1 pedido pendiente de enviar.' : `Hay ${store.toShip} pedidos pendientes de enviar.`}</strong>{' '}
             <Link to="/admin/pedidos?status=paid">Ver los pedidos por preparar →</Link>
+          </div>
+        </div>
+      )}
+
+      {(stock.soldOut > 0 || stock.low > 0) && (
+        <div className="admin-notice admin-notice--warning" role="status">
+          <div>
+            <strong>
+              {[
+                stock.soldOut > 0 && `${stock.soldOut} ${stock.soldOut === 1 ? 'referencia agotada' : 'referencias agotadas'}`,
+                stock.low > 0 && `${stock.low} con pocas unidades`,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+              .
+            </strong>{' '}
+            <Link to="/admin/catalogo">Revisar el stock →</Link>
           </div>
         </div>
       )}

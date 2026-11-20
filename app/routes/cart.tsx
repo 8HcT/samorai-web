@@ -19,10 +19,19 @@ import { fill } from '~/lib/seo';
 import { ProductMedia } from '~/components/ProductMedia';
 import { CartSkeletonBody } from '~/components/PageSkeleton';
 import { Spinner } from '~/components/ui/Spinner';
+import { loadCatalog } from '~/lib/catalog.server';
+import { lineProblem, publicVariantState, type PublicVariantState } from '~/lib/catalog';
 
-/** Precios vigentes (y promociones) de todo el catálogo para pintar el carrito. */
-export async function loader() {
-  return { priceBook: buildPriceBook(await loadPricing(), products) };
+/**
+ * Precios vigentes (y promociones) y disponibilidad de cada referencia para
+ * pintar el carrito. Tras un aviso de stock del pago, se lee sin caché.
+ */
+export async function loader({ request }: Route.LoaderArgs) {
+  const fresh = new URL(request.url).searchParams.get('error') === 'stock';
+  const [pricing, catalog] = await Promise.all([loadPricing(), loadCatalog({ fresh })]);
+  const availability: Record<string, PublicVariantState> = {};
+  for (const p of products) for (const v of p.variants) availability[v.id] = publicVariantState(catalog, p.slug, v);
+  return { priceBook: buildPriceBook(pricing, products), availability };
 }
 
 export function meta(args: Route.MetaArgs) {
@@ -48,6 +57,9 @@ export default function Cart({ loaderData }: Route.ComponentProps) {
   }, []);
 
   const resolved = resolveCart(lines, loaderData.priceBook);
+  // Líneas agotadas o con más unidades de las que quedan: no se puede pagar.
+  const problems = new Map(resolved.map((l) => [l.variant.id, lineProblem(loaderData.availability[l.variant.id], l.quantity)]));
+  const blocked = [...problems.values()].some(Boolean);
   const totalCents = cartTotalCents(resolved);
   // Ahorro por promociones (ya descontado del total).
   const savedCents = resolved.reduce(
@@ -104,8 +116,10 @@ export default function Cart({ loaderData }: Route.ComponentProps) {
               const { variant, product } = line;
               const finishName = t.finishNames[variant.finishId] ?? getFinish(product, variant.finishId)?.name ?? variant.color;
               const spec = `${formatSize(variant.diameter, variant.width, locale)} · ${formatEt(variant.et)} · ${variant.pcd}`;
+              const problem = problems.get(variant.id) ?? null;
+              const maxQty = loaderData.availability[variant.id]?.left ?? null;
               return (
-                <div key={variant.id} className="cart-item">
+                <div key={variant.id} className={`cart-item${problem ? ' cart-item--problem' : ''}`}>
                   <div className="cart-item__image">
                     <ProductMedia
                       color={variant.color}
@@ -127,6 +141,20 @@ export default function Cart({ loaderData }: Route.ComponentProps) {
                         <PromoBadge promotion={line.price.promotion} />
                       </p>
                     )}
+                    {problem && (
+                      <p className="cart-item__problem" role="alert">
+                        {problem.kind === 'unavailable'
+                          ? problem.reason === 'sold_out'
+                            ? c.lineSoldOut
+                            : c.lineUnavailable
+                          : fill(c.lineOnlyLeft, { n: String(problem.left) })}
+                        {problem.kind === 'too_many' && problem.left > 0 && (
+                          <button type="button" className="cart-item__fix" onClick={() => setQuantity(variant.id, problem.left)}>
+                            {fill(c.adjustTo, { n: String(problem.left) })}
+                          </button>
+                        )}
+                      </p>
+                    )}
                     <div className="cart-item__qty" aria-label={c.quantity}>
                       <button
                         className="cart-item__qty-btn"
@@ -142,6 +170,7 @@ export default function Cart({ loaderData }: Route.ComponentProps) {
                         className="cart-item__qty-btn"
                         aria-label={c.increase}
                         onClick={() => setQuantity(variant.id, line.quantity + 1)}
+                        disabled={maxQty != null && line.quantity >= maxQty}
                       >
                         +
                       </button>
@@ -192,17 +221,22 @@ export default function Cart({ loaderData }: Route.ComponentProps) {
             <form
               method="post"
               action="/api/checkout"
-              onSubmit={() => {
+              onSubmit={(e) => {
+                if (blocked) {
+                  e.preventDefault();
+                  return;
+                }
                 trackEvent('checkout_started', { itemCount: count });
                 setLeaving(true);
               }}
             >
               <input type="hidden" name="cart" value={JSON.stringify(lines)} />
               <input type="hidden" name="locale" value={locale} />
+              {blocked && <p className="cart-blocked" role="status">{c.fixLines}</p>}
               <button
                 type="submit"
                 className="btn btn-primary btn-lg w-full cart-checkout"
-                disabled={leaving}
+                disabled={leaving || blocked}
                 aria-busy={leaving || undefined}
               >
                 {leaving && <Spinner size={16} />}

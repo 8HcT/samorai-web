@@ -16,6 +16,7 @@ import { AdminPageSkeleton } from '~/components/admin/AdminSkeletons';
 import { useDelayed } from '~/components/ui/useDelayed';
 import {
   IconBatches,
+  IconCatalog,
   IconExternal,
   IconMail,
   IconOrders,
@@ -67,6 +68,7 @@ const NAV: NavItem[] = [
   { to: '/admin/tiradas', label: 'Tiradas', end: false, presale: true, icon: <IconBatches /> },
   { to: '/admin/reservas', label: 'Reservas', end: false, presale: true, icon: <IconReservations /> },
   { to: '/admin/pedidos', label: 'Pedidos', end: false, presale: false, icon: <IconOrders /> },
+  { to: '/admin/catalogo', label: 'Catálogo', end: false, presale: false, icon: <IconCatalog /> },
   { to: '/admin/precios', label: 'Precios', end: false, presale: false, icon: <IconPrices /> },
   { to: '/admin/correos', label: 'Correos', end: false, presale: true, desktopOnly: true, icon: <IconMail /> },
   { to: '/admin/estado', label: 'Estado', end: false, presale: false, icon: <IconStatus /> },

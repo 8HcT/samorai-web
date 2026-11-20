@@ -7,6 +7,7 @@ import { useLocale, useLocalePath, useT } from '~/i18n/useT';
 import { ProductMedia, FINISH_SWATCH_CLASS as PLACEHOLDER_CLASS } from './ProductMedia';
 import { PriceTag, PromoBadge } from './PriceTag';
 import type { VariantPrice } from '~/lib/pricing';
+import type { LabelCode } from '~/lib/catalog';
 
 interface ProductCardProps {
   product: Product;
@@ -18,11 +19,23 @@ interface ProductCardProps {
   finish?: ProductFinish;
   /** Precio más bajo vigente (con promoción si la hay). Sin él, `priceLabel`. */
   price?: VariantPrice | null;
-  /** Etiqueta puesta desde /admin para este acabado («Nuevo»…). */
-  label?: string | null;
+  /** Etiquetas del acabado (las del panel y las automáticas de stock). */
+  labels?: LabelCode[];
 }
 
-export function ProductCard({ product, activeColor, finish, price, label }: ProductCardProps) {
+/** Clase de cada etiqueta: la del panel en dorado; las de stock, aparte. */
+export const LABEL_CLASS: Record<LabelCode, string> = {
+  new: 'badge-new',
+  premium: 'badge-new',
+  best_seller: 'badge-new',
+  limited: 'badge-new',
+  exclusive: 'badge-new',
+  back_in_stock: 'badge-new',
+  last_units: 'badge-low',
+  sold_out: 'badge-soldout',
+};
+
+export function ProductCard({ product, activeColor, finish, price, labels = [] }: ProductCardProps) {
   // Hover largo (~3 s) → cambia a la imagen secundaria del acabado.
   const [showSecondary, setShowSecondary] = useState(false);
   const timer = useRef<number | null>(null);
@@ -54,9 +67,10 @@ export function ProductCard({ product, activeColor, finish, price, label }: Prod
     );
     const src =
       showSecondary && finish.images[1] ? finish.images[1] : finish.images[0];
+    const soldOut = labels.includes('sold_out');
     return (
       <Link prefetch="intent"
-        className="pcard"
+        className={`pcard${soldOut ? ' pcard--soldout' : ''}`}
         to={lp(`/the-wheels/${product.slug}?finish=${finish.id}`)}
         aria-label={`${product.model} — ${finishName(finish)}`}
         onMouseEnter={() => onEnter(finish.images)}
@@ -64,11 +78,13 @@ export function ProductCard({ product, activeColor, finish, price, label }: Prod
       >
         <div className="ph">
           <ProductMedia color={finish.color} src={src} alt={`${product.model} — ${finishName(finish)}`} />
-          {/* Etiqueta del panel + la de la promoción activa (automática). */}
-          {(label || price?.promotion) && (
+          {/* Etiquetas del panel, de stock y la de la promoción activa (automáticas). */}
+          {(labels.length > 0 || (price?.promotion && !soldOut)) && (
             <div className="badges">
-              {label && <span className="badge badge-new">{label}</span>}
-              {price?.promotion && <PromoBadge promotion={price.promotion} />}
+              {labels.map((code) => (
+                <span key={code} className={`badge ${LABEL_CLASS[code]}`}>{t.labels[code]}</span>
+              ))}
+              {price?.promotion && !soldOut && <PromoBadge promotion={price.promotion} />}
             </div>
           )}
           <div className="ov">

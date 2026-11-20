@@ -11,6 +11,10 @@ import { adminRpc, isPresaleDbConfigured } from '~/lib/presale/rpc.server';
 import { recordOrder, type OrderAddress, type OrderLineRecord, type OrderRecord } from './orders.server';
 import { TEST_PRICE_CENTS, TEST_PRODUCT_NAME, isTestVariantId } from './test-purchase';
 import { shippingReviewReason } from '~/lib/shipping';
+import { commitStock, extendStock } from '~/lib/catalog.server';
+
+/** Pago diferido: lo apartado se guarda hasta 7 días mientras el banco confirma. */
+const DEFERRED_HOLD_MS = 7 * 24 * 3600_000;
 
 /**
  * Reconstruye las líneas desde `metadata.cart`:
@@ -73,15 +77,29 @@ export function sessionAddresses(session: Stripe.Checkout.Session): {
 }
 
 export async function processCartSession(session: Stripe.Checkout.Session): Promise<void> {
+  const parsed = parseCartMeta(session.metadata?.cart);
+  // La sesión la crea siempre nuestro servidor: el metadato no lo puede poner el cliente.
+  const isTest = session.metadata?.test === '1' || parsed.some((l) => isTestVariantId(l.variantId));
+
   // Solo se registra y se avisa cuando el pago está efectivamente cobrado.
   if (session.payment_status !== 'paid') {
+    // Pago diferido (el banco aún confirma): lo apartado se mantiene.
+    const key = session.metadata?.stock_key;
+    if (key && session.status === 'complete') await extendStock(key, new Date(Date.now() + DEFERRED_HOLD_MS));
     console.log('[stripe][webhook] sesión sin cobrar todavía, se ignora', session.id, session.payment_status);
     return;
   }
 
-  const parsed = parseCartMeta(session.metadata?.cart);
-  // La sesión la crea siempre nuestro servidor: el metadato no lo puede poner el cliente.
-  const isTest = session.metadata?.test === '1' || parsed.some((l) => isTestVariantId(l.variantId));
+  // Stock: se descuenta antes de registrar el pedido y una sola vez por
+  // sesión y referencia (un reintento de Stripe no descuenta dos veces).
+  // Las sesiones anteriores al control de stock usan su propio id de clave.
+  const stockItems = isTest
+    ? []
+    : parsed.filter((l) => !isTestVariantId(l.variantId)).map((l) => ({ variantId: l.variantId, quantity: l.quantity }));
+  const { oversold } = await commitStock(session.metadata?.stock_key || session.id, stockItems);
+  const stockReason = oversold.length
+    ? `Sin stock suficiente al cobrar: ${oversold.map((o) => `${o.variantId} (faltan ${o.missing})`).join(', ')}. Comprueba si se puede servir o devuelve el pago.`
+    : null;
 
   const lines: OrderLineRecord[] = parsed.map((l) => {
     if (isTestVariantId(l.variantId)) {
@@ -133,7 +151,7 @@ export async function processCartSession(session: Stripe.Checkout.Session): Prom
     createdAt: new Date().toISOString(),
     isTest,
     // Canarias, Ceuta, Melilla, Madeira, Azores: se cobra, pero hay que revisarlo antes de enviar.
-    reviewReason: isTest ? null : shippingReviewReason(shippingAddress),
+    reviewReason: isTest ? null : [shippingReviewReason(shippingAddress), stockReason].filter(Boolean).join(' · ').slice(0, 500) || null,
     locale: session.metadata?.locale === 'en' ? 'en' : 'es',
   };
 

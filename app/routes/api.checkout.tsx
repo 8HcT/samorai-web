@@ -4,7 +4,7 @@ import type Stripe from 'stripe';
 import { getStripe } from '~/lib/stripe/stripe.server';
 import { getVariantById, getFinish } from '~/data/products';
 import { CURRENCY, formatPrice } from '~/lib/money';
-import { priceVariant, type PricingSnapshot } from '~/lib/pricing';
+import { priceVariant, promoText, type PricingSnapshot } from '~/lib/pricing';
 import { loadPricing } from '~/lib/pricing.server';
 import { isTestVariantId } from '~/lib/orders/test-purchase';
 import { startTestCheckout } from '~/lib/orders/test-checkout.server';
@@ -13,6 +13,11 @@ import { formatSize, formatEt } from '~/lib/format';
 import { fallbackPriceCents, siteUrl } from '~/lib/env.server';
 import { shippingCheckoutParams } from '~/lib/stripe/checkout-options.server';
 import { isManagedByBatches } from '~/lib/presale/offers.server';
+import { newStockKey, releaseStock, reserveStock, type ReserveResult, type StockItem } from '~/lib/catalog.server';
+
+/** El pago de Stripe caduca a los 31 min; la reserva de stock, 15 min después (margen para el webhook). */
+const SESSION_TTL_MS = 31 * 60_000;
+const STOCK_HOLD_MS = SESSION_TTL_MS + 15 * 60_000;
 
 interface IncomingLine {
   variantId: string;
@@ -70,6 +75,7 @@ export async function action({ request }: Route.ActionArgs) {
   const summaryParts: string[] = [];
   let missingPrice = false;
   const managedChecked = new Map<string, boolean>();
+  const stockItems: StockItem[] = [];
 
   for (const line of lines) {
     const quantity = Math.max(1, Math.floor(Number(line.quantity) || 0));
@@ -109,6 +115,7 @@ export async function action({ request }: Route.ActionArgs) {
       `${product.model} ${finishEs} ${formatSize(variant.diameter, variant.width)} ${formatEt(variant.et)} ×${quantity}${promo ? ` (${promo.badge} -${promo.percentOff}%)` : ''}`
     );
     charged.push(`${variant.id}:${quantity}:${price.finalCents}`);
+    stockItems.push({ variantId: variant.id, quantity });
 
     // Siempre price_data: el importe puede cambiar desde /admin o por una
     // promoción, así que no se usan Prices fijos de Stripe.
@@ -119,12 +126,12 @@ export async function action({ request }: Route.ActionArgs) {
         // Importe FINAL con IVA incluido; sin impuesto añadido encima.
         unit_amount: price.finalCents,
         product_data: {
-          name: `${product.name} · ${finishName} · ${size} ${formatEt(variant.et)}${promo ? ` · ${promo.badge} −${promo.percentOff}%` : ''}`,
+          name: `${product.name} · ${finishName} · ${size} ${formatEt(variant.et)}${promo ? ` · ${promoText(promo, locale)} −${promo.percentOff}%` : ''}`,
           ...(promo
             ? {
                 description:
                   locale === 'en'
-                    ? `Previous price ${formatPrice(price.baseCents)} per wheel. ${promo.badge}: −${promo.percentOff}%.`
+                    ? `Previous price ${formatPrice(price.baseCents)} per wheel. ${promoText(promo, locale)}: −${promo.percentOff}%.`
                     : `Precio anterior ${formatPrice(price.baseCents)} por llanta. ${promo.badge}: −${promo.percentOff}%.`,
               }
             : {}),
@@ -149,6 +156,21 @@ export async function action({ request }: Route.ActionArgs) {
     return redirect('/cart?error=price');
   }
 
+  // Stock (/admin/catalogo): se aparta mientras el cliente paga, para no
+  // vender dos veces las últimas unidades. Si falta algo, vuelve al carrito,
+  // que marca qué líneas revisar. Ante un fallo de la base de datos no se
+  // cobra: mejor eso que vender algo que no hay.
+  const stockKey = newStockKey();
+  const startedAt = Date.now();
+  let reservation: ReserveResult;
+  try {
+    reservation = await reserveStock(stockKey, stockItems, new Date(startedAt + STOCK_HOLD_MS));
+  } catch (err) {
+    console.error('[checkout] no se pudo comprobar el stock', err);
+    return redirect('/cart?error=stock_check');
+  }
+  if (!reservation.ok) return redirect('/cart?error=stock');
+
   try {
     const stripe = getStripe();
     const base = siteUrl();
@@ -158,6 +180,9 @@ export async function action({ request }: Route.ActionArgs) {
       line_items: lineItems,
       success_url: `${base}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${base}/cancel`,
+      // Con stock apartado, el pago caduca antes que la reserva (Stripe
+      // admite 30 min como mínimo). Sin stock controlado, 24 h como siempre.
+      ...(reservation.held > 0 ? { expires_at: Math.floor((startedAt + SESSION_TTL_MS) / 1000) } : {}),
       ...shippingCheckoutParams(locale),
       automatic_tax: { enabled: false }, // activar tras configurar Stripe Tax
       // El resumen también en el pago, para verlo desde el dashboard de Stripe.
@@ -176,13 +201,19 @@ export async function action({ request }: Route.ActionArgs) {
         itemCount: String(lines.reduce((s, l) => s + (Number(l.quantity) || 0), 0)),
         // Idioma del correo de confirmación al cliente.
         locale,
+        // Reserva de stock: el webhook la convierte en venta o la libera.
+        stock_key: stockKey,
       },
     });
 
-    if (!session.url) return redirect('/cart?error=stripe');
+    if (!session.url) {
+      await releaseStock(stockKey).catch(() => {});
+      return redirect('/cart?error=stripe');
+    }
     return redirect(session.url, 303);
   } catch (err) {
     console.error('[stripe][checkout] error', err);
+    await releaseStock(stockKey).catch(() => {});
     return redirect('/cart?error=stripe');
   }
 }

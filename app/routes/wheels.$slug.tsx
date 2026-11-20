@@ -10,11 +10,12 @@ import {
 import { trackEvent } from '~/lib/analytics/trackEvent';
 import { useCart } from '~/lib/cart/CartContext';
 import { formatPrice } from '~/lib/money';
-import { buildPriceBook, lowestPrice } from '~/lib/pricing';
+import { buildPriceBook, lowestPrice, promoText } from '~/lib/pricing';
 import { loadPricing } from '~/lib/pricing.server';
 import { PriceTag, PromoBadge } from '~/components/PriceTag';
-import { loadLabels } from '~/lib/labels.server';
-import { labelKey } from '~/lib/labels';
+import { loadCatalog } from '~/lib/catalog.server';
+import { finishSummary, publicVariantState, type LabelCode, type PublicVariantState } from '~/lib/catalog';
+import { LABEL_CLASS } from '~/components/ProductCard';
 import { formatSize, formatEt } from '~/lib/format';
 import { Button } from '~/components/Button';
 import { SpecList } from '~/components/SpecList';
@@ -47,7 +48,8 @@ const AVAILABILITY: Record<ProductOffer['mode'], string> = {
 export function meta(args: Route.MetaArgs) {
   const { data } = args;
   if (!data?.product) return [{ title: 'SAMORAI' }, { name: 'robots', content: 'noindex' }];
-  const { product, galleryImages, offer, priceBook } = data;
+  const { product, galleryImages, offer, priceBook, finishStates, variantStates } = data;
+  const shown = (finishId: string) => finishStates?.[finishId]?.visible !== false;
   const { origin, locale } = rootSeoData(args);
   const s = seoStrings(args);
 
@@ -60,7 +62,7 @@ export function meta(args: Route.MetaArgs) {
   const finishName = (id: string) => tr.finishNames[id] ?? product.finishes.find((f) => f.id === id)?.name ?? id;
   const finishImage = (id: string) =>
     absoluteUrl(origin, galleryImages[id]?.[0] ?? product.finishes.find((f) => f.id === id)?.images[0] ?? '');
-  const images = product.finishes.map((f) => finishImage(f.id));
+  const images = product.finishes.filter((f) => shown(f.id)).map((f) => finishImage(f.id));
   const path = localizePath(`/the-wheels/${product.slug}`, locale);
   const url = absoluteUrl(origin, path);
   // Si no se pudo leer el stock, mejor no declarar nada que declarar «agotado».
@@ -96,8 +98,13 @@ export function meta(args: Route.MetaArgs) {
         material: tr.product.specValues[product.specs.material] ?? product.specs.material,
         variesBy: ['https://schema.org/color', 'https://schema.org/size'],
         hasVariant: product.variants
-          .filter((v) => priceBook[v.id])
+          .filter((v) => priceBook[v.id] && shown(v.finishId))
           .map((v) => {
+            // Stock del panel: una referencia agotada o desactivada se declara sin stock.
+            const variantAvailability =
+              offer.mode === 'legacy' && variantStates?.[v.id]?.purchasable === false
+                ? 'https://schema.org/OutOfStock'
+                : availability;
             const p = priceBook[v.id];
             const size = `${formatSize(v.diameter, v.width, locale)} ${formatEt(v.et)}`;
             // Cada variante tiene su URL: la ficha la abre ya configurada.
@@ -117,7 +124,7 @@ export function meta(args: Route.MetaArgs) {
                 // Precio de promoción: vale hasta el fin de la promoción.
                 ...(p.promotion ? { priceValidUntil: p.promotion.endsAt.slice(0, 10) } : {}),
                 itemCondition: 'https://schema.org/NewCondition',
-                ...(availability ? { availability } : {}),
+                ...(variantAvailability ? { availability: variantAvailability } : {}),
                 shippingDetails,
                 seller: { '@id': `${origin}/#organization` },
               },
@@ -145,15 +152,27 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   }
   // Tirada de fabricación y stock REAL (PostgreSQL, en cada petición). Sin
   // tirada → la ficha funciona con el carrito como siempre.
-  const [offer, session, pricing, labels] = await Promise.all([
+  const [offer, session, pricing, catalog] = await Promise.all([
     getProductOffer(product),
     getSessionUser(request),
     loadPricing(),
-    loadLabels(),
+    loadCatalog(),
   ]);
   const priceBook = buildPriceBook(pricing, [product]);
+  // Lo que se publica del catálogo: acabados visibles con sus etiquetas y,
+  // por referencia, si se puede comprar (sin revelar el stock si sobra).
+  const finishStates: Record<string, { visible: boolean; soldOut: boolean; labels: LabelCode[] }> = {};
+  for (const f of product.finishes) {
+    const { visible, soldOut, labels } = finishSummary(catalog, product, f.id);
+    finishStates[f.id] = { visible, soldOut, labels };
+  }
+  if (!product.finishes.some((f) => finishStates[f.id].visible)) {
+    throw new Response('Product not found', { status: 404 });
+  }
+  const variantStates: Record<string, PublicVariantState> = {};
+  for (const v of product.variants) variantStates[v.id] = publicVariantState(catalog, product.slug, v);
   return data(
-    { product, galleryImages, offer, priceBook, labels: labels.labels, userEmail: session.user?.email ?? null },
+    { product, galleryImages, offer, priceBook, finishStates, variantStates, userEmail: session.user?.email ?? null },
     { headers: session.auth?.headers }
   );
 }
@@ -164,7 +183,9 @@ export async function action({ request, params }: Route.ActionArgs) {
 }
 
 export default function WheelDetail({ loaderData }: Route.ComponentProps) {
-  const { product, galleryImages, offer, priceBook, labels, userEmail } = loaderData;
+  const { product, galleryImages, offer, priceBook, finishStates, variantStates, userEmail } = loaderData;
+  // Solo los acabados que el panel deja ver.
+  const finishes = product.finishes.filter((f) => finishStates[f.id]?.visible !== false);
   const t = useT();
   const locale = useLocale();
   const lp = useLocalePath();
@@ -176,7 +197,7 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
 
   // Acabado preseleccionado vía ?finish=<id> (desde la lista de /the-wheels).
   const finishFromUrl = searchParams.get('finish');
-  const initialFinishId = product.finishes.some((f) => f.id === finishFromUrl)
+  const initialFinishId = finishes.some((f) => f.id === finishFromUrl)
     ? finishFromUrl
     : null;
 
@@ -203,8 +224,7 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
   // Lightbox de zoom sobre la imagen grande.
   const [zoomOpen, setZoomOpen] = useState(false);
 
-  const previewFinish =
-    product.finishes.find((f) => f.id === finishId) ?? product.finishes[0];
+  const previewFinish = finishes.find((f) => f.id === finishId) ?? finishes[0];
 
   // Imágenes de la galería del acabado activo (las reales de la carpeta, o la
   // lista por defecto si el loader no pudo leerla).
@@ -270,6 +290,23 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
     [product, finishId, width, et]
   );
 
+  // Stock de la referencia elegida (panel /admin/catalogo).
+  const variantState = variant ? variantStates[variant.id] : undefined;
+  const canBuy = variant != null && variantState?.purchasable !== false;
+  const maxQty = variantState?.left ?? null;
+  const finishSoldOut = finishId != null && finishStates[finishId]?.soldOut === true;
+  // Una medida se puede elegir si alguna de sus referencias se puede comprar.
+  const widthBuyable = (w: number) =>
+    product.variants.some((v) => v.finishId === finishId && v.width === w && variantStates[v.id]?.purchasable !== false);
+  const etBuyable = (value: number) => {
+    const v = finishId && width != null ? findExactVariant(product, finishId, width, value) : undefined;
+    return v ? variantStates[v.id]?.purchasable !== false : false;
+  };
+  // No dejar pedir más de las que quedan.
+  useEffect(() => {
+    if (maxQty != null && maxQty > 0) setQuantity((q) => Math.min(q, maxQty));
+  }, [maxQty]);
+
   // "Desde X €" = precio mínimo (a pagar) entre las referencias del acabado
   // elegido, o de todo el modelo si aún no hay acabado.
   const fromPrice = useMemo(
@@ -314,7 +351,7 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
   }
 
   function handleAddToCart() {
-    if (!variant) return;
+    if (!variant || !canBuy) return;
     add(variant.id, quantity);
     trackEvent('add_to_cart_clicked', { productId: product.id, variantId: variant.id, quantity });
     setAdded(true);
@@ -363,7 +400,7 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
             <div className="gallery">
               {/* Selector visual de acabado (discos de color) */}
               <div className="thumbs thumbs--finish" role="list" aria-label={t.product.selectFinishAria}>
-                {product.finishes.map((f) => (
+                {finishes.map((f) => (
                   <button
                     key={f.id}
                     role="listitem"
@@ -394,10 +431,12 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
                   <span className="main__zoom-icon" />
                   {t.product.zoom}
                 </span>
-                {/* Etiqueta puesta desde /admin para el acabado que se está viendo. */}
-                {labels[labelKey(product.slug, previewFinish.id)] && (
+                {/* Etiquetas del acabado que se está viendo (panel y stock). */}
+                {(finishStates[previewFinish.id]?.labels.length ?? 0) > 0 && (
                   <span className="badges" style={{ position: 'absolute', top: '14px', left: '14px', zIndex: 2 }}>
-                    <span className="badge badge-new">{labels[labelKey(product.slug, previewFinish.id)]}</span>
+                    {finishStates[previewFinish.id].labels.map((code) => (
+                      <span key={code} className={`badge ${LABEL_CLASS[code]}`}>{t.labels[code]}</span>
+                    ))}
                   </span>
                 )}
               </button>
@@ -462,16 +501,17 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
                 )}
               </p>
               <div className="pills" role="group" aria-label={t.product.selectFinishAria}>
-                {product.finishes.map((f) => (
+                {finishes.map((f) => (
                   <button
                     key={f.id}
-                    className={`pill pill--finish${f.id === finishId ? ' active' : ''}`}
+                    className={`pill pill--finish${f.id === finishId ? ' active' : ''}${finishStates[f.id]?.soldOut ? ' pill--soldout' : ''}`}
                     onClick={() => handleFinishSelect(f.id)}
                     aria-pressed={f.id === finishId}
-                    aria-label={finishName(f)}
+                    aria-label={finishStates[f.id]?.soldOut ? `${finishName(f)} — ${t.product.soldOut}` : finishName(f)}
                   >
                     <FinishDot color={f.color} />
                     {finishName(f)}
+                    {finishStates[f.id]?.soldOut && <span className="pill__note">{t.product.soldOut}</span>}
                   </button>
                 ))}
               </div>
@@ -482,16 +522,21 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
               <div className="product-detail__color-selector">
                 <p className="product-detail__option-title"><span className="config-step" aria-hidden="true">2</span>{t.product.size}</p>
                 <div className="pills" role="group" aria-label={t.product.selectSizeAria}>
-                  {widths.map((w) => (
-                    <button
-                      key={w}
-                      className={`pill${w === width ? ' active' : ''}`}
-                      onClick={() => handleWidthSelect(w)}
-                      aria-pressed={w === width}
-                    >
-                      {formatSize(18, w, locale)}
-                    </button>
-                  ))}
+                  {widths.map((w) => {
+                    const buyable = widthBuyable(w);
+                    return (
+                      <button
+                        key={w}
+                        className={`pill${w === width ? ' active' : ''}${buyable ? '' : ' pill--soldout'}`}
+                        onClick={() => handleWidthSelect(w)}
+                        aria-pressed={w === width}
+                        aria-label={buyable ? undefined : `${formatSize(18, w, locale)} — ${t.product.soldOut}`}
+                      >
+                        {formatSize(18, w, locale)}
+                        {!buyable && <span className="pill__note">{t.product.soldOut}</span>}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -501,16 +546,21 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
               <div className="product-detail__color-selector">
                 <p className="product-detail__option-title"><span className="config-step" aria-hidden="true">3</span>{t.product.offset}</p>
                 <div className="pills" role="group" aria-label={t.product.selectEtAria}>
-                  {ets.map((value) => (
-                    <button
-                      key={value}
-                      className={`pill${value === et ? ' active' : ''}`}
-                      onClick={() => handleEtSelect(value)}
-                      aria-pressed={value === et}
-                    >
-                      {formatEt(value)}
-                    </button>
-                  ))}
+                  {ets.map((value) => {
+                    const buyable = etBuyable(value);
+                    return (
+                      <button
+                        key={value}
+                        className={`pill${value === et ? ' active' : ''}${buyable ? '' : ' pill--soldout'}`}
+                        onClick={() => handleEtSelect(value)}
+                        aria-pressed={value === et}
+                        aria-label={buyable ? undefined : `${formatEt(value)} — ${t.product.soldOut}`}
+                      >
+                        {formatEt(value)}
+                        {!buyable && <span className="pill__note">{t.product.soldOut}</span>}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -540,9 +590,12 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
                     <PriceTag price={unitPrice} quantity={quantity} wasLabel={t.product.was} className="product-detail__summary-total" />
                     <span className="product-detail__summary-detail">
                       {quantity} × {formatPrice(unitPrice.finalCents)} · {t.product.vatIncluded}
-                      {unitPrice.promotion ? ` · ${unitPrice.promotion.badge} −${unitPrice.promotion.percentOff}%` : ''}
+                      {unitPrice.promotion ? ` · ${promoText(unitPrice.promotion, locale)} −${unitPrice.promotion.percentOff}%` : ''}
                       {variant ? '' : t.product.chooseEt}
                     </span>
+                    {variant && canBuy && variantState?.low && maxQty != null && (
+                      <span className="product-detail__stock product-detail__stock--low">{fill(t.product.onlyLeft, { n: String(maxQty) })}</span>
+                    )}
                   </>
                 ) : (
                   <span className="product-detail__summary-detail">{t.product.selectSizeForPrice}</span>
@@ -556,16 +609,24 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
                 <div className="config-qty" aria-label={t.product.quantity}>
                   <button className="config-qty__btn" onClick={() => setQuantity((q) => Math.max(1, q - 1))} aria-label={t.product.decrease}>−</button>
                   <span className="config-qty__count" aria-live="polite">{quantity}</span>
-                  <button className="config-qty__btn" onClick={() => setQuantity((q) => q + 1)} aria-label={t.product.increase}>+</button>
+                  <button
+                    className="config-qty__btn"
+                    onClick={() => setQuantity((q) => (maxQty != null ? Math.min(q + 1, maxQty) : q + 1))}
+                    disabled={maxQty != null && quantity >= maxQty}
+                    title={maxQty != null && quantity >= maxQty ? t.product.maxQtyReached : undefined}
+                    aria-label={t.product.increase}
+                  >
+                    +
+                  </button>
                 </div>
                 <Button
                   variant="primary"
                   size="large"
                   className="product-detail__add-to-cart"
                   onClick={handleAddToCart}
-                  disabled={!variant}
+                  disabled={!canBuy}
                 >
-                  {added ? t.product.added : t.product.addToCart}
+                  {variant && !canBuy ? t.product.soldOut : added ? t.product.added : t.product.addToCart}
                 </Button>
               </div>
             ) : (
@@ -579,6 +640,12 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
                 </span>
                 <Link prefetch="intent" to="/cart" className="btn btn-outline btn-sm">{t.product.viewCart}</Link>
               </div>
+            )}
+            {offer.mode === 'legacy' && ((variant && !canBuy) || (finishSoldOut && !variant)) && (
+              <p className="product-detail__stock product-detail__stock--out" role="status">
+                {finishSoldOut ? t.product.soldOutFinish : t.product.soldOutVariant}{' '}
+                <Link to={lp('/contacto')}>{t.product.askRestock}</Link>
+              </p>
             )}
             {offer.mode === 'legacy' && (
               <p className="product-detail__note">
@@ -643,8 +710,8 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
             )}
           </div>
           {variant ? (
-            <button type="button" className="btn btn-primary" onClick={handleAddToCart} tabIndex={buyVisible ? -1 : undefined}>
-              {added ? t.product.added : t.product.addToCart}
+            <button type="button" className="btn btn-primary" onClick={handleAddToCart} disabled={!canBuy} tabIndex={buyVisible ? -1 : undefined}>
+              {!canBuy ? t.product.soldOut : added ? t.product.added : t.product.addToCart}
             </button>
           ) : (
             <button

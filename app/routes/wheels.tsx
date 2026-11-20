@@ -7,8 +7,8 @@ import { ProductCard } from '~/components/ProductCard';
 import { useT } from '~/i18n/useT';
 import { buildPriceBook, lowestPrice } from '~/lib/pricing';
 import { loadPricing } from '~/lib/pricing.server';
-import { loadLabels } from '~/lib/labels.server';
-import { labelKey } from '~/lib/labels';
+import { loadCatalog } from '~/lib/catalog.server';
+import { finishKey, finishSummary, type FinishSummary } from '~/lib/catalog';
 
 export function meta(args: Route.MetaArgs) {
   const s = seoStrings(args).wheels;
@@ -16,8 +16,16 @@ export function meta(args: Route.MetaArgs) {
 }
 
 export async function loader() {
-  const [pricing, labels] = await Promise.all([loadPricing(), loadLabels()]);
-  return { products, priceBook: buildPriceBook(pricing, products), labels: labels.labels };
+  const [pricing, catalog] = await Promise.all([loadPricing(), loadCatalog()]);
+  // Estado de cada acabado (visible, etiquetas): sin publicar el stock exacto.
+  const finishStates: Record<string, Pick<FinishSummary, 'visible' | 'labels'>> = {};
+  for (const product of products.filter((p) => p.status === 'active')) {
+    for (const finish of product.finishes) {
+      const { visible, labels } = finishSummary(catalog, product, finish.id);
+      finishStates[finishKey(product.slug, finish.id)] = { visible, labels };
+    }
+  }
+  return { products, priceBook: buildPriceBook(pricing, products), finishStates };
 }
 
 export default function Wheels({ loaderData }: Route.ComponentProps) {
@@ -27,8 +35,12 @@ export default function Wheels({ loaderData }: Route.ComponentProps) {
     trackEvent('wheels_page_viewed', {});
   }, []);
 
-  // Producto activo (Victoria). Cada acabado se presenta como un "modelo".
+  // Producto activo (Victoria). Cada acabado se presenta como un "modelo";
+  // solo los que el panel deja ver.
   const product = loaderData.products.find((p) => p.status === 'active');
+  const finishes = product
+    ? product.finishes.filter((f) => loaderData.finishStates[finishKey(product.slug, f.id)]?.visible !== false)
+    : [];
 
   return (
     <>
@@ -38,9 +50,9 @@ export default function Wheels({ loaderData }: Route.ComponentProps) {
 
       <div className="section">
       <div className="container">
-        {product ? (
+        {product && finishes.length > 0 ? (
           <div className="product-grid product-grid--models">
-            {product.finishes.map((finish) => (
+            {finishes.map((finish) => (
               <ProductCard
                 key={finish.id}
                 product={product}
@@ -48,15 +60,15 @@ export default function Wheels({ loaderData }: Route.ComponentProps) {
                 price={lowestPrice(
                   product.variants.filter((v) => v.finishId === finish.id).map((v) => loaderData.priceBook[v.id])
                 )}
-                label={loaderData.labels[labelKey(product.slug, finish.id)]}
+                labels={loaderData.finishStates[finishKey(product.slug, finish.id)]?.labels ?? []}
               />
             ))}
           </div>
         ) : (
           <div className="empty-state">
             <div className="empty-state__icon" aria-hidden="true">○</div>
-            <h3>Nothing here yet</h3>
-            <p>No hay productos disponibles todavía.</p>
+            <h3>{w.emptyTitle}</h3>
+            <p>{w.emptyBody}</p>
           </div>
         )}
         </div>

@@ -2809,3 +2809,48 @@
   font-size: 12px;
   font-weight: 700;
 }
+
+/* Etiquetas automáticas de stock (sobre la foto, siempre fondo blanco) */
+.badge-soldout { background: #1D1D1D; color: #EDEDED; }
+.badge-low     { background: #FFFFFF; color: #1D1D1D; border: 1px solid #1D1D1D; }
+/* Acabado agotado: foto apagada; la tarjeta sigue enlazando a la ficha. */
+.pcard--soldout .ph img { filter: grayscale(0.6); opacity: 0.6; }
+
+/* Carrito: línea agotada o con más unidades de las que quedan */
+.cart-item--problem { border-left: 3px solid #b42318; padding-left: var(--space-4); }
+.cart-item__problem {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: #b42318;
+}
+:root[data-theme='dark'] .cart-item__problem { color: #ff8a80; }
+.cart-item__fix {
+  font: inherit;
+  font-size: var(--text-xs);
+  padding: 6px 12px;
+  border: 1px solid currentColor;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.cart-item__qty-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.cart-blocked { margin: 0 0 var(--space-3); font-size: var(--text-sm); color: var(--color-text-secondary); }
+
+/* Ficha: medidas o acabados agotados y avisos de stock */
+.pill--soldout { opacity: 0.6; border-style: dashed; }
+.pill__note {
+  margin-left: 6px;
+  font-size: 0.85em;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+}
+.product-detail__stock { display: block; margin-top: var(--space-2); font-size: var(--text-sm); font-weight: 600; }
+.product-detail__stock--low { color: var(--accent-ink); }
+.product-detail__stock--out { color: var(--color-text-primary); margin: var(--space-4) 0 0; }
+.product-detail__stock--out a { color: var(--accent-ink); }
+.config-qty__btn:disabled { opacity: 0.35; cursor: not-allowed; }

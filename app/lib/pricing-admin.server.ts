@@ -3,7 +3,7 @@
  * Solo servidor; cada action comprueba antes `requireAdmin`.
  */
 import { products } from '~/data/products';
-import { adminRpc, type Rpc } from '~/lib/presale/rpc.server';
+import { adminRpc, isSchemaMissingError, type Rpc } from '~/lib/presale/rpc.server';
 import { eurosToCents, madridLocalToUtcIso } from '~/lib/presale/datetime';
 import { priceKey, unitPriceCentsForWidth } from './pricing';
 import { invalidatePricingCache } from './pricing.server';
@@ -12,6 +12,7 @@ export interface PromotionRow {
   id: string;
   name: string;
   badge: string;
+  badge_en?: string | null;
   percent_off: number;
   starts_at: string;
   ends_at: string;
@@ -95,6 +96,7 @@ export function parsePromotionForm(form: FormData): { fields: Record<string, unk
   const errors: string[] = [];
   const name = String(form.get('name') ?? '').trim();
   const badge = String(form.get('badge') ?? '').trim() || name;
+  const badgeEn = String(form.get('badge_en') ?? '').trim();
   const percent = Number.parseInt(String(form.get('percent_off') ?? ''), 10);
   const startsAt = madridLocalToUtcIso(String(form.get('starts_at') ?? ''));
   const endsAt = madridLocalToUtcIso(String(form.get('ends_at') ?? ''));
@@ -108,6 +110,7 @@ export function parsePromotionForm(form: FormData): { fields: Record<string, unk
 
   if (!name || name.length > 80) errors.push('Pon un nombre (máx. 80 caracteres).');
   if (badge.length > 40) errors.push('La etiqueta admite como mucho 40 caracteres.');
+  if (badgeEn.length > 40) errors.push('La etiqueta en inglés admite como mucho 40 caracteres.');
   if (!Number.isInteger(percent) || percent < 1 || percent > 90) errors.push('El descuento debe estar entre 1 y 90 %.');
   if (!startsAt || !endsAt) errors.push('Indica la fecha y hora de inicio y de fin.');
   else if (new Date(endsAt) <= new Date(startsAt)) errors.push('La fecha de fin debe ser posterior a la de inicio.');
@@ -121,6 +124,7 @@ export function parsePromotionForm(form: FormData): { fields: Record<string, unk
     fields: {
       name,
       badge,
+      badge_en: badgeEn || null,
       percent_off: percent,
       starts_at: startsAt,
       ends_at: endsAt,
@@ -133,7 +137,18 @@ export function parsePromotionForm(form: FormData): { fields: Record<string, unk
 }
 
 export async function savePromotion(id: string | null, fields: Record<string, unknown>, actor: string, rpc: Rpc = adminRpc) {
-  const res = await rpc<Result>('pricing_admin_save_promotion', { p_id: id, p_fields: fields, p_actor: actor });
+  const { badge_en: badgeEn, ...rest } = fields;
+  const res = await rpc<Result>('pricing_admin_save_promotion', { p_id: id, p_fields: rest, p_actor: actor });
+  // La etiqueta en inglés va aparte (columna añadida con el catálogo). Sin
+  // esa migración se guarda la promoción igualmente, solo en castellano.
+  const savedId = res.ok ? String((res as { id?: string }).id ?? id ?? '') : '';
+  if (savedId) {
+    try {
+      await rpc('pricing_admin_set_promotion_badge_en', { p_id: savedId, p_badge_en: badgeEn ?? null, p_actor: actor });
+    } catch (err) {
+      if (!isSchemaMissingError(err)) console.error('[pricing] etiqueta en inglés no guardada', err);
+    }
+  }
   invalidatePricingCache();
   return res;
 }

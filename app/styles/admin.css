@@ -1008,8 +1008,6 @@ fieldset.admin-form-row {
 /* Fila de edición de precio (formulario en línea) */
 .price-edit { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .price-edit .admin-field { width: 9.5em; }
-/* Etiquetas: caben 24 caracteres («Últimas unidades»…). */
-.price-edit--label .admin-field { width: min(16em, 100%); }
 .price-edit__state { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8125rem; font-weight: 600; }
 .price-edit__state--ok { color: var(--tone-good); }
 .price-edit__state--error { color: var(--tone-critical); }
@@ -1138,4 +1136,19 @@ fieldset.admin-form-row {
 .preset-chip:disabled { opacity: 0.45; cursor: not-allowed; }
 @media (max-width: 860px) {
   .preset-chip { min-height: 40px; padding-inline: 14px; }
+}
+
+/* ---------- Catálogo (stock, visibilidad y etiquetas) ---------- */
+.catalog-summary { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.catalog-finish { padding: 20px 24px 16px; display: grid; gap: 16px; border-bottom: 1px solid var(--a-border); }
+.catalog-finish__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
+.catalog-finish__head h2 { display: inline-flex; align-items: center; gap: 10px; margin: 0; }
+.catalog-finish__state { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.catalog-badges { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+.catalog-finish-form { display: grid; gap: 14px; }
+.catalog-label-field { max-width: 26rem; }
+.catalog-stock-field { width: 8.5em; }
+.catalog-active { min-height: 40px; }
+@media (max-width: 860px) {
+  .catalog-finish { padding: 16px; }
 }

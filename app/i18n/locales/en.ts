@@ -92,12 +92,25 @@ export const en = {
     quoteAccent: 'We choose to listen.',
   },
   wheels: {
+    emptyTitle: 'No wheels on sale right now',
+    emptyBody: 'Come back soon or write to us and we will tell you when they arrive.',
     heroEyebrow: 'The Wheels',
     heroTitle: 'Our products',
     heroSubtitle:
       'We design wheels for those who turn every decision behind the wheel into a statement of character.',
     configure: 'Configure →',
     viewProduct: 'View product →',
+  },
+  /** Product labels (chosen in /admin/catalogo; their text lives here). */
+  labels: {
+    new: 'New',
+    premium: 'Premium',
+    best_seller: 'Best seller',
+    limited: 'Limited edition',
+    exclusive: 'Exclusive',
+    last_units: 'Last units',
+    back_in_stock: 'Back in stock',
+    sold_out: 'Sold out',
   },
   product: {
     description:
@@ -131,6 +144,12 @@ export const en = {
     addToCart: 'Add to cart',
     added: 'Added ✓',
     addedTitle: 'Added to your cart',
+    soldOut: 'Sold out',
+    onlyLeft: '{n} left',
+    soldOutVariant: 'This size is sold out right now.',
+    soldOutFinish: 'This finish is sold out right now.',
+    askRestock: 'Write to us and we will let you know when it is back',
+    maxQtyReached: 'There are no more units of this size.',
     viewCart: 'View cart',
     stickyChoose: 'Choose finish and size',
     stickyTotal: 'Total',
@@ -160,6 +179,11 @@ export const en = {
   } as Record<string, string>,
   cart: {
     redirecting: 'Opening secure checkout…',
+    lineSoldOut: 'Sold out. Remove it from the cart to pay.',
+    lineUnavailable: 'No longer available. Remove it from the cart to pay.',
+    lineOnlyLeft: 'Only {n} left.',
+    adjustTo: 'Keep {n}',
+    fixLines: 'Check the marked wheels to pay.',
     loadingCart: 'Loading your cart…',
     eyebrow: 'Your selection',
     title: 'Cart',
@@ -187,6 +211,8 @@ export const en = {
       empty: 'Your cart is empty.',
       price: 'An item does not have a price yet. Please try again later.',
       stripe: 'The payment could not be started. Please try again in a few minutes.',
+      stock: 'Some wheels in your cart no longer have enough stock. Check the marked lines.',
+      stock_check: 'We could not check the stock right now. Please try again in a few seconds.',
       managed:
         'Victoria wheels are now sold in sets of 4 from their product page (pre-order or direct purchase with limited stock). Remove the item from the cart and reserve or buy it from the product page.',
     } as Record<string, string>,

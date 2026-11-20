@@ -1,11 +1,13 @@
 import { formatPrice } from '~/lib/money';
-import type { AppliedPromotion, VariantPrice } from '~/lib/pricing';
+import { promoText, type AppliedPromotion, type VariantPrice } from '~/lib/pricing';
+import { useLocale } from '~/i18n/useT';
 
-/** Etiqueta de la promoción: «Black Friday −20 %». */
+/** Etiqueta de la promoción en el idioma de la página: «Black Friday −20%». */
 export function PromoBadge({ promotion, className = '' }: { promotion: AppliedPromotion; className?: string }) {
+  const locale = useLocale();
   return (
     <span className={`badge badge-promo ${className}`.trim()}>
-      {promotion.badge} −{promotion.percentOff}%
+      {promoText(promotion, locale)} −{promotion.percentOff}%
     </span>
   );
 }

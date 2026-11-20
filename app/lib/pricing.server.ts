@@ -18,6 +18,7 @@ interface SnapshotRow {
     id: string;
     name: string;
     badge: string;
+    badge_en?: string | null;
     percent_off: number;
     starts_at: string;
     ends_at: string;
@@ -34,6 +35,7 @@ export function toPricingSnapshot(row: SnapshotRow | null | undefined): PricingS
     id: p.id,
     name: p.name,
     badge: p.badge,
+    badgeEn: p.badge_en ?? null,
     percentOff: p.percent_off,
     startsAt: p.starts_at,
     endsAt: p.ends_at,

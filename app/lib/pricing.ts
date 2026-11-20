@@ -34,6 +34,8 @@ export interface ActivePromotion {
   name: string;
   /** Texto de la etiqueta visible (p. ej. «Black Friday»). */
   badge: string;
+  /** La misma etiqueta en inglés; sin ella se usa `badge`. */
+  badgeEn?: string | null;
   percentOff: number;
   startsAt: string;
   endsAt: string;
@@ -53,8 +55,14 @@ export interface PricingSnapshot {
 export interface AppliedPromotion {
   id: string;
   badge: string;
+  badgeEn?: string | null;
   percentOff: number;
   endsAt: string;
+}
+
+/** Texto de la promoción en el idioma de la página («Black Friday» / «Sale»…). */
+export function promoText(promotion: Pick<AppliedPromotion, 'badge' | 'badgeEn'>, locale: string): string {
+  return locale === 'en' && promotion.badgeEn ? promotion.badgeEn : promotion.badge;
 }
 
 export interface VariantPrice {
@@ -122,7 +130,7 @@ export function priceVariant(
   return {
     baseCents,
     finalCents: applyPercentOff(baseCents, promo.percentOff),
-    promotion: { id: promo.id, badge: promo.badge, percentOff: promo.percentOff, endsAt: promo.endsAt },
+    promotion: { id: promo.id, badge: promo.badge, badgeEn: promo.badgeEn ?? null, percentOff: promo.percentOff, endsAt: promo.endsAt },
   };
 }
 

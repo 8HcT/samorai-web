@@ -17,6 +17,7 @@
 import type Stripe from 'stripe';
 import { dispatchNotifications } from '~/lib/email/outbox.server';
 import { processCartSession, sessionAddresses } from '~/lib/orders/cart-webhook.server';
+import { releaseStock } from '~/lib/catalog.server';
 import { adminRpc, isPresaleDbConfigured, isSchemaMissingError, type Rpc } from './rpc.server';
 
 export interface WebhookDeps {
@@ -24,6 +25,8 @@ export interface WebhookDeps {
   rpc: Rpc | null;
   dispatch: (ids: string[]) => Promise<unknown>;
   cartSession: (session: Stripe.Checkout.Session) => Promise<void>;
+  /** Pago del carrito caducado o fallido: libera el stock apartado. Devuelve cuántas líneas. */
+  cartSessionClosed?: (session: Stripe.Checkout.Session) => Promise<number>;
 }
 
 export function defaultWebhookDeps(): WebhookDeps {
@@ -31,6 +34,10 @@ export function defaultWebhookDeps(): WebhookDeps {
     rpc: isPresaleDbConfigured() ? adminRpc : null,
     dispatch: (ids) => dispatchNotifications({ ids }),
     cartSession: processCartSession,
+    cartSessionClosed: async (session) => {
+      const key = session.metadata?.stock_key;
+      return key ? releaseStock(key) : 0;
+    },
   };
 }
 
@@ -114,6 +121,9 @@ async function route(event: Stripe.Event, deps: WebhookDeps): Promise<{ outcome:
       const session = event.data.object as Stripe.Checkout.Session;
       const flow = session.metadata?.flow;
       if (!flow || !PRESALE_FLOWS.has(flow)) {
+        // Carrito: si tenía stock apartado, se libera para otros clientes.
+        const released = deps.cartSessionClosed ? await deps.cartSessionClosed(session) : 0;
+        if (released > 0) return { outcome: { status: 'processed', flow: 'cart', result: 'stock_released' }, notificationIds: none };
         return { outcome: { status: 'ignored', reason: 'not_presale' }, notificationIds: none };
       }
       if (!deps.rpc) throw new Error('Evento de preventa recibido sin Supabase configurado');

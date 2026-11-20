@@ -17,6 +17,9 @@ import { recipients } from '~/lib/email/email.server';
 import { sitemapPaths } from '~/lib/sitemap';
 import { supportedLocales } from '~/i18n/config';
 import { TEST_ORDER_CODE_PREFIX, isTestOrder } from '~/lib/orders/test-purchase';
+import { loadCatalogAdmin } from '~/lib/catalog.server';
+import { variantAvailability } from '~/lib/catalog';
+import { products } from '~/data/products';
 
 export type HealthStatus = 'ok' | 'warning' | 'error' | 'info';
 
@@ -135,6 +138,44 @@ async function checkPricing(now: Date): Promise<HealthCheck> {
     status: 'ok',
     detail: `${stored} precios guardados en /admin/precios. ${promo}`,
     at: active[0]?.endsAt ?? null,
+  };
+}
+
+/** Catálogo: tablas creadas y referencias agotadas o con pocas unidades. */
+async function checkCatalog(): Promise<HealthCheck> {
+  const id = 'catalog';
+  const title = 'Catálogo y stock';
+  const admin = await loadCatalogAdmin(adminRpc);
+  if (!admin.enabled) {
+    return {
+      id,
+      title,
+      status: 'warning',
+      detail: 'Faltan las tablas del catálogo: no hay control de stock ni etiquetas (se vende sin límite, como antes).',
+      hint: 'Pega supabase/migrations/20261120100000_catalog_control.sql en el SQL Editor de Supabase.',
+    };
+  }
+  const cat = admin.snapshot;
+  const states = products
+    .filter((p) => p.status === 'active')
+    .flatMap((p) => p.variants.map((v) => variantAvailability(cat, p.slug, v)));
+  const soldOut = states.filter((s) => s.reason === 'sold_out').length;
+  const low = states.filter((s) => s.low).length;
+  const tracked = states.filter((s) => s.available != null || s.reason === 'sold_out').length;
+  if (soldOut > 0 || low > 0) {
+    return {
+      id,
+      title,
+      status: 'warning',
+      detail: `${soldOut} referencia(s) agotada(s) y ${low} con pocas unidades.`,
+      hint: 'Revisa el stock en /admin/catalogo.',
+    };
+  }
+  return {
+    id,
+    title,
+    status: 'ok',
+    detail: tracked > 0 ? `${tracked} referencias con stock controlado, ninguna agotada.` : 'Sin stock controlado todavía: se vende sin límite.',
   };
 }
 
@@ -423,6 +464,7 @@ export async function runHealthChecks(
     Promise.resolve(checkDomain(request)),
     safe('db', 'Base de datos', checkDatabase),
     safe('pricing', 'Precios y promociones', () => checkPricing(now)),
+    safe('catalog', 'Catálogo y stock', checkCatalog),
     safe('stripe', 'Stripe · clave de pagos', checkStripeKey),
     safe('refunds', 'Stripe · devoluciones desde el panel', checkStripeRefunds),
     safe('webhook', 'Stripe · avisos de pago (webhook)', () => checkWebhook(now)),

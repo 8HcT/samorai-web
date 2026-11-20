@@ -94,12 +94,25 @@ export const es: TranslationKeys = {
     quoteAccent: 'Nosotros elegimos escuchar.',
   },
   wheels: {
+    emptyTitle: 'Ahora mismo no hay llantas a la venta',
+    emptyBody: 'Vuelve pronto o escríbenos y te contamos cuándo llegan.',
     heroEyebrow: 'Las llantas',
     heroTitle: 'Nuestros productos',
     heroSubtitle:
       'Diseñamos llantas para quienes convierten cada decisión al volante en una declaración de carácter.',
     configure: 'Configurar →',
     viewProduct: 'Ver ficha →',
+  },
+  /** Etiquetas de producto (se eligen en /admin/catalogo; aquí, su texto). */
+  labels: {
+    new: 'Nuevo',
+    premium: 'Premium',
+    best_seller: 'Más vendido',
+    limited: 'Edición limitada',
+    exclusive: 'Exclusivo',
+    last_units: 'Últimas unidades',
+    back_in_stock: 'De nuevo disponible',
+    sold_out: 'Agotado',
   },
   product: {
     description:
@@ -133,6 +146,12 @@ export const es: TranslationKeys = {
     addToCart: 'Añadir al carrito',
     added: 'Añadido ✓',
     addedTitle: 'Añadido a tu carrito',
+    soldOut: 'Agotado',
+    onlyLeft: 'Quedan {n}',
+    soldOutVariant: 'Esta medida está agotada ahora mismo.',
+    soldOutFinish: 'Este acabado está agotado ahora mismo.',
+    askRestock: 'Escríbenos y te avisamos cuando vuelva',
+    maxQtyReached: 'No quedan más unidades de esta medida.',
     viewCart: 'Ver carrito',
     stickyChoose: 'Elige acabado y medida',
     stickyTotal: 'Total',
@@ -160,6 +179,11 @@ export const es: TranslationKeys = {
   },
   cart: {
     redirecting: 'Abriendo el pago seguro…',
+    lineSoldOut: 'Agotado. Quítalo del carrito para poder pagar.',
+    lineUnavailable: 'Ya no está disponible. Quítalo del carrito para poder pagar.',
+    lineOnlyLeft: 'Solo quedan {n}.',
+    adjustTo: 'Dejar {n}',
+    fixLines: 'Revisa las llantas marcadas para poder pagar.',
     loadingCart: 'Cargando tu carrito…',
     eyebrow: 'Tu selección',
     title: 'Carrito',
@@ -187,6 +211,8 @@ export const es: TranslationKeys = {
       empty: 'Tu carrito está vacío.',
       price: 'Algún artículo no tiene precio configurado todavía. Inténtalo más tarde.',
       stripe: 'No se pudo iniciar el pago. Inténtalo de nuevo en unos minutos.',
+      stock: 'Alguna llanta del carrito ya no tiene stock suficiente. Revisa las líneas marcadas.',
+      stock_check: 'No hemos podido comprobar el stock ahora mismo. Inténtalo de nuevo en unos segundos.',
       managed:
         'Las llantas Victoria se venden ahora por juegos de 4 desde su ficha (preventa o compra directa con stock limitado). Quita el artículo del carrito y resérvalo o cómpralo desde la ficha del producto.',
     },
