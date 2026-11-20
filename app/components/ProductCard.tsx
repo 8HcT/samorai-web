@@ -18,9 +18,11 @@ interface ProductCardProps {
   finish?: ProductFinish;
   /** Precio más bajo vigente (con promoción si la hay). Sin él, `priceLabel`. */
   price?: VariantPrice | null;
+  /** Etiqueta puesta desde /admin para este acabado («Nuevo»…). */
+  label?: string | null;
 }
 
-export function ProductCard({ product, activeColor, finish, price }: ProductCardProps) {
+export function ProductCard({ product, activeColor, finish, price, label }: ProductCardProps) {
   // Hover largo (~3 s) → cambia a la imagen secundaria del acabado.
   const [showSecondary, setShowSecondary] = useState(false);
   const timer = useRef<number | null>(null);
@@ -62,9 +64,10 @@ export function ProductCard({ product, activeColor, finish, price }: ProductCard
       >
         <div className="ph">
           <ProductMedia color={finish.color} src={src} alt={`${product.model} — ${finishName(finish)}`} />
-          {(product.featured || price?.promotion) && (
+          {/* Etiqueta del panel + la de la promoción activa (automática). */}
+          {(label || price?.promotion) && (
             <div className="badges">
-              {product.featured && <span className="badge badge-new">{t.product.newBadge}</span>}
+              {label && <span className="badge badge-new">{label}</span>}
               {price?.promotion && <PromoBadge promotion={price.promotion} />}
             </div>
           )}
@@ -104,12 +107,6 @@ export function ProductCard({ product, activeColor, finish, price }: ProductCard
         <div className={`product-card__image-placeholder ${placeholderClass}`}>
           <div className="product-card__wheel-icon" aria-hidden="true" />
         </div>
-
-        {product.featured && (
-          <div className="badges">
-            <span className="badge badge-new">{t.product.newBadge}</span>
-          </div>
-        )}
 
         <div className="ov">
           <span className="overlay-cta">{t.wheels.viewProduct}</span>

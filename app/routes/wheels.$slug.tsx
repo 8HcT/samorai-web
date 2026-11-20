@@ -13,6 +13,8 @@ import { formatPrice } from '~/lib/money';
 import { buildPriceBook, lowestPrice } from '~/lib/pricing';
 import { loadPricing } from '~/lib/pricing.server';
 import { PriceTag, PromoBadge } from '~/components/PriceTag';
+import { loadLabels } from '~/lib/labels.server';
+import { labelKey } from '~/lib/labels';
 import { formatSize, formatEt } from '~/lib/format';
 import { Button } from '~/components/Button';
 import { SpecList } from '~/components/SpecList';
@@ -143,14 +145,15 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   }
   // Tirada de fabricación y stock REAL (PostgreSQL, en cada petición). Sin
   // tirada → la ficha funciona con el carrito como siempre.
-  const [offer, session, pricing] = await Promise.all([
+  const [offer, session, pricing, labels] = await Promise.all([
     getProductOffer(product),
     getSessionUser(request),
     loadPricing(),
+    loadLabels(),
   ]);
   const priceBook = buildPriceBook(pricing, [product]);
   return data(
-    { product, galleryImages, offer, priceBook, userEmail: session.user?.email ?? null },
+    { product, galleryImages, offer, priceBook, labels: labels.labels, userEmail: session.user?.email ?? null },
     { headers: session.auth?.headers }
   );
 }
@@ -161,7 +164,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 }
 
 export default function WheelDetail({ loaderData }: Route.ComponentProps) {
-  const { product, galleryImages, offer, priceBook, userEmail } = loaderData;
+  const { product, galleryImages, offer, priceBook, labels, userEmail } = loaderData;
   const t = useT();
   const locale = useLocale();
   const lp = useLocalePath();
@@ -391,9 +394,10 @@ export default function WheelDetail({ loaderData }: Route.ComponentProps) {
                   <span className="main__zoom-icon" />
                   {t.product.zoom}
                 </span>
-                {product.featured && (
+                {/* Etiqueta puesta desde /admin para el acabado que se está viendo. */}
+                {labels[labelKey(product.slug, previewFinish.id)] && (
                   <span className="badges" style={{ position: 'absolute', top: '14px', left: '14px', zIndex: 2 }}>
-                    <span className="badge badge-new">{t.product.newBadge}</span>
+                    <span className="badge badge-new">{labels[labelKey(product.slug, previewFinish.id)]}</span>
                   </span>
                 )}
               </button>

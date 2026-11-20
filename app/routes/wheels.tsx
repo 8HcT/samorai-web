@@ -7,6 +7,8 @@ import { ProductCard } from '~/components/ProductCard';
 import { useT } from '~/i18n/useT';
 import { buildPriceBook, lowestPrice } from '~/lib/pricing';
 import { loadPricing } from '~/lib/pricing.server';
+import { loadLabels } from '~/lib/labels.server';
+import { labelKey } from '~/lib/labels';
 
 export function meta(args: Route.MetaArgs) {
   const s = seoStrings(args).wheels;
@@ -14,8 +16,8 @@ export function meta(args: Route.MetaArgs) {
 }
 
 export async function loader() {
-  const priceBook = buildPriceBook(await loadPricing(), products);
-  return { products, priceBook };
+  const [pricing, labels] = await Promise.all([loadPricing(), loadLabels()]);
+  return { products, priceBook: buildPriceBook(pricing, products), labels: labels.labels };
 }
 
 export default function Wheels({ loaderData }: Route.ComponentProps) {
@@ -46,6 +48,7 @@ export default function Wheels({ loaderData }: Route.ComponentProps) {
                 price={lowestPrice(
                   product.variants.filter((v) => v.finishId === finish.id).map((v) => loaderData.priceBook[v.id])
                 )}
+                label={loaderData.labels[labelKey(product.slug, finish.id)]}
               />
             ))}
           </div>

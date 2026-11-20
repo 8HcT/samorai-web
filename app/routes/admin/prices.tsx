@@ -36,18 +36,40 @@ import {
   savePromotion,
   setPrice,
   setPromotionActive,
+  promotionScopeOptions,
   type PromotionRow,
 } from '~/lib/pricing-admin.server';
+import { invalidateLabelsCache, loadLabels, setLabel } from '~/lib/labels.server';
+import { LABEL_MAX_LENGTH, labelKey } from '~/lib/labels';
 
 export async function loader({ request }: Route.LoaderArgs) {
   await requireAdmin(request);
   const now = new Date();
+  // Etiquetas siempre recién leídas en el panel (sin la caché de la web).
+  invalidateLabelsCache();
+  const labels = await loadLabels();
   try {
     const [admin, snapshot] = await Promise.all([loadPricingAdmin(), loadPricing({ strict: true, rpc: adminRpc, now })]);
-    return { ...admin, references: referencePrices(snapshot, now), setupMissing: false, now: now.toISOString() };
+    return {
+      ...admin,
+      references: referencePrices(snapshot, now),
+      labels: labels.labels,
+      labelsAvailable: labels.available,
+      setupMissing: false,
+      now: now.toISOString(),
+    };
   } catch (err) {
     console.error('[admin][precios] no se pudo leer', err);
-    return { prices: [], promotions: [], scope: [], references: [], setupMissing: true, now: now.toISOString() };
+    return {
+      prices: [],
+      promotions: [],
+      scope: promotionScopeOptions(),
+      references: [],
+      labels: labels.labels,
+      labelsAvailable: labels.available,
+      setupMissing: true,
+      now: now.toISOString(),
+    };
   }
 }
 
@@ -67,6 +89,15 @@ export async function action({ request }: Route.ActionArgs) {
     );
     if (!res.ok) return fail(res.reason);
     return data<ActionData>({ ok: 'Precio guardado.' });
+  }
+
+  if (intent === 'set_label') {
+    const res = await setLabel(
+      { productSlug: String(form.get('product_slug') ?? ''), finishId: String(form.get('finish_id') ?? ''), label: form.get('label') },
+      user.id
+    );
+    if (!res.ok) return data<ActionData>({ errors: [res.reason] }, { status: 400 });
+    return data<ActionData>({ ok: res.label ? 'Etiqueta guardada.' : 'Etiqueta quitada.' });
   }
 
   if (intent === 'save_promotion') {
@@ -160,6 +191,77 @@ function PriceRowForm({ row, disabled }: { row: PriceRow; disabled: boolean }) {
       </td>
       <td data-label="Última modificación" className="admin-muted">
         {row.updatedAt ? <LocalDateTime iso={row.updatedAt} compact /> : 'Precio inicial'}
+      </td>
+    </tr>
+  );
+}
+
+/** Etiqueta de un acabado: se guarda sola en su fila y se ve al escribirla. */
+function LabelRowForm({
+  productSlug,
+  productName,
+  finish,
+  current,
+  disabled,
+}: {
+  productSlug: string;
+  productName: string;
+  finish: { id: string; name: string };
+  current: string | null;
+  disabled: boolean;
+}) {
+  const fetcher = useFetcher<ActionData>();
+  const saving = fetcher.state !== 'idle';
+  const result = fetcher.state === 'idle' ? fetcher.data : undefined;
+  const [text, setText] = useState(current ?? '');
+  const [shown, setShown] = useState<ActionData | undefined>(undefined);
+  useEffect(() => {
+    if (!result) return;
+    setShown(result);
+    if (!result.ok) return;
+    const t = window.setTimeout(() => setShown(undefined), 4000);
+    return () => window.clearTimeout(t);
+  }, [result]);
+  const preview = text.replace(/\s+/g, ' ').trim();
+  const errorId = `label-err-${productSlug}-${finish.id}`;
+
+  return (
+    <tr>
+      <td data-label="Acabado" className="cell-strong">{productName} · {finish.name}</td>
+      <td data-label="Etiqueta">
+        <fetcher.Form method="post" className="price-edit price-edit--label">
+          <input type="hidden" name="intent" value="set_label" />
+          <input type="hidden" name="product_slug" value={productSlug} />
+          <input type="hidden" name="finish_id" value={finish.id} />
+          <label className="admin-field">
+            <span className="sr-only">Etiqueta de {productName} {finish.name}</span>
+            <input
+              name="label"
+              maxLength={LABEL_MAX_LENGTH}
+              value={text}
+              onChange={(e) => {
+                setText(e.currentTarget.value);
+                setShown(undefined);
+              }}
+              placeholder="Sin etiqueta"
+              autoComplete="off"
+              disabled={disabled}
+              aria-invalid={shown?.errors ? true : undefined}
+              aria-describedby={shown?.errors ? errorId : undefined}
+            />
+          </label>
+          <button className="btn btn-outline btn-sm" disabled={disabled || saving} aria-busy={saving || undefined}>
+            {saving && <Spinner size={14} />}
+            {saving ? 'Guardando…' : 'Guardar'}
+          </button>
+          <span aria-live="polite">
+            {shown?.ok && <span className="price-edit__state price-edit__state--ok">✓ {preview ? 'Guardada' : 'Quitada'}</span>}
+            {shown?.errors && <span id={errorId} className="price-edit__state price-edit__state--error">{shown.errors.join(' ')}</span>}
+          </span>
+        </fetcher.Form>
+      </td>
+      <td data-label="Así se ve">
+        {preview ? <span className="badge badge-new">{preview}</span> : <span className="admin-muted">Sin etiqueta</span>}
       </td>
     </tr>
   );
@@ -406,7 +508,7 @@ function PromotionForm({
 }
 
 export default function AdminPrices({ loaderData, actionData }: Route.ComponentProps) {
-  const { prices, promotions, scope, references, setupMissing, now } = loaderData;
+  const { prices, promotions, scope, references, labels, labelsAvailable, setupMissing, now } = loaderData;
   const [params] = useSearchParams();
   const editing = promotions.find((p) => p.id === params.get('editar')) ?? null;
   const ad = actionData as ActionData | undefined;
@@ -471,6 +573,41 @@ export default function AdminPrices({ loaderData, actionData }: Route.ComponentP
           <PriceTable prices={references} />
         </section>
       )}
+
+      <section className="admin-section">
+        <h2>Etiquetas en las fotos</h2>
+        <p className="admin-hint">
+          Salen en la esquina de la foto, en el listado y en la ficha («Nuevo», «Últimas unidades»…). Déjala vacía para no
+          mostrar ninguna. Las promociones activas añaden la suya sola, con el descuento (p. ej. «Black Friday −20%»).
+        </p>
+        {!labelsAvailable && (
+          <div className="admin-notice admin-notice--warning" role="note">
+            Para usar las etiquetas falta crear su tabla en Supabase: pega en el SQL Editor el archivo{' '}
+            <code>supabase/migrations/20261120100000_product_labels.sql</code> y recarga esta página.
+          </div>
+        )}
+        <div className="admin-table-wrap">
+          <table className="admin-table admin-table--stack">
+            <thead>
+              <tr><th>Acabado</th><th>Etiqueta</th><th>Así se ve</th></tr>
+            </thead>
+            <tbody>
+              {scope.flatMap((product) =>
+                product.finishes.map((finish) => (
+                  <LabelRowForm
+                    key={labelKey(product.slug, finish.id)}
+                    productSlug={product.slug}
+                    productName={product.name}
+                    finish={finish}
+                    current={labels[labelKey(product.slug, finish.id)] ?? null}
+                    disabled={!labelsAvailable}
+                  />
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
       <section className="admin-section">
         <h2>Promociones</h2>

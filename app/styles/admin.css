@@ -1008,6 +1008,8 @@ fieldset.admin-form-row {
 /* Fila de edición de precio (formulario en línea) */
 .price-edit { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .price-edit .admin-field { width: 9.5em; }
+/* Etiquetas: caben 24 caracteres («Últimas unidades»…). */
+.price-edit--label .admin-field { width: min(16em, 100%); }
 .price-edit__state { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8125rem; font-weight: 600; }
 .price-edit__state--ok { color: var(--tone-good); }
 .price-edit__state--error { color: var(--tone-critical); }
