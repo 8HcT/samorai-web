@@ -5,6 +5,7 @@ import { assertSameOrigin } from '~/lib/security.server';
 import { accountHomePath } from '~/lib/presale/config.server';
 import { t as translations } from '~/i18n/config';
 import { useT } from '~/i18n/useT';
+import { PasswordInput } from '~/components/ui/PasswordInput';
 import { rootSeoData } from '~/lib/seo';
 
 const MIN_PASSWORD_LENGTH = 10;
@@ -56,11 +57,11 @@ export default function Password({ loaderData, actionData }: Route.ComponentProp
           <Form method="post" className="auth-form">
             <label className="presale-field">
               <span>{a.newPassword.replace('{n}', n)}</span>
-              <input type="password" name="password" required minLength={MIN_PASSWORD_LENGTH} autoComplete="new-password" />
+              <PasswordInput name="password" required minLength={MIN_PASSWORD_LENGTH} autoComplete="new-password" showLabel={a.showPassword} hideLabel={a.hidePassword} />
             </label>
             <label className="presale-field">
               <span>{a.repeatPassword}</span>
-              <input type="password" name="password2" required minLength={MIN_PASSWORD_LENGTH} autoComplete="new-password" />
+              <PasswordInput name="password2" required minLength={MIN_PASSWORD_LENGTH} autoComplete="new-password" showLabel={a.showPassword} hideLabel={a.hidePassword} />
             </label>
             {actionData && (
               <p className={actionData.ok ? 'notice notice--ok' : 'presale-form__error'} role="status">{message}</p>

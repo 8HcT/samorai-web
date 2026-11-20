@@ -229,3 +229,28 @@
   gap: 18px;
   padding-block: var(--space-16);
 }
+
+/* ---------- Acceso (cuenta / panel) ---------- */
+.account-card__title { color: var(--color-text-secondary); font-weight: 600; }
+.account-card > .caption { margin-bottom: var(--space-4); }
+.auth-form .presale-field { font-size: var(--text-sm); }
+
+.password-input { position: relative; display: block; }
+.password-input input { width: 100%; padding-right: 48px; }
+.password-input__toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 46px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+.password-input__toggle:hover { color: var(--color-text-primary); }
+.password-input__toggle:focus-visible { outline: 2px solid var(--s-gold); outline-offset: -4px; }
+.password-input__toggle[aria-pressed='true'] { color: var(--accent-ink); }

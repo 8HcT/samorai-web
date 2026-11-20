@@ -4,6 +4,7 @@ import { Form, Link, data, redirect, useNavigation } from 'react-router';
 import { siteUrl } from '~/lib/env.server';
 import { createAuthClient, getSessionUser, isAuthConfigured } from '~/lib/auth/session.server';
 import { assertSameOrigin, normalizeEmail } from '~/lib/security.server';
+import { PasswordInput } from '~/components/ui/PasswordInput';
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: 'Crear cuenta | SAMORAI' }, { name: 'robots', content: 'noindex' }];
@@ -71,11 +72,11 @@ export default function Register({ loaderData, actionData }: Route.ComponentProp
               </label>
               <label className="presale-field">
                 <span>Contraseña (mínimo {MIN_PASSWORD_LENGTH} caracteres)</span>
-                <input type="password" name="password" required minLength={MIN_PASSWORD_LENGTH} autoComplete="new-password" />
+                <PasswordInput name="password" required minLength={MIN_PASSWORD_LENGTH} autoComplete="new-password" showLabel="Mostrar contraseña" hideLabel="Ocultar contraseña" />
               </label>
               <label className="presale-field">
                 <span>Repite la contraseña</span>
-                <input type="password" name="password2" required minLength={MIN_PASSWORD_LENGTH} autoComplete="new-password" />
+                <PasswordInput name="password2" required minLength={MIN_PASSWORD_LENGTH} autoComplete="new-password" showLabel="Mostrar contraseña" hideLabel="Ocultar contraseña" />
               </label>
               {actionData && !actionData.ok && <p className="presale-form__error" role="alert">{actionData.message}</p>}
               <button type="submit" className="btn btn-primary w-full" disabled={busy || !loaderData.configured}>Crear cuenta</button>
