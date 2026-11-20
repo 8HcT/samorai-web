@@ -198,7 +198,6 @@
 .page-skel-stack--tight { gap: 12px; }
 .page-skel-row { display: flex; flex-wrap: wrap; gap: 10px; }
 @media (max-width: 640px) {
-  .page-skel-desktop-only { display: none; }
   .page-skel-hero { min-height: 56vh; }
   .page-skel-hero--compact { min-height: 34vh; }
 }

@@ -1359,15 +1359,6 @@
   }
   /* En móvil el banner 3:1 queda muy bajo → mínimo para que quepa el texto */
   .page-hero.page-hero--compact { min-height: 46vh; }
-  /* Heros que no se muestran en móvil (p. ej. /the-wheels: se va directo
-     al listado de llantas, sin banner). */
-  .page-hero--desktop-only { display: none; }
-}
-
-/* El h1 de respaldo solo existe cuando el hero está oculto (móvil): fuera de
-   ese tamaño se quita del todo para no duplicar el encabezado. */
-@media (min-width: 641px) {
-  .sr-only--mobile-heading { display: none; }
 }
 
 /* ─── Gallery ─────────────────────────────────────────────────────── */

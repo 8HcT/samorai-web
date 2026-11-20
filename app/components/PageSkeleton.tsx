@@ -70,10 +70,6 @@ function ProductDetailSkeleton() {
 function WheelsSkeleton() {
   return (
     <>
-      {/* Como en la página real: en móvil no hay cabecera con foto. */}
-      <div className="page-skel-desktop-only">
-        <HeroBlock compact />
-      </div>
       <div className="section">
         <div className="container">
           <div className="product-grid product-grid--models" aria-hidden="true">
