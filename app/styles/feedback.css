@@ -193,6 +193,8 @@
   background: var(--skeleton-base);
 }
 .page-skel-hero--compact { min-height: min(54vh, 480px); padding-block: var(--space-12); }
+/* Cabecera sin foto (.page-intro de The Dynasty) */
+.page-skel-hero--intro { min-height: 0; padding-block: var(--space-16) var(--space-12); }
 .page-skel-hero .container { display: grid; gap: 18px; width: 100%; }
 .page-skel-stack { display: grid; gap: 22px; align-content: start; }
 .page-skel-stack--tight { gap: 12px; }
@@ -200,6 +202,7 @@
 @media (max-width: 640px) {
   .page-skel-hero { min-height: 56vh; }
   .page-skel-hero--compact { min-height: 34vh; }
+  .page-skel-hero--intro { min-height: 0; padding-block: var(--space-12) var(--space-10); }
 }
 @media (prefers-reduced-motion: reduce) {
   .page-loading { animation: none; }

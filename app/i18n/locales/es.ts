@@ -62,7 +62,7 @@ export const es: TranslationKeys = {
   },
   dynasty: {
     heroEyebrow: 'The Dynasty',
-    heroTitle: 'Devolver el arte de la personalización a la automoción',
+    heroTitle: 'El arte de la personalización',
     heroSubtitle:
       'Diseñamos llantas para quienes convierten cada decisión al volante en una declaración de carácter.',
     originEyebrow: 'El origen',

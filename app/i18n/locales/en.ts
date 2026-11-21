@@ -60,7 +60,7 @@ export const en = {
   },
   dynasty: {
     heroEyebrow: 'The Dynasty',
-    heroTitle: 'Bringing the art of personalization back to the automobile',
+    heroTitle: 'The art of personalization',
     heroSubtitle:
       'We design wheels for those who turn every decision behind the wheel into a statement of character.',
     originEyebrow: 'The origin',

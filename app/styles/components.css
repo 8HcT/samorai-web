@@ -1361,6 +1361,33 @@
   .page-hero.page-hero--compact { min-height: 46vh; }
 }
 
+/* ─── Page Intro (cabecera sin imagen, The Dynasty) ──────────────────
+   Más baja y con el título más pequeño que .page-hero. Sigue el tema
+   (claro/oscuro) en vez de forzar un velo oscuro. */
+.page-intro {
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--gold-30);
+  padding-block: var(--space-16) var(--space-12);
+}
+.page-intro h1 {
+  /* 48px en desktop (frente a los 70px del h1 global) */
+  font-size: clamp(1.4rem, 6.4vw, var(--text-5xl));
+  max-width: 24ch;
+  margin-bottom: var(--space-5);
+  margin-left: -0.1rem; /* side-bearing del display font, como en .page-hero */
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: manual;
+}
+.page-intro__subtitle {
+  font-size: var(--text-lg);
+  max-width: 55ch;
+}
+@media (max-width: 640px) {
+  .page-intro { padding-block: var(--space-12) var(--space-10); }
+  .page-intro__subtitle { font-size: var(--text-base); }
+}
+
 /* ─── Gallery ─────────────────────────────────────────────────────── */
 .gallery-grid {
   display: grid;
@@ -2302,7 +2329,7 @@
   .dynasty-value .media-ph { margin-top: var(--space-2); }
 }
 
-/* Hero con placeholder de imagen (The Dynasty): patrón rayado bajo la imagen,
+/* Hero con placeholder de imagen (home): patrón rayado bajo la imagen,
    que aparece automáticamente cuando existe el archivo de --hero-bg. */
 .page-hero--ph::before {
   background:
@@ -2348,67 +2375,21 @@
 .home-light h2 em,
 .home-feature h2 em { font-style: normal; color: var(--accent-ink); }
 
-/* Sección "Descubre Victoria": fondo normal (no banda blanca). La imagen sale a
-   sangre por el borde IZQUIERDO de la pantalla (fuera del contenedor), grande y
-   completa (contain, anclada a la izquierda). */
+/* Sección "Descubre Victoria": imagen + texto en dos columnas, como el resto de
+   la home. La foto es un recorte sin fondo con la llanta cortada por la
+   izquierda: va en un marco del tono de las tarjetas para que ese corte
+   coincida con el borde del marco, y se ve entera (misma proporción). */
 .home-feature {
   border-top: 1px solid var(--gold-30);
   border-bottom: 1px solid var(--gold-30);
-  position: relative;       /* bloque contenedor de la imagen absoluta */
-  padding-bottom: calc(var(--section-padding-y) + var(--space-16));
 }
-
-/* Imagen fuera del flujo del grid: sangra al borde izquierdo del viewport
-   y desborda la sección por arriba cruzando la línea de separación. */
-.home-victoria-img {
-  --bleed-left: calc(max((100vw - var(--container-max)) / 2, 0px) + var(--container-padding));
-
-  position: absolute;
-  left:   calc(-1 * var(--bleed-left));
-  top:    calc(-1 * var(--section-padding-y) + var(--space-10));
-  bottom: var(--space-10);
-  width:  calc(42% + var(--bleed-left) - var(--space-8));
-  z-index: 1;
-
-  /* anula estilos de placeholder que no aplican en absolute */
-  border: none;
-  border-radius: 0;
-  padding: 0;
-  background: transparent;
+.home-victoria-img { max-width: 480px; }
+.media-ph--filled.home-victoria-img {
+  background: var(--color-bg-elevated); /* claro #fff · oscuro #232323 */
 }
-.home-victoria-img .media-ph__img {
-  object-fit: contain;
-  object-position: left center;
-}
-
-/* Columna de texto: compensa el espacio que ocuparía la imagen en el grid */
-.home-victoria-text {
-  position: relative;
-  z-index: 2;                               /* siempre encima de la imagen */
-  padding-left: calc(50% + var(--space-8));
-  min-height: clamp(360px, 45vw, 560px);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-@media (max-width: 900px) {
-  .home-feature {
-    padding-bottom: var(--section-padding-y);
-  }
-  .home-victoria-img {
-    /* relative (no static): la <img> va en absolute y necesita este hueco como
-       referencia; con static se estiraba sobre toda la sección y tapaba el texto. */
-    position: relative;
-    inset: auto;
-    width: 100%;
-    aspect-ratio: 4 / 3;
-    margin-bottom: var(--space-8);
-  }
-  .home-victoria-text {
-    padding-left: 0;
-    min-height: auto;
-  }
+.home-victoria-img .media-ph__img { object-fit: contain; }
+@media (max-width: 640px) {
+  .home-victoria-img { max-width: 360px; }
 }
 
 /* Banda de cita: fondo oscuro fijo en ambos temas */

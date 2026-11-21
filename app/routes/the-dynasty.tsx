@@ -1,7 +1,5 @@
 import type { Route } from './+types/the-dynasty';
-import { cssBackground } from '~/lib/images';
 import { seoMeta, seoStrings } from '~/lib/seo';
-import type { CSSProperties } from 'react';
 import { MediaPlaceholder as MediaPh } from '~/components/MediaPlaceholder';
 import { useT } from '~/i18n/useT';
 
@@ -12,26 +10,21 @@ export function meta(args: Route.MetaArgs) {
 
 /**
  * The Dynasty — página de identidad de marca. Copy en i18n (t.dynasty, ES/EN).
- * Imágenes: placeholders hasta subirlas a `public/images/` (ver <MediaPh> y
- * el `--hero-bg` del hero).
+ * Imágenes: placeholders hasta subirlas a `public/images/` (ver <MediaPh>).
  */
 export default function TheDynasty() {
   const { dynasty: d, a11y } = useT();
 
   return (
     <>
-      {/* 1 · Hero — placeholder de imagen de fondo. Cuando exista el archivo,
-          se muestra automáticamente; hasta entonces se ve el patrón rayado. */}
-      <div
-        className="page-hero page-hero--ph"
-        style={{ '--hero-bg': cssBackground('/images/dynasty-hero.png') } as CSSProperties}
-      >
+      {/* 1 · Cabecera — sin imagen, compacta y con el color del tema */}
+      <header className="page-intro">
         <div className="container">
           <span className="eyebrow">{d.heroEyebrow}</span>
           <h1>{d.heroTitle}</h1>
-          <p className="page-hero__subtitle">{d.heroSubtitle}</p>
+          <p className="page-intro__subtitle">{d.heroSubtitle}</p>
         </div>
-      </div>
+      </header>
 
       {/* 2 · La historia */}
       <section className="section section--elevated" aria-label={d.originEyebrow}>

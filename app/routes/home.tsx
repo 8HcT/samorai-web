@@ -55,15 +55,23 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 3 · Descubre el Modelo Victoria (imagen sangra izquierda y desborda sección) */}
+      {/* 3 · Descubre el Modelo Victoria (imagen + texto, como el resto de secciones) */}
       <section className="section home-feature" aria-label="Victoria">
-        <MediaPlaceholder className="home-victoria-img" label="Victoria" alt={h.altVictoria} file="/images/home-victoria.png" />
         <div className="container">
-          <div className="home-victoria-text">
-            <h2>{h.s3TitlePre}<em>{h.s3TitleAccent}</em>{h.s3TitlePost}</h2>
-            <p className="home-lead" style={{ marginTop: 'var(--space-4)' }}>{h.s3Subtitle}</p>
-            <p style={{ marginTop: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>{h.s3Body}</p>
-            <Button href="/the-wheels/victoria" variant="secondary">{h.s3Cta}</Button>
+          <div className="grid-2 home-split" style={{ alignItems: 'center' }}>
+            <MediaPlaceholder
+              className="home-victoria-img"
+              label="Victoria"
+              alt={h.altVictoria}
+              file="/images/home-victoria.png"
+              ratio="679 / 919"
+            />
+            <div>
+              <h2>{h.s3TitlePre}<em>{h.s3TitleAccent}</em>{h.s3TitlePost}</h2>
+              <p className="home-lead" style={{ marginTop: 'var(--space-4)' }}>{h.s3Subtitle}</p>
+              <p style={{ marginTop: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>{h.s3Body}</p>
+              <Button href="/the-wheels/victoria" variant="secondary">{h.s3Cta}</Button>
+            </div>
           </div>
         </div>
       </section>

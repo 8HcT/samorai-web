@@ -7,12 +7,13 @@ import { useCart } from '~/lib/cart/CartContext';
  * salto sea mínimo. Son decorativos: quien los usa anuncia la carga.
  */
 
-function HeroBlock({ compact = false }: { compact?: boolean }) {
+/** `size`: hero alto (home), compacto (con foto) o cabecera sin foto (`intro`). */
+function HeroBlock({ size = 'full' }: { size?: 'full' | 'compact' | 'intro' }) {
   return (
-    <div className={`page-skel-hero${compact ? ' page-skel-hero--compact' : ''}`} aria-hidden="true">
+    <div className={`page-skel-hero${size === 'full' ? '' : ` page-skel-hero--${size}`}`} aria-hidden="true">
       <div className="container">
         <Skeleton width={110} height={12} />
-        <Skeleton width="min(560px, 80%)" height={compact ? 40 : 56} />
+        <Skeleton width="min(560px, 80%)" height={size === 'full' ? 56 : 40} />
         <Skeleton width="min(420px, 65%)" height={14} />
       </div>
     </div>
@@ -145,11 +146,11 @@ function CartSkeleton({ items }: { items: number }) {
   );
 }
 
-/** Páginas con foto de cabecera y texto (The Dynasty, distribuidores, legales). */
-function HeroTextSkeleton() {
+/** Páginas de cabecera y texto: The Dynasty (sin foto), distribuidores y legales. */
+function HeroTextSkeleton({ intro = false }: { intro?: boolean }) {
   return (
     <>
-      <HeroBlock compact />
+      <HeroBlock size={intro ? 'intro' : 'compact'} />
       <div className="section">
         <div className="container page-skel-stack" style={{ maxWidth: 760 }} aria-hidden="true">
           <Skeleton width="55%" height={28} />
@@ -194,7 +195,8 @@ export function PageSkeleton({ path, cartItems = 2 }: { path: string; cartItems?
   if (p === '/the-wheels' || p === '/wheels' || p === '/shop') return <WheelsSkeleton />;
   if (p === '/cart') return <CartSkeleton items={cartItems} />;
   if (p === '/') return <HeroBlock />;
-  if (/^\/(the-dynasty|the-dealers|dealers|legal|privacidad|cookies)$/.test(p)) return <HeroTextSkeleton />;
+  if (p === '/the-dynasty') return <HeroTextSkeleton intro />;
+  if (/^\/(the-dealers|dealers|legal|privacidad|cookies)$/.test(p)) return <HeroTextSkeleton />;
   return <SectionSkeleton />;
 }
 
